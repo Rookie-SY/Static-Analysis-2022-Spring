@@ -29,7 +29,7 @@ int main(int argc, const char *argv[]) {
 
   LLVMInitializeNativeTarget();
   LLVMInitializeNativeAsmParser();
-
+  
   std::vector<std::string> ASTs = initialize(argv[1]);
 
   Config configure(argv[2]);

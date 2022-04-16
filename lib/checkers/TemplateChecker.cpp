@@ -16,7 +16,6 @@ void TemplateChecker::check() {
   LangOpts.CPlusPlus = true;
   std::unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
   cfg->dump(LangOpts, true);
-
 }
 
 void TemplateChecker::readConfig() {
