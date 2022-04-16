@@ -1,8 +1,8 @@
 digraph "Call graph" {
     label="Call graph"
 
-    Node0x55e015b95940 [shape=record,label="{main  }"];
-    Node0x55e015b95940 -> Node0x55e015b95820
-    Node0x55e015b95820 [shape=record,label="{inc_x  void *  }"];
-    Node0x55e015b922f0 [shape=record,label="{inc_1  void *  }"];
+    Node0x55ada6543980 [shape=record,label="{main  }"];
+    Node0x55ada6543980 -> Node0x55ada6543860
+    Node0x55ada6543860 [shape=record,label="{inc_x  void *  }"];
+    Node0x55ada6540330 [shape=record,label="{inc_1  void *  }"];
 }
