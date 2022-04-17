@@ -36,6 +36,7 @@ public:
                   CallGraph *call_graph, Config *configure)
       : BasicChecker(resource, manager, call_graph, configure){};
   void check();
+  void print_stmt_kind(Stmt* statement, int spaceCount);
 
 private:
   void getEntryFunc();
