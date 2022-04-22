@@ -1,4 +1,4 @@
-LLVM_BUILD = "./home/cyrus/桌面/llvm-source-build/llvm-build"
+LLVM_BUILD="/home/cyrus/桌面/llvm-source-build/llvm-build"
 cd ./cmake-build-debug
 cmake -G Ninja -DLLVM_BUILD=${LLVM_BUILD} ..
 ninja
