@@ -37,16 +37,15 @@ void *inc_x(void *x_void_ptr)
 
 int main()
 {
-
-    int x = 0, y = 0;
-
+    int array[10][5];
+    int x, y = 85;
+    int z = x;
+    
+    x = 1;
     /* show the initial values of x and y */
     printf("x: %d, y: %d\n", x, y);
-
-
-    inc_x(&x);
-
-    for(int i = 0; i<100; i++)
+    //inc_x(&x);
+    for(int i = 10;i<100;i++)
     {
         x++;
         gx++;
@@ -54,5 +53,5 @@ int main()
 
     printf("x increment finished\n");
 
-    return 0;
+    return x;
 }
