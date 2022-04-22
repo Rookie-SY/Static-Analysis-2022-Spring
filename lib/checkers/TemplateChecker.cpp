@@ -64,7 +64,7 @@ void TemplateChecker::print_stmt_kind(Stmt* statement, int spaceCount)
     if(statement != nullptr && statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
         clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(statement);
         declrefexp->getNameInfo().getName().dump();
-        //static_cast<clang::VarDecl*>(declrefexp->getDecl())->getInit()->dumpColor();
+        static_cast<clang::VarDecl*>(declrefexp->getDecl())->getInit()->dumpColor();
         //if(static_cast<clang::VarDecl*>(declrefexp->getDecl())->getEvaluatedValue() != nullptr)
         static_cast<clang::VarDecl*>(declrefexp->getDecl())->getDeclContext()->dumpDeclContext();
             //static_cast<clang::VarDecl*>(declrefexp->getDecl()).imp

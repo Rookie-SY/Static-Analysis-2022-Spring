@@ -40,6 +40,7 @@ int main()
     int array[10][5];
     int x, y = 85;
     int z = x;
+    
     x = 1;
     /* show the initial values of x and y */
     printf("x: %d, y: %d\n", x, y);
