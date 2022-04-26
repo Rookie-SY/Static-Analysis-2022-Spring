@@ -1,57 +1,14 @@
-#include <stdio.h>
+#include<stdlib.h>
 
-static int gx = 0;
-
-void *inc_1(void *x_void_ptr)
+struct myStruct
 {
-
-    /* increment x to 100 */
-    int *x_ptr = (int *)x_void_ptr;
-    for(int i = 0; i<100; i++)
-    {
-        ++(*x_ptr);
-        gx++;
-    }
- 
-    printf("x increment finished\n");
-
-    /* the function must return something - NULL will do */
-    return NULL;
-
-}
-
-/* this function is run by the second thread */
-void *inc_x(void *x_void_ptr)
-{
-
-    /* increment x to 100 */
-    int *x_ptr = (int *)x_void_ptr;
-    for(int i = 0; i<100; i++)
-    {
-        ++(*x_ptr);
-        gx++;
-    }
-    printf("x increment finished\n");
-    return NULL;
-}
+    int a;
+    float b;
+    char c;
+};
 
 int main()
 {
-    int array[10][5];
-    int x, y = 85;
-    int z = x;
-    
-    x = 1;
-    /* show the initial values of x and y */
-    printf("x: %d, y: %d\n", x, y);
-    //inc_x(&x);
-    for(int i = 10;i<100;i++)
-    {
-        x++;
-        gx++;
-    }
+    myStruct temp = {1, 0.5, 'a'};
 
-    printf("x increment finished\n");
-
-    return x;
 }
