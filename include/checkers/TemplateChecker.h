@@ -37,6 +37,7 @@ public:
       : BasicChecker(resource, manager, call_graph, configure){};
   void check();
   void print_stmt_kind(Stmt* statement, int spaceCount);
+  void get_cfg_stmt(unique_ptr<CFG>& cfg);
 
 private:
   void getEntryFunc();

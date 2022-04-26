@@ -6,39 +6,98 @@ void TemplateChecker::print_stmt_kind(Stmt* statement, int spaceCount)
 {
     if(statement == nullptr)
     {
+        for(int i = 0; i < spaceCount; i++)
+            std::cout << "  ";
         std::cout << "<<<NULL>>>" << std::endl;
         return;
     }
+    for(int i = 0; i < spaceCount; i++)
+        std::cout << "  ";
     std::cout << statement->getStmtClassName() << std::endl;
+    // clang::Stmt::StmtClass::
+    // clang::TranslationUnitDecl::getTranslationUnitDecl();
     
+    if(statement != nullptr && statement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass){
+            clang::DeclStmt* declstmt = static_cast<clang::DeclStmt*>(statement);
+            clang::DeclStmt::decl_iterator it1 = declstmt->decl_begin();
+            if(declstmt->isSingleDecl()){
+                clang::Decl* oneDecl = declstmt->getSingleDecl();
+                for(int i = 0; i < spaceCount + 1; i++)
+                    std::cout << "  ";
+                std::cout << oneDecl->getDeclKindName() << std::endl;
+                if(oneDecl->getKind() == clang::Decl::Kind::Var){
+                    clang::VarDecl* vardecl = static_cast<clang::VarDecl*>(oneDecl);
+                    std::cout << vardecl->getNameAsString() << std::endl;
+                    //vardecl->dumpColor();
+                    if(vardecl->getInit()!= nullptr){
+                        clang::Expr* initexpr = vardecl->getInit();
+                        if(initexpr->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass){
+                            clang::IntegerLiteral* integerit = static_cast<clang::IntegerLiteral*>(initexpr);
+                            std::cout << integerit->getValue().getZExtValue() << std::endl;
+                        }
+                    }
+                }   
+            }
+            else{
+                clang::DeclGroupRef multDecl = declstmt->getDeclGroup();
+                clang::DeclGroupRef::iterator itgr = multDecl.begin();
+                for(; itgr != multDecl.end(); itgr++)
+                {
+                    for(int i = 0; i < spaceCount + 1; i++)
+                        std::cout << "  ";
+                    std::cout << (*itgr)->getDeclKindName() << std::endl;
+                    if((*itgr)->getKind() == clang::Decl::Kind::Var){
+                        clang::VarDecl* vardecl = static_cast<clang::VarDecl*>((*itgr));
+                        std::cout << vardecl->getNameAsString() << std::endl;
+                        if(vardecl->getInit()!= nullptr){
+                            clang::Expr* initexpr = vardecl->getInit();
+                            if(initexpr->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass){
+                                clang::IntegerLiteral* integerit = static_cast<clang::IntegerLiteral*>(initexpr);
+                                std::cout << integerit->getValue().getZExtValue() << std::endl;
+                            }
+                        }
+                    }  
+                }
+            }
+       }
+    if(statement != nullptr && statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+        clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(statement);
+        declrefexp->getNameInfo().getName().dump();
+        std::cout << "here\n" << std::endl;
+        static_cast<clang::VarDecl*>(declrefexp->getDecl())->getInit()->dumpColor();
+        //if(static_cast<clang::VarDecl*>(declrefexp->getDecl())->getEvaluatedValue() != nullptr)
+        //static_cast<clang::VarDecl*>(declrefexp->getDecl())->getDeclContext()->dumpDeclContext();
+            //static_cast<clang::VarDecl*>(declrefexp->getDecl()).imp
+        //if(declrefexp->getQualifier())
+        //  declrefexp->getQualifier()->dump();
+        
+    }
     clang::Stmt::child_iterator iter = statement->child_begin();
     for(; iter != statement->child_end(); iter++)
     {
-        for(int i = 0; i < spaceCount; i++)
-            std::cout << "  ";
-        
-        //FIXME:
-        /*if((*iter)->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass)
-        {
-            clang::DeclStmt myStmt()
-            std::cout << "Found Dec at " << myStmt->getBeginLoc().dump();
-            if(myStmt->isSingleDecl())
-            {
-                clang::Decl* myDecl = myStmt->getSingleDecl();
-                myDecl->getDeclContext()->dumpDeclContext();
-            }
-            else
-            {
-                clang::DeclGroupRef myDeclRef = myStmt.getDeclGroup();
-                clang::DeclGroupRef::iterator groupIter = myDeclRef.begin();
-                for(; groupIter != myDeclRef.end(); groupIter++)
-                {
-                    *groupIter->
-                }
-            }
-        }*/
-
         print_stmt_kind(*iter, spaceCount + 1);
+    }
+}
+
+void TemplateChecker::get_cfg_stmt(unique_ptr<CFG>& cfg)
+{
+    clang::CFG::iterator blockIter;
+    for(blockIter = cfg->begin(); blockIter != cfg->end(); blockIter++){
+        CFGBlock* block = *blockIter;
+        BumpVector<CFGElement>::reverse_iterator elementIter;
+        for(elementIter = block->begin(); elementIter != block->end(); elementIter++){
+            CFGElement element = *elementIter;
+            if(element.getKind() == clang::CFGElement::Kind::Statement){
+                llvm::Optional<CFGStmt> stmt = element.getAs<CFGStmt>();
+
+                Stmt* statement = const_cast<Stmt* >(stmt.getValue().getStmt());
+                print_stmt_kind(statement, 0);
+            }
+            else if(element.getKind() == clang::CFGElement::Kind::Constructor){
+                // may have no use
+                std::cout << "Check here.\n" << std::endl;
+            }   
+        }
     }
 }
 
@@ -47,37 +106,21 @@ void TemplateChecker::check() {
     getEntryFunc();
     if (entryFunc != nullptr) {
         FunctionDecl *funDecl = manager->getFunctionDecl(entryFunc);
+        
         std::cout << "The entry function is: "
                 << funDecl->getQualifiedNameAsString() << std::endl;
         std::cout << "Here is its dump: " << std::endl;
         funDecl->dump();
-
         std::cout << "Here are related Statements: " << std::endl;
         Stmt* statement =  funDecl->getBody();
 
-        print_stmt_kind(statement, 1);
+        print_stmt_kind(statement, 0);
     }
     LangOptions LangOpts;
     LangOpts.CPlusPlus = true;
     std::unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
-    cfg->dump(LangOpts, true);
-    
-    /*CFGBlock* cfgBlock = cfg->createBlock();
-    std::cout << "CFGBlock is listed: " << std::endl;
-    cfgBlock->dump();
-    
-    unsigned int size = cfgBlock->size();
-
-    using myIterator = clang::CFGBlock::iterator;
-    myIterator iter = cfgBlock->begin();
-    for(myIterator iter = cfgBlock->begin(); iter != cfgBlock->end(); iter++)
-    {
-        CFGStmt cfgStmt = *iter->getAs<CFGStmt>();
-        const Stmt* myStmt = cfgStmt.getStmt();
-        std::cout << "Here are all the statements: " << std::endl;
-        myStmt->dump();
-    }*/
-
+    cfg->dump(LangOpts, true); 
+    //get_cfg_stmt(cfg);
 }
 
 void TemplateChecker::readConfig() {
