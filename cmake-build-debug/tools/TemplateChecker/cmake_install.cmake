@@ -1,4 +1,4 @@
-# Install script for directory: /home/cyrus/桌面/SE_experiment/se-experiment/tools/TemplateChecker
+# Install script for directory: /home/cyrus/桌面/se_experiment/Static-Analysis-2022-Spring/tools/TemplateChecker
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

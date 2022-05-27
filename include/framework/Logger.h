@@ -37,6 +37,7 @@ public:
   static void setCheckType(TCheck t);
   static TLogLevel &getConfigurationLevel();
   static std::string ToString(TLogLevel level);
+  static void configure_UndefinedVariable(Config &c);
 
 protected:
   std::ostringstream os;

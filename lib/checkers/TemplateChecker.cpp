@@ -63,10 +63,10 @@ void TemplateChecker::print_stmt_kind(Stmt* statement, int spaceCount)
         }
     if(statement != nullptr && statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
         clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(statement);
-        declrefexp->getNameInfo().getName().dump();
-        static_cast<clang::VarDecl*>(declrefexp->getDecl())->getInit()->dumpColor();
+        //declrefexp->getNameInfo().getName().dump();
+        //static_cast<clang::VarDecl*>(declrefexp->getDecl())->getInit()->dumpColor();
         //if(static_cast<clang::VarDecl*>(declrefexp->getDecl())->getEvaluatedValue() != nullptr)
-        static_cast<clang::VarDecl*>(declrefexp->getDecl())->getDeclContext()->dumpDeclContext();
+        //static_cast<clang::VarDecl*>(declrefexp->getDecl())->getDeclContext()->dumpDeclContext();
             //static_cast<clang::VarDecl*>(declrefexp->getDecl()).imp
         //if(declrefexp->getQualifier())
         //  declrefexp->getQualifier()->dump();
@@ -76,6 +76,34 @@ void TemplateChecker::print_stmt_kind(Stmt* statement, int spaceCount)
     for(; iter != statement->child_end(); iter++)
     {
         print_stmt_kind(*iter, spaceCount + 1);
+    }
+}
+
+void TemplateChecker::get_cfg_stmt(unique_ptr<CFG>& cfg)
+{
+    int i = 0;
+    clang::CFG::iterator blockIter;
+    for(blockIter = cfg->begin(); blockIter != cfg->end(); blockIter++){
+        std::cout<< "\033[31m" << "BLOCK" << i <<  "\033[0m" << std::endl;
+        CFGBlock* block = *blockIter;
+        BumpVector<CFGElement>::reverse_iterator elementIter;
+        for(elementIter = block->begin(); elementIter != block->end(); elementIter++){
+            CFGElement element = *elementIter;
+            
+            if(element.getKind() == clang::CFGElement::Kind::Statement){
+                llvm::Optional<CFGStmt> stmt = element.getAs<CFGStmt>();
+                if(stmt.hasValue() == true){
+                    Stmt* statement = const_cast<Stmt* >(stmt.getValue().getStmt());
+                    print_stmt_kind(statement, 0);
+                }
+            }
+            else if(element.getKind() == clang::CFGElement::Kind::Constructor){
+                // may have no use
+                std::cout << "Check here.\n" << std::endl;
+            }   
+            
+        }
+        i++;
     }
 }
 
@@ -92,13 +120,13 @@ void TemplateChecker::check() {
         std::cout << "Here are related Statements: " << std::endl;
         Stmt* statement =  funDecl->getBody();
 
-        print_stmt_kind(statement, 0);
+        //print_stmt_kind(statement, 0);
     }
     LangOptions LangOpts;
     LangOpts.CPlusPlus = true;
     std::unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
     cfg->dump(LangOpts, true); 
-
+    get_cfg_stmt(cfg);
 }
 
 void TemplateChecker::readConfig() {

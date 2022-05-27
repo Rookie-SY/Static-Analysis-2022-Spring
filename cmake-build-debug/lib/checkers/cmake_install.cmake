@@ -1,4 +1,4 @@
-# Install script for directory: /home/cyrus/桌面/SE_experiment/se-experiment/lib/checkers
+# Install script for directory: /home/cyrus/桌面/se_experiment/Static-Analysis-2022-Spring/lib/checkers
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -1,4 +1,4 @@
-# Install script for directory: /home/cyrus/桌面/SE_experiment/se-experiment/tools
+# Install script for directory: /home/cyrus/桌面/se_experiment/Static-Analysis-2022-Spring/tools
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/cyrus/桌面/SE_experiment/se-experiment/cmake-build-debug/tools/TemplateChecker/cmake_install.cmake")
+  include("/home/cyrus/桌面/se_experiment/Static-Analysis-2022-Spring/cmake-build-debug/tools/TemplateChecker/cmake_install.cmake")
+  include("/home/cyrus/桌面/se_experiment/Static-Analysis-2022-Spring/cmake-build-debug/tools/UndefinedVariableChecker/cmake_install.cmake")
 
 endif()
 

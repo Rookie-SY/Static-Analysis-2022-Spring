@@ -8,6 +8,7 @@
 #include <llvm/Support/CommandLine.h>
 
 #include "checkers/TemplateChecker.h"
+#include "checkers/UndefinedVariableChecker.h"
 #include "framework/ASTManager.h"
 #include "framework/BasicChecker.h"
 #include "framework/CallGraph.h"
