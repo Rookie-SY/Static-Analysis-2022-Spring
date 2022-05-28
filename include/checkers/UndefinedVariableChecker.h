@@ -69,6 +69,7 @@ private:
   };
   struct UsefulStatementInfo{
     clang::Stmt* statement;
+    bool isconstantarray;
     string variable;
     int rvalueKind;
     double rvalueLiteral;
@@ -106,6 +107,7 @@ public:
   void get_all_useful_statement();
   void calculate_gen_kill();
 
+  string analyze_array(clang::ArraySubscriptExpr* arrayexpr);
   void check_variable_use_in_block(string name,int blockno,int statementno);
   void calculate_block(int num);
   void blockvector_output();
