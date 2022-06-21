@@ -1,4 +1,10 @@
 #include <stdio.h>
+int add(){
+    int a1;
+    int b1 = 2;
+    b1 = a1 + b1;
+    return b1;
+}
 
 int main()
 {
@@ -13,6 +19,7 @@ int main()
     x += array[3];
     array[3]++;
     x = b[9][4];
+    x = add();
     if(y > x)
         x = y;
     else

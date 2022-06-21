@@ -116,18 +116,49 @@ void UndefinedVariableChecker::check() {
     blockNum = 0;
     
     if (entryFunc != nullptr) {
-        FunctionDecl *funDecl = manager->getFunctionDecl(entryFunc);
+        /*FunctionDecl *funDecl = manager->getFunctionDecl(entryFunc);
         SM = &manager->getFunctionDecl(entryFunc)->getASTContext().getSourceManager();
         std::cout << "The entry function is: "
                 << funDecl->getQualifiedNameAsString() << std::endl;
         std::cout << "Here is its dump: " << std::endl;
         funDecl->dump();
         std::cout << "Here are related Statements: " << std::endl;
-        Stmt* statement =  funDecl->getBody();
+        Stmt* statement =  funDecl->getBody();*/
 
         //print_stmt_kind(statement, 0);
+        for(int i = 0;i<allFunctions.size();i++){
+            FunctionDecl *funDecl = manager->getFunctionDecl(allFunctions[i]);
+            SM = &manager->getFunctionDecl(allFunctions[i])->getASTContext().getSourceManager();
+            if(i == 0)
+                std::cout << "The entry function is: "
+                        << funDecl->getQualifiedNameAsString() << std::endl;
+            std::cout << "Here is its dump: " << std::endl;
+            funDecl->dump();
+            std::cout << "Here are related Statements: " << std::endl;
+            Stmt* statement =  funDecl->getBody();
+            LangOptions LangOpts;
+            LangOpts.CPlusPlus = true;
+            std::unique_ptr<CFG>& cfg = manager->getCFG(allFunctions[i]);
+            cfg->dump(LangOpts, true); 
+            count_definition(cfg);
+            get_block_statement(cfg);
+            init_blockvector(cfg);
+            get_all_useful_statement();
+            calculate_gen_kill();
+            undefined_variable_check();
+            dump_debug();
+    
+            blockvector_output();
+            find_dummy_definition();
+            blockNum = 0;
+            definitionNum = 0;
+            std::vector<std::pair<string,Initvalue>>().swap(var_vector);
+            std::vector<BlockInfo>().swap(block_statement);
+            std::vector<BlockBitVector>().swap(blockbitvector);
+            std::vector<UsefulStatementInfo>().swap(allusefulstatement);
+        }
     }
-    LangOptions LangOpts;
+    /*LangOptions LangOpts;
     LangOpts.CPlusPlus = true;
     std::unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
     cfg->dump(LangOpts, true); 
@@ -141,7 +172,7 @@ void UndefinedVariableChecker::check() {
     dump_debug();
     
     blockvector_output();
-    find_dummy_definition();
+    find_dummy_definition();*/
     //get_cfg_stmt(cfg);
 }
 
@@ -540,6 +571,7 @@ void UndefinedVariableChecker::readConfig() {
 
 void UndefinedVariableChecker::getEntryFunc() {
   std::vector<ASTFunction *> topLevelFuncs = call_graph->getTopLevelFunctions();
+  allFunctions = call_graph->getAllFunctions();
   for (auto fun : topLevelFuncs) {
     const FunctionDecl *funDecl = manager->getFunctionDecl(fun);
     if (funDecl->getQualifiedNameAsString() == "main") {

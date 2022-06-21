@@ -111,16 +111,25 @@ void TemplateChecker::check() {
     readConfig();
     getEntryFunc();
     if (entryFunc != nullptr) {
-        FunctionDecl *funDecl = manager->getFunctionDecl(entryFunc);
+        /*FunctionDecl *funDecl = manager->getFunctionDecl(entryFunc);
         
         std::cout << "The entry function is: "
                 << funDecl->getQualifiedNameAsString() << std::endl;
         std::cout << "Here is its dump: " << std::endl;
         funDecl->dump();
         std::cout << "Here are related Statements: " << std::endl;
-        Stmt* statement =  funDecl->getBody();
+        Stmt* statement =  funDecl->getBody();*/
 
         //print_stmt_kind(statement, 0);
+        for(int i = 0;i<allFunctions.size();i++){
+            FunctionDecl *funDecl = manager->getFunctionDecl(allFunctions[i]);
+            if(i == 0)
+                std::cout << "The entry function is: "
+                        << funDecl->getQualifiedNameAsString() << std::endl;
+            std::cout << "Here is its dump: " << std::endl;
+            funDecl->dump();
+            std::cout << "Here are related Statements: " << std::endl;
+        }
     }
     LangOptions LangOpts;
     LangOpts.CPlusPlus = true;
@@ -138,6 +147,7 @@ void TemplateChecker::readConfig() {
 
 void TemplateChecker::getEntryFunc() {
   std::vector<ASTFunction *> topLevelFuncs = call_graph->getTopLevelFunctions();
+  allFunctions = call_graph->getAllFunctions();
   for (auto fun : topLevelFuncs) {
     const FunctionDecl *funDecl = manager->getFunctionDecl(fun);
     if (funDecl->getQualifiedNameAsString() == "main") {

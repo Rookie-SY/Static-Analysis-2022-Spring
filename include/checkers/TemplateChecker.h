@@ -42,7 +42,7 @@ private:
   void getEntryFunc();
   void readConfig();
   ASTFunction *entryFunc;
-
+  std::vector<ASTFunction *> allFunctions;
   int request_fun;
   int maxPathInFun;
 };

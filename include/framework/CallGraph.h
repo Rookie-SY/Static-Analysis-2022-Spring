@@ -38,7 +38,7 @@ public:
   ~CallGraph();
 
   const std::vector<ASTFunction *> &getTopLevelFunctions() const;
-
+  const std::vector<ASTFunction *> &getAllFunctions() const;
   ASTFunction *getFunction(FunctionDecl *FD) const;
 
   const std::vector<ASTFunction *> &getParents(ASTFunction *F) const;
@@ -59,6 +59,7 @@ public:
 protected:
   std::unordered_map<std::string, CallGraphNode *> nodes;
   std::vector<ASTFunction *> topLevelFunctions;
+  std::vector<ASTFunction *> allFunctions;
   CallGraphNode *getNode(ASTFunction *f);
 };
 
