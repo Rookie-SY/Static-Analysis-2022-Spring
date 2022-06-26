@@ -37,12 +37,18 @@ using namespace std;
 #define Literal 4
 #define Ref 5
 
+#define HASH_SIZE 0x3fff
+
 class UndefinedVariableChecker : public BasicChecker {
 private:
   void getEntryFunc();
   void readConfig();
   ASTFunction *entryFunc;
   std::vector<ASTFunction *> allFunctions;
+  struct Variable{
+    string variable;
+    clang::SourceLocation loc;
+  };
   struct Initvalue{
     int initkind;
     double value;
@@ -52,6 +58,7 @@ private:
     int statementno;
     clang::Stmt* stmt;
     bool isdummy;
+    vector<Variable> usedVariable;
   };
   struct BlockInfo{
     int blockno;
@@ -73,7 +80,7 @@ private:
     string variable;
     int rvalueKind;
     double rvalueLiteral;
-    vector<string> rvalueString;
+    vector<Variable> rvalueString;
     bool isdummy;
   };
   int request_fun;
@@ -84,12 +91,19 @@ private:
   clang::SourceManager *SM;
   std::vector<std::pair<string,Initvalue>> var_vector;
   std::vector<BlockInfo> block_statement;
+  std::vector<BlockInfo> useless_block_statement;
   std::vector<BlockBitVector> blockbitvector;
   std::vector<UsefulStatementInfo> allusefulstatement;
+  std::unordered_map<string,vector<string>> locationMap;
 public:
   void recursive_get_binaryop(clang::Stmt* statement,UsefulStatementInfo* info);
+  void recursive_find_usevariable(clang::Stmt* statement,StatementInfo* info);
   void get_rvalue(clang::Stmt* statement,UsefulStatementInfo* info);
-  void report_warning(string name,clang::Stmt* statement);
+  void report_warning(Variable variable);
+/*public:
+  unsigned int hash_pjw(string name);
+  void insert_Hashtable(string name);
+  bool findHashtable(string name);*/
 public:
   UndefinedVariableChecker(ASTResource *resource, ASTManager *manager,
                   CallGraph *call_graph, Config *configure)
@@ -106,12 +120,17 @@ public:
 
   void get_all_useful_statement();
   void calculate_gen_kill();
-
+  void get_useless_statement_variable();
   string analyze_array(clang::ArraySubscriptExpr* arrayexpr);
+  string analyze_struct(clang::MemberExpr* structexpr);
+
   void check_variable_use_in_block(string name,int blockno,int statementno);
+  void check_all_use_in_block(string name,int blockno);
   void calculate_block(int num);
   void blockvector_output();
   void undefined_variable_check();
   void find_dummy_definition();
   void dump_debug();
+
+  void is_other_function(clang::FunctionDecl* func);
 };

@@ -74,6 +74,10 @@ void UndefinedVariableChecker::print_stmt_kind(Stmt* statement, int spaceCount)
         //  declrefexp->getQualifier()->dump();
         
     }
+    if(statement != nullptr && statement->getStmtClass() == clang::Stmt::StmtClass::IfStmtClass)
+    {
+        std::cout << "good\n";
+    }
     clang::Stmt::child_iterator iter = statement->child_begin();
     for(; iter != statement->child_end(); iter++)
     {
@@ -109,6 +113,30 @@ void UndefinedVariableChecker::get_cfg_stmt(unique_ptr<CFG>& cfg)
     }
 }
 
+/*void UndefinedVariableChecker::insert_Hashtable(string name){
+    int hashNum = hash_pjw(name);
+    Hashtable[hashNum] = 1;
+}
+
+bool UndefinedVariableChecker::findHashtable(string name){
+    int hashNum = hash_pjw(name);
+    std::cout << name << " " <<hashNum <<std::endl;
+    if(Hashtable[hashNum] == 1)
+        return true;
+    else
+        return false;
+}
+
+unsigned int UndefinedVariableChecker::hash_pjw(string name)
+{
+    unsigned int val = 0, i;
+    for(int j=0;j<name.length();j++){
+        val = (val << 2) + (char)name[j];
+        if (i = val & ~HASH_SIZE) val = (val ^ (i >> 12)) & HASH_SIZE;
+    }
+    return val;
+}*/
+
 void UndefinedVariableChecker::check() {
     readConfig();
     getEntryFunc();
@@ -140,10 +168,16 @@ void UndefinedVariableChecker::check() {
             LangOpts.CPlusPlus = true;
             std::unique_ptr<CFG>& cfg = manager->getCFG(allFunctions[i]);
             cfg->dump(LangOpts, true); 
+            //get_cfg_stmt(cfg);
+            //print_stmt_kind(statement,0);
+            if(funDecl->getQualifiedNameAsString() != "main"){
+                is_other_function(funDecl);
+            }
             count_definition(cfg);
             get_block_statement(cfg);
             init_blockvector(cfg);
             get_all_useful_statement();
+            get_useless_statement_variable();
             calculate_gen_kill();
             undefined_variable_check();
             dump_debug();
@@ -154,8 +188,10 @@ void UndefinedVariableChecker::check() {
             definitionNum = 0;
             std::vector<std::pair<string,Initvalue>>().swap(var_vector);
             std::vector<BlockInfo>().swap(block_statement);
+            std::vector<BlockInfo>().swap(useless_block_statement);
             std::vector<BlockBitVector>().swap(blockbitvector);
             std::vector<UsefulStatementInfo>().swap(allusefulstatement);
+            std::unordered_map<string,vector<string>>().swap(locationMap);
         }
     }
     /*LangOptions LangOpts;
@@ -176,6 +212,20 @@ void UndefinedVariableChecker::check() {
     //get_cfg_stmt(cfg);
 }
 
+void UndefinedVariableChecker::is_other_function(clang::FunctionDecl* func){
+    int paramNum = func->getNumParams();
+    definitionNum = definitionNum + paramNum;
+    for(int i=0;i<paramNum;i++){
+        clang::ParmVarDecl* paramvar = func->getParamDecl(i);
+        pair<string,Initvalue> variable;
+        Initvalue initvalue;
+        initvalue.initkind = NotInitialize;
+        variable.second = initvalue;
+        variable.first = paramvar->getNameAsString();
+        var_vector.push_back(variable);
+    }
+}
+
 string UndefinedVariableChecker::analyze_array(clang::ArraySubscriptExpr* arrayexpr){
     string ret = "nothing";
     if(arrayexpr->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
@@ -188,6 +238,23 @@ string UndefinedVariableChecker::analyze_array(clang::ArraySubscriptExpr* arraye
             clang::DeclRefExpr* Declexpr = static_cast<clang::DeclRefExpr*>(Implicitexpr->getSubExpr());
             return Declexpr->getNameInfo().getAsString();
         }
+        else if(Implicitexpr->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(Implicitexpr->getSubExpr());
+            return analyze_struct(memberexpr);
+        }
+    }
+    return ret;
+}
+
+string UndefinedVariableChecker::analyze_struct(clang::MemberExpr* structexpr){
+    string ret = "nothing";
+    if(structexpr->getBase()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+        clang::MemberExpr* newstructIter = static_cast<clang::MemberExpr*>(structexpr->getBase());
+        return analyze_struct(newstructIter);
+    }
+    else if(structexpr->getBase()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+        clang::DeclRefExpr* declexpr = static_cast<clang::DeclRefExpr*>(structexpr->getBase());
+        return declexpr->getNameInfo().getAsString();
     }
     return ret;
 }
@@ -216,6 +283,10 @@ string UndefinedVariableChecker::get_statement_value(clang::Stmt* statement){
             clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(binaryIter->getLHS());
             return analyze_array(arrayexpr);
         }
+        else if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(binaryIter->getLHS());
+            return analyze_struct(memberexpr);
+        }
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
         clang::CompoundAssignOperator* compoundIter = static_cast<clang::CompoundAssignOperator*>(statement);
@@ -227,6 +298,10 @@ string UndefinedVariableChecker::get_statement_value(clang::Stmt* statement){
         else if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
             clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(compoundIter->getLHS());
             return analyze_array(arrayexpr);
+        }
+        else if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(compoundIter->getLHS());
+            return analyze_struct(memberexpr);
         }
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
@@ -240,6 +315,20 @@ string UndefinedVariableChecker::get_statement_value(clang::Stmt* statement){
             clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(unaryIter->getSubExpr());
             return analyze_array(arrayexpr);
         }
+        else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(unaryIter->getSubExpr());
+            return analyze_struct(memberexpr);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
+        clang::CXXOperatorCallExpr* cxxoperatorIter = static_cast<clang::CXXOperatorCallExpr*>(statement);
+        auto iter = cxxoperatorIter->child_begin();
+        assert((*iter) != NULL);
+        iter++;
+        assert((*iter) != NULL);
+        assert((*iter)->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
+        clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>((*iter));
+        return declrefiter->getNameInfo().getAsString();
     }
     return ret;
 }
@@ -251,12 +340,14 @@ void UndefinedVariableChecker::recursive_get_binaryop(clang::Stmt* statement,Use
         recursive_get_binaryop(binaryIter->getRHS(),info);
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
-        if(info->rvalueKind == 0 || info->rvalueKind == Literal)
-            info->rvalueKind = Ref;
         clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(statement);
         if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            if(info->rvalueKind == 0 || info->rvalueKind == Literal)
+                info->rvalueKind = Ref;
             clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(implicitit->getSubExpr());
-            string variable = declrefexp->getNameInfo().getAsString();
+            Variable variable;
+            variable.variable = declrefexp->getNameInfo().getAsString();
+            variable.loc = declrefexp->getLocation();
             info->rvalueString.push_back(variable);
         }
         else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
@@ -264,9 +355,19 @@ void UndefinedVariableChecker::recursive_get_binaryop(clang::Stmt* statement,Use
             recursive_get_binaryop(parenexp->getSubExpr(),info);
         }
         else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            if(info->rvalueKind == 0 || info->rvalueKind == Literal)
+                info->rvalueKind = Ref;
             clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(implicitit->getSubExpr());
-            string arrayname = analyze_array(arrayexpr);
-            info->rvalueString.push_back(arrayname);
+            /*string arrayname = analyze_array(arrayexpr);
+            Variable variable;
+            variable.variable = arrayname;
+            variable.loc = arrayexpr->getBeginLoc();
+            info->rvalueString.push_back(variable);*/
+            recursive_get_binaryop(arrayexpr->getLHS(),info);
+            recursive_get_binaryop(arrayexpr->getRHS(),info);
+        }
+        else{
+            recursive_get_binaryop(implicitit->getSubExpr(),info);
         }
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass){
@@ -274,6 +375,18 @@ void UndefinedVariableChecker::recursive_get_binaryop(clang::Stmt* statement,Use
             info->rvalueKind = Literal;
         clang::IntegerLiteral* integerit = static_cast<clang::IntegerLiteral*>(statement);
         info->rvalueLiteral = info->rvalueLiteral + integerit->getValue().getZExtValue();
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::FloatingLiteralClass){
+        if(info->rvalueKind == 0)
+            info->rvalueKind = Literal;
+        clang::FloatingLiteral* floatingit = static_cast<clang::FloatingLiteral*>(statement);
+        info->rvalueLiteral = info->rvalueLiteral + floatingit->getValue().convertToDouble();
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CharacterLiteralClass){
+        if(info->rvalueKind == 0)
+            info->rvalueKind = Literal;
+        clang::CharacterLiteral* characterit = static_cast<clang::CharacterLiteral*>(statement);
+        info->rvalueLiteral = info->rvalueLiteral + characterit->getValue();
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
         clang::ParenExpr* parenexp = static_cast<clang::ParenExpr*>(statement);
@@ -287,26 +400,56 @@ void UndefinedVariableChecker::recursive_get_binaryop(clang::Stmt* statement,Use
                 if(info->rvalueKind == 0 || info->rvalueKind == Literal)
                     info->rvalueKind = Ref;
                 clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>(implicitit->getSubExpr());
+                Variable variable;
                 string variableName = declrefiter->getNameInfo().getAsString();
-                info->rvalueString.push_back(variableName);
+                variable.variable = variableName;
+                variable.loc = declrefiter->getLocation();
+                info->rvalueString.push_back(variable);
             }
             else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
                 clang::ParenExpr* parenexp = static_cast<clang::ParenExpr*>(implicitit->getSubExpr());
-                clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(parenexp->getSubExpr());
-                string variable = declrefexp->getNameInfo().getAsString();
-                info->rvalueString.push_back(variable);
-                //recursive_get_binaryop(parenexp->getSubExpr(),info);
+                recursive_get_binaryop(parenexp->getSubExpr(),info);
+            }
+            else{
+                recursive_get_binaryop(implicitit->getSubExpr(),info);
             }
         }
         else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
             clang::ParenExpr* parenexp = static_cast<clang::ParenExpr*>(unaryIter->getSubExpr());
             recursive_get_binaryop(parenexp->getSubExpr(),info);
         }
+        else{
+            recursive_get_binaryop(unaryIter->getSubExpr(),info);
+        }
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+        if(info->rvalueKind == 0 || info->rvalueKind == Literal)
+            info->rvalueKind = Ref;
         clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(statement);
-        string arrayname = analyze_array(arrayexpr);
-        info->rvalueString.push_back(arrayname);
+        /*string arrayname = analyze_array(arrayexpr);
+        Variable variable;
+        variable.variable = arrayname;
+        variable.loc = arrayexpr->getBeginLoc();
+        info->rvalueString.push_back(variable);*/
+        recursive_get_binaryop(arrayexpr->getLHS(),info);
+        recursive_get_binaryop(arrayexpr->getRHS(),info);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+        clang::CallExpr* callIter = static_cast<clang::CallExpr*>(statement);
+        int argNum = callIter->getNumArgs();
+        for(int k = 0;k < argNum;k++){
+            recursive_get_binaryop(callIter->getArg(k),info);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+        clang::MemberExpr* structIter = static_cast<clang::MemberExpr*>(statement);
+        string structname = analyze_struct(structIter);
+        if(info->rvalueKind == 0 || info->rvalueKind == Literal)
+            info->rvalueKind = Ref;
+        Variable variable;
+        variable.variable = structname;
+        variable.loc = structIter->getBeginLoc();
+        info->rvalueString.push_back(variable);
     }
 }
 
@@ -326,8 +469,6 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt* statement,UsefulStatement
                     }
                     else {
                         if(initexpr->getStmtClass() == clang::Stmt::StmtClass::InitListExprClass){
-                            //array assign
-                            //vardecl->get
                             std::cout << "-------------******-------------------\n";
                             assert(vardecl->getType()->isArrayType());
                             assert(vardecl->getType()->isConstantArrayType());
@@ -337,24 +478,83 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt* statement,UsefulStatement
                             info->rvalueKind = Literal;
                             clang::InitListExpr* Initlistexpr = static_cast<clang::InitListExpr*>(initexpr);
                             info->rvalueLiteral = -1;
-                            //vardecl->getca
-                            //vardecl->get
                         }
                         else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
                             clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(initexpr);
-                            string variable;
+                            Variable variable;
                             if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
                                 clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(implicitit->getSubExpr());
-                                variable = declrefexp->getNameInfo().getAsString();
+                                variable.variable = declrefexp->getNameInfo().getAsString();
+                                variable.loc = declrefexp->getLocation();
+                                info->rvalueKind = Ref;
+                                info->rvalueString.push_back(variable);
                             }
                             else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
                                 clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(implicitit->getSubExpr());
-                                variable = analyze_array(arrayexpr);
+                                /*variable.variable = analyze_array(arrayexpr);
+                                variable.loc = arrayexpr->getBeginLoc();
+                                info->rvalueKind = Ref;
+                                info->rvalueString.push_back(variable);*/
+                                recursive_get_binaryop(arrayexpr->getLHS(),info);
+                                recursive_get_binaryop(arrayexpr->getRHS(),info);
                             }
-                            info->rvalueKind = Ref;
-                            info->rvalueString.push_back(variable);
+                            else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+                                clang::UnaryOperator* unaryexp = static_cast<clang::UnaryOperator*>(implicitit->getSubExpr());
+                                recursive_get_binaryop(implicitit->getSubExpr(),info);
+                            }
+                            else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+                                clang::BinaryOperator* binaryexp = static_cast<clang::BinaryOperator*>(implicitit->getSubExpr());
+                                recursive_get_binaryop(implicitit->getSubExpr(),info);
+                            }
+                            else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass){
+                                clang::IntegerLiteral* integerit = static_cast<clang::IntegerLiteral*>(implicitit->getSubExpr());
+                                info->rvalueKind = Literal;
+                                info->rvalueLiteral = integerit->getValue().getZExtValue();
+                            }
+                            else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::FloatingLiteralClass){
+                                clang::FloatingLiteral* integerit = static_cast<clang::FloatingLiteral*>(implicitit->getSubExpr());
+                               // std::cout << integerit->getValue().getSizeInBits();
+                                info->rvalueKind = Literal;
+                                info->rvalueLiteral = integerit->getValue().convertToDouble();
+                            }
+                            else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::CharacterLiteralClass){
+                                clang::CharacterLiteral* charit = static_cast<clang::CharacterLiteral*>(implicitit->getSubExpr());
+                                info->rvalueKind = Literal;
+                                info->rvalueLiteral = charit->getValue();
+                            }
+                            else{
+                                recursive_get_binaryop(implicitit->getSubExpr(),info);
+                            }
+                                    
+                        }//int x = y || int x = !y || int z = 0.5
+                        else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+                            recursive_get_binaryop(initexpr,info);
                         }
-
+                        else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+                            recursive_get_binaryop(initexpr,info);
+                        }
+                        else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+                            recursive_get_binaryop(initexpr,info);
+                        }
+                        else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass){
+                            clang::CXXConstructExpr* structIter = static_cast<clang::CXXConstructExpr*>(initexpr);
+                                                    //structIter->getBestDynamicClassTypeExpr()->dump();
+                            auto iter = structIter->child_begin();
+                            for(; iter != structIter->child_end(); iter++){
+                                assert((*iter)!= NULL);
+                                /*if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+                                    clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>((*iter));
+                                    assert(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
+                                    clang::DeclRefExpr* declrefIter = static_cast<clang::DeclRefExpr*>(implicitit->getSubExpr());
+                                    info->rvalueKind = Ref;
+                                    Variable variable;
+                                    variable.variable = declrefIter->getNameInfo().getAsString();
+                                    variable.loc = declrefIter->getLocation();
+                                    info->rvalueString.push_back(variable);
+                                }*/
+                                recursive_get_binaryop((*iter),info);
+                            }
+                        }
                     }
                 }
             }
@@ -362,6 +562,23 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt* statement,UsefulStatement
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
         clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+        if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            clang::ArraySubscriptExpr* arrayIter = static_cast<clang::ArraySubscriptExpr*>(binaryIter->getLHS());
+            string arrayname = analyze_array(arrayIter);
+            recursive_get_binaryop(arrayIter,info);
+            if(info->rvalueKind == Ref){
+                for(auto iter = info->rvalueString.begin();iter != info->rvalueString.end();iter++){
+                    if(arrayname == iter->variable){
+                        info->rvalueString.erase(iter);
+                        break;
+                    }
+                }
+            }
+            if(info->rvalueString.size() == 0){
+                info->rvalueKind = 0;
+                info->rvalueLiteral = 0;
+            }
+        }
         recursive_get_binaryop(binaryIter->getRHS(),info);
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
@@ -370,37 +587,65 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt* statement,UsefulStatement
             clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>(compoundIter->getLHS());
             info->rvalueKind = Ref;
             string variableName = declrefiter->getNameInfo().getAsString();
-            info->rvalueString.push_back(variableName);
+            Variable variable;
+            variable.variable = variableName;
+            variable.loc = declrefiter->getLocation();
+            info->rvalueString.push_back(variable);
             if(compoundIter->getRHS()->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
                 clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(compoundIter->getRHS());
+                Variable tempvariable;
                 if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
                     clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(implicitit->getSubExpr());
-                    info->rvalueString.push_back(declrefexp->getNameInfo().getAsString());
+                    tempvariable.variable = declrefexp->getNameInfo().getAsString();
+                    tempvariable.loc = declrefexp->getLocation();
+                    info->rvalueString.push_back(tempvariable);
                 }
                 else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
                     clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(implicitit->getSubExpr());
-                    string arrayname = analyze_array(arrayexpr);
-                    info->rvalueString.push_back(arrayname);
+                    /*string arrayname = analyze_array(arrayexpr);
+                    tempvariable.variable = arrayname;
+                    tempvariable.loc = arrayexpr->getBeginLoc();
+                    info->rvalueString.push_back(tempvariable);*/
+                    recursive_get_binaryop(arrayexpr->getLHS(),info);
+                    recursive_get_binaryop(arrayexpr->getRHS(),info);
                 }
+            }
+            else{
+                recursive_get_binaryop(compoundIter->getRHS(),info);
             }
         }
         else if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
             clang::ArraySubscriptExpr* newarrayexpr = static_cast<clang::ArraySubscriptExpr*>(compoundIter->getLHS());
-            string temparray = analyze_array(newarrayexpr);
+            /*string temparray = analyze_array(newarrayexpr);
+            Variable variable;
+            variable.variable = temparray;
+            variable.loc = newarrayexpr->getBeginLoc();
             info->rvalueKind = Ref;
-            info->rvalueString.push_back(temparray);
-            if(compoundIter->getRHS()->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+            info->rvalueString.push_back(variable);*/
+            recursive_get_binaryop(newarrayexpr->getLHS(),info);
+            recursive_get_binaryop(newarrayexpr->getRHS(),info);
+            recursive_get_binaryop(compoundIter->getRHS(),info);
+            /*if(compoundIter->getRHS()->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
                 clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(compoundIter->getRHS());
+                Variable tempvariable;
                 if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
                     clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(implicitit->getSubExpr());
-                    info->rvalueString.push_back(declrefexp->getNameInfo().getAsString());
+                    tempvariable.variable = declrefexp->getNameInfo().getAsString();
+                    tempvariable.loc = declrefexp->getLocation();
+                    info->rvalueString.push_back(tempvariable);
                 }
                 else if(implicitit->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
                     clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(implicitit->getSubExpr());
                     string arrayname = analyze_array(arrayexpr);
-                    info->rvalueString.push_back(arrayname);
+                    tempvariable.variable = arrayname;
+                    tempvariable.loc = arrayexpr->getBeginLoc();
+                    info->rvalueString.push_back(tempvariable);
+                    recursive_get_binaryop(arrayexpr->getRHS(),info);
                 }
-            }
+                else{
+                    recursive_get_binaryop(implicitit->getSubExpr(),info);
+                }
+            }*/
         }
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
@@ -409,16 +654,33 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt* statement,UsefulStatement
             clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>(unaryIter->getSubExpr());
             info->rvalueKind = Ref;
             string variableName = declrefiter->getNameInfo().getAsString();
-            info->rvalueString.push_back(variableName);
+            Variable variable;
+            variable.variable = variableName;
+            variable.loc = declrefiter->getLocation();
+            info->rvalueString.push_back(variable);
         }
         else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
             clang::ArraySubscriptExpr* arrayiter = static_cast<clang::ArraySubscriptExpr*>(unaryIter->getSubExpr());
             info->rvalueKind = Ref;
-            string variableName = analyze_array(arrayiter);
-            info->rvalueString.push_back(variableName);
+            /*string variableName = analyze_array(arrayiter);
+            Variable variable;
+            variable.variable = variableName;
+            variable.loc = arrayiter->getBeginLoc();
+            info->rvalueString.push_back(variable);*/
+            recursive_get_binaryop(arrayiter->getLHS(),info);
+            recursive_get_binaryop(arrayiter->getRHS(),info);
         }
+    }//x++
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
+        clang::CXXOperatorCallExpr* cxxoperatorIter = static_cast<clang::CXXOperatorCallExpr*>(statement);
+        auto iter = cxxoperatorIter->child_begin();
+        assert((*iter) != NULL);
+        iter++;
+        assert((*iter) != NULL);
+        iter++;
+        assert((*iter) != NULL);
+        return recursive_get_binaryop((*iter),info);
     }
-
 }
 
 vector<int> UndefinedVariableChecker::kill_variable(int statementno,string variable){
@@ -535,6 +797,9 @@ void UndefinedVariableChecker::count_definition(unique_ptr<CFG>& cfg){
                                                     //declrefexp->dump();
                                                     initvalue.ref = declrefexp->getNameInfo().getAsString();
                                                 }
+                                                else{
+                                                    initvalue.initkind = Reference;
+                                                }
                                             }
                                             variable.second = initvalue;
                                             var_vector.push_back(variable);
@@ -617,8 +882,8 @@ void UndefinedVariableChecker::dump_debug(){
             block_statement[i].usefulBlockStatement[j].stmt->dump();
         }
     }*/
-    /*std::cout<< "bit vector length:  "<< bitVectorLength <<std::endl;
-    for(int i=0;i<blockbitvector.size();i++){
+    std::cout<< "bit vector length:  "<< bitVectorLength <<std::endl;
+    /*for(int i=0;i<blockbitvector.size();i++){
         std::cout << "Block" << blockbitvector[i].blockid << ":   "<<std::endl;
         std::cout << "Succ:";
         for(int j=0;j<blockbitvector[i].succ.size();j++){
@@ -644,7 +909,6 @@ void UndefinedVariableChecker::dump_debug(){
     }*/
     std::cout<< "******************************" <<std::endl;
     for(int i=0;i<allusefulstatement.size();i++){
-        
         //allusefulstatement[i].statement->getBeginLoc().dump(*SM);
         std::cout << "left: " << allusefulstatement[i].variable << " ";
         if(allusefulstatement[i].rvalueKind == Literal)
@@ -652,11 +916,23 @@ void UndefinedVariableChecker::dump_debug(){
         else if(allusefulstatement[i].rvalueKind == Ref){
             std::cout << "right ref: ";
             for(int j=0;j<allusefulstatement[i].rvalueString.size();j++){
-                std::cout << allusefulstatement[i].rvalueString[j] << " ";
+                std::cout << allusefulstatement[i].rvalueString[j].variable << " ";
+                //allusefulstatement[i].rvalueString[j].loc.dump(*SM);
             }
             std:: cout << std::endl;
         }
     }
+    /*std::cout<< "******************************" <<std::endl;
+    for(int i=0;i<blockNum;i++){
+        std::cout << "Block" << i << std::endl;
+        for(int j=0;j<useless_block_statement[i].usefulBlockStatement.size();j++){
+            useless_block_statement[i].usefulBlockStatement[j].stmt->dump();
+            for(int k=0;k<useless_block_statement[i].usefulBlockStatement[j].usedVariable.size();k++){
+                std::cout << useless_block_statement[i].usefulBlockStatement[j].usedVariable[k] << " ";
+            }
+            std::cout << std::endl;
+        }
+    }*/
 }
 
 void UndefinedVariableChecker::get_bit_vector_length(){
@@ -668,12 +944,15 @@ void UndefinedVariableChecker::get_bit_vector_length(){
 
 void UndefinedVariableChecker::get_block_statement(unique_ptr<CFG>& cfg){
     int curBlockNum = 0;
+    int uselessStatementNum = 0;
     int statementNum = definitionNum;
     clang::CFG::iterator blockIter;
     for(blockIter = cfg->begin(); blockIter != cfg->end(); blockIter++){
         BlockInfo blockInfo;
+        BlockInfo uselessBlockInfo;
         CFGBlock* block = *blockIter;
         blockInfo.blockno = block->getBlockID();
+        uselessBlockInfo.blockno = block->getBlockID();
         BumpVector<CFGElement>::reverse_iterator elementIter;
         for(elementIter = block->begin(); elementIter != block->end(); elementIter++){
             CFGElement element = *elementIter;
@@ -685,8 +964,7 @@ void UndefinedVariableChecker::get_block_statement(unique_ptr<CFG>& cfg){
                     if(statement == nullptr){
                         std::cout<< "\033[31m" << "error here" <<  "\033[0m" <<std::endl;
                     }
-                    else{
-                        //statement->dump();
+                    else{  
                         if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass){
                             clang::DeclStmt* declstmt = static_cast<clang::DeclStmt*>(statement);
                             if(declstmt->isSingleDecl()){
@@ -721,6 +999,31 @@ void UndefinedVariableChecker::get_block_statement(unique_ptr<CFG>& cfg){
                                                 statementPair.stmt = statement;
                                                 statementPair.isdummy = false;
                                                 blockInfo.usefulBlockStatement.push_back(statementPair);
+                                            }
+                                            else{
+                                                if(initexpr->getStmtClass() != clang::Stmt::StmtClass::CXXConstructExprClass){
+                                                    StatementInfo statementPair;
+                                                    statementPair.statementno = statementNum;
+                                                    statementNum++;
+                                                    statementPair.stmt = statement;
+                                                    statementPair.isdummy = false;
+                                                    blockInfo.usefulBlockStatement.push_back(statementPair);
+                                                }
+                                                else{
+                                                    clang::CXXConstructExpr* structIter = static_cast<clang::CXXConstructExpr*>(initexpr);
+                                                    //structIter->getBestDynamicClassTypeExpr()->dump();
+                                                    auto iter = structIter->child_begin();
+                                                    for(; iter != structIter->child_end(); iter++)
+                                                    {
+                                                        StatementInfo statementPair;
+                                                        statementPair.statementno = statementNum;
+                                                        statementNum++;
+                                                        statementPair.stmt = statement;
+                                                        statementPair.isdummy = false;
+                                                        blockInfo.usefulBlockStatement.push_back(statementPair);
+                                                        break;
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -772,7 +1075,6 @@ void UndefinedVariableChecker::get_block_statement(unique_ptr<CFG>& cfg){
                         }
                         else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
                             clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
-                            
                             if(binaryIter->isAssignmentOp()){
                                 StatementInfo statementPair;
                                 statementPair.statementno = statementNum;
@@ -789,6 +1091,14 @@ void UndefinedVariableChecker::get_block_statement(unique_ptr<CFG>& cfg){
                                 statementPair.isdummy = false;
                                 blockInfo.usefulBlockStatement.push_back(statementPair);
                             }// ?
+                            else{
+                                StatementInfo statementPair;
+                                statementPair.statementno = uselessStatementNum;
+                                uselessStatementNum++;
+                                statementPair.stmt = statement;
+                                statementPair.isdummy = false;
+                                uselessBlockInfo.usefulBlockStatement.push_back(statementPair);
+                            }
                         }
                         else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
                             StatementInfo statementPair;
@@ -808,7 +1118,37 @@ void UndefinedVariableChecker::get_block_statement(unique_ptr<CFG>& cfg){
                                 statementPair.isdummy = false;
                                 blockInfo.usefulBlockStatement.push_back(statementPair);
                             }
+                            else if(unaryIter->isArithmeticOp()){
+                                StatementInfo statementPair;
+                                statementPair.statementno = uselessStatementNum;
+                                uselessStatementNum++;
+                                statementPair.stmt = statement;
+                                statementPair.isdummy = false;
+                                uselessBlockInfo.usefulBlockStatement.push_back(statementPair);
+                            }
                         }//x ++ or x-- or ++x or --x
+                        else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
+                            StatementInfo statementPair;
+                            statementPair.statementno = statementNum;
+                            statementNum++;
+                            statementPair.stmt = statement;
+                            statementPair.isdummy = false;
+                            blockInfo.usefulBlockStatement.push_back(statementPair);
+                        }
+                        else{
+                            assert(statement->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass || statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass || statement->getStmtClass() == clang::Stmt::StmtClass::ReturnStmtClass || statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass);
+                            //yinshi zhuanhuan
+                            if(statement->getStmtClass() != clang::Stmt::StmtClass::CXXConstructExprClass){
+                            StatementInfo statementPair;
+                            statementPair.statementno = uselessStatementNum;
+                            uselessStatementNum++;
+                            statementPair.stmt = statement;
+                            statementPair.isdummy = false;
+                            uselessBlockInfo.usefulBlockStatement.push_back(statementPair);
+                            }
+                        }//call function
+                        //statement->dump();
+                        //std::cout <<"statement" << statementNum << std::endl;
                     }
                 }
             }
@@ -819,6 +1159,7 @@ void UndefinedVariableChecker::get_block_statement(unique_ptr<CFG>& cfg){
             
         }
         block_statement.push_back(blockInfo);
+        useless_block_statement.push_back(uselessBlockInfo);
         curBlockNum++;
     }
     assert(curBlockNum == blockNum);
@@ -887,6 +1228,83 @@ void UndefinedVariableChecker::get_all_useful_statement(){
             info.rvalueKind = 0;
             get_rvalue(block_statement[i].usefulBlockStatement[j].stmt,&info);
             allusefulstatement.push_back(info);
+        }
+    }
+}
+
+void UndefinedVariableChecker::recursive_find_usevariable(clang::Stmt* statement,StatementInfo* info){
+    if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+        clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(statement);
+        Variable variable;
+        variable.variable = declrefexp->getNameInfo().getAsString();
+        variable.loc = declrefexp->getLocation();
+        info->usedVariable.push_back(variable);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+        clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(statement);
+        /*string arrayname = analyze_array(arrayexpr);
+        Variable variable;
+        variable.variable = arrayname;
+        variable.loc = arrayexpr->getBeginLoc();
+        info->usedVariable.push_back(variable);*/
+        recursive_find_usevariable(arrayexpr->getLHS(),info);
+        recursive_find_usevariable(arrayexpr->getRHS(),info);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+        clang::ImplicitCastExpr* implicitIter = static_cast<clang::ImplicitCastExpr*>(statement);
+        recursive_find_usevariable(implicitIter->getSubExpr(),info);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
+        clang::ParenExpr* parenexp = static_cast<clang::ParenExpr*>(statement);
+        recursive_find_usevariable(parenexp->getSubExpr(),info);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+        clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+        recursive_find_usevariable(binaryIter->getLHS(),info);
+        recursive_find_usevariable(binaryIter->getRHS(),info);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+        clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+        recursive_find_usevariable(unaryIter->getSubExpr(),info);
+    }
+    else{
+        //assert(statement->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass);
+        //actually this means coder uses char,int,double,long,etc, in a boolean expr,so we ignore it
+        return;
+    }
+}
+
+void UndefinedVariableChecker::get_useless_statement_variable(){
+    for(int i = 0;i < blockNum; i++){
+        for(int j = 0;j<useless_block_statement[i].usefulBlockStatement.size();j++){
+            if(useless_block_statement[i].usefulBlockStatement[j].stmt->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+                clang::CallExpr* callIter = static_cast<clang::CallExpr*>(useless_block_statement[i].usefulBlockStatement[j].stmt);
+                int argNum = callIter->getNumArgs();
+                for(int k = 0;k < argNum;k++){
+                    recursive_find_usevariable(callIter->getArg(k),&useless_block_statement[i].usefulBlockStatement[j]);
+                }
+            }
+            else if(useless_block_statement[i].usefulBlockStatement[j].stmt->getStmtClass() == clang::Stmt::StmtClass::ReturnStmtClass){
+                clang::ReturnStmt* returnIter = static_cast<clang::ReturnStmt*>(useless_block_statement[i].usefulBlockStatement[j].stmt);
+                recursive_find_usevariable(returnIter->getRetValue(),&useless_block_statement[i].usefulBlockStatement[j]);
+            }
+            else if(useless_block_statement[i].usefulBlockStatement[j].stmt->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+                clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(useless_block_statement[i].usefulBlockStatement[j].stmt);
+                assert(unaryIter->isArithmeticOp() == true);
+                if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+                    clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(unaryIter->getSubExpr());
+                    recursive_find_usevariable(implicitit->getSubExpr(),&useless_block_statement[i].usefulBlockStatement[j]);
+                }//!x (x maybe a boolean or other kind),
+                else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
+                    clang::ParenExpr* parenexp = static_cast<clang::ParenExpr*>(unaryIter->getSubExpr());
+                    recursive_find_usevariable(parenexp->getSubExpr(),&useless_block_statement[i].usefulBlockStatement[j]);
+                }
+            }
+            else if(useless_block_statement[i].usefulBlockStatement[j].stmt->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+                clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(useless_block_statement[i].usefulBlockStatement[j].stmt);
+                recursive_find_usevariable(binaryIter->getLHS(),&useless_block_statement[i].usefulBlockStatement[j]);
+                recursive_find_usevariable(binaryIter->getRHS(),&useless_block_statement[i].usefulBlockStatement[j]);
+            }
         }
     }
 }
@@ -1157,8 +1575,8 @@ void UndefinedVariableChecker::undefined_variable_check(){
     std::cout<< "iteration time: " << count <<std::endl;
 }
 
-void UndefinedVariableChecker::report_warning(string name,clang::Stmt* statement){
-    string statementinfo = statement->getBeginLoc().printToString(*SM);
+void UndefinedVariableChecker::report_warning(Variable variable){
+    string statementinfo = variable.loc.printToString(*SM);
     int divideline1 = 0,divideline2 = 0;
     for(int i=0;i<statementinfo.length();i++){
         if(statementinfo[i] == ':' && divideline1 == 0){
@@ -1171,7 +1589,30 @@ void UndefinedVariableChecker::report_warning(string name,clang::Stmt* statement
     }
     string line = statementinfo.substr(divideline1 + 1,divideline2 - divideline1 - 1);
     string column = statementinfo.substr(divideline2 + 1,statementinfo.length()-divideline2 - 1);
-    std::cout << "\033[31m" << "WARNING:USE UNINITIALIZED VARIABLE " << name << ": " << "Line: " << line << " Column: " << column << "\033[0m" << std::endl;
+    string hashstring = line + "0" + column + "0";
+    bool isexist = false;
+    for(int i=0;i<locationMap[variable.variable].size();i++){
+        if(locationMap[variable.variable][i] == hashstring)
+        {
+            isexist = true;
+            break;
+        }
+    }
+    if(isexist == false)
+    {
+        locationMap[variable.variable].push_back(hashstring);
+        std::cout << "\033[31m" << "WARNING:USE UNINITIALIZED VARIABLE " << variable.variable << ": " << "Line: " << line << " Column: " << column << "\033[0m" << std::endl;
+    }
+}
+
+void UndefinedVariableChecker::check_all_use_in_block(string name,int blockno){
+    for(int i=0;i<useless_block_statement[blockno].usefulBlockStatement.size();i++){
+        for(int j=0;j<useless_block_statement[blockno].usefulBlockStatement[i].usedVariable.size();j++){
+            if(name == useless_block_statement[blockno].usefulBlockStatement[i].usedVariable[j].variable){
+                    report_warning(useless_block_statement[blockno].usefulBlockStatement[i].usedVariable[j]);
+            }
+        }
+    }
 }
 
 void UndefinedVariableChecker::check_variable_use_in_block(string name,int blockno,int statementno){
@@ -1191,13 +1632,16 @@ void UndefinedVariableChecker::check_variable_use_in_block(string name,int block
             else if(allusefulstatement[i].rvalueKind == Ref){
                 bool hasmyself = false;
                 for(int j=0;j<allusefulstatement[i].rvalueString.size();j++){
-                    if(name == allusefulstatement[i].rvalueString[j])
+                    if(name == allusefulstatement[i].rvalueString[j].variable)
                         hasmyself = true;
                 }
                 if(hasmyself == true){
                     if(isknown == false){
                         //definition use myself warning should be reported
-                        report_warning(name,allusefulstatement[i].statement);
+                        for(int j=0;j<allusefulstatement[i].rvalueString.size();j++){
+                            if(name == allusefulstatement[i].rvalueString[j].variable)
+                                report_warning(allusefulstatement[i].rvalueString[j]);
+                        }
                     }
                     else{
                         // has inited do nothing
@@ -1212,11 +1656,11 @@ void UndefinedVariableChecker::check_variable_use_in_block(string name,int block
             }
             else{
                 for(int j=0;j<allusefulstatement[i].rvalueString.size();j++){
-                    if(name == allusefulstatement[i].rvalueString[j]){
+                    if(name == allusefulstatement[i].rvalueString[j].variable){
                         if(isknown == false)
                         {
                             // use uninited variable warning should be reported
-                            report_warning(name,allusefulstatement[i].statement);
+                            report_warning(allusefulstatement[i].rvalueString[j]);
                         }
                     }
                 }
@@ -1243,6 +1687,7 @@ void UndefinedVariableChecker::find_dummy_definition(){
                     for(int j=0;j<=tempblock.blockid;j++)
                         statenum = statenum + block_statement[j].usefulBlockStatement.size();
                     check_variable_use_in_block(name,tempblock.blockid, statenum - 1);
+                    check_all_use_in_block(name,tempblock.blockid);
                 }
                 else{//kill unreachable
                     for(int j=0;j<bitVectorLength;j++){

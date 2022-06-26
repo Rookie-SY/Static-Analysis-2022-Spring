@@ -1,5 +1,5 @@
 #include <stdio.h>
-int add(){
+int add(int t,int m){
     int a1;
     int b1 = 2;
     b1 = a1 + b1;
@@ -10,6 +10,7 @@ int main()
 {
     int array[10];
     int t = array[5];
+    int p = add(1,2);
     while(t > 5)
         array[t] = t;
     int x,y = 85,a,b[10][5];
@@ -19,7 +20,7 @@ int main()
     x += array[3];
     array[3]++;
     x = b[9][4];
-    x = add();
+    x = add(1,y);
     if(y > x)
         x = y;
     else
