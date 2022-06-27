@@ -137,24 +137,54 @@ unsigned int UndefinedVariableChecker::hash_pjw(string name)
     return val;
 }*/
 
+void UndefinedVariableChecker::reset(){
+    blockNum = 0;
+    definitionNum = 0;
+    std::vector<std::pair<string,Initvalue>>().swap(var_vector);
+    std::vector<BlockInfo>().swap(block_statement);
+    std::vector<BlockInfo>().swap(useless_block_statement);
+    std::vector<BlockBitVector>().swap(blockbitvector);
+    std::vector<UsefulStatementInfo>().swap(allusefulstatement);
+    std::unordered_map<string,vector<string>>().swap(locationMap);
+}
+
 void UndefinedVariableChecker::check() {
     readConfig();
     getEntryFunc();
+    for(int i=0;i<allFunctions.size();i++){
+        InterNode internode;
+        internode.isvisit = false;
+        internode.funcname = manager->getFunctionDecl(allFunctions[i])->getQualifiedNameAsString();
+        graph.push_back(internode);
+    }
+    nodeNum = allFunctions.size();
     definitionNum = 0;
     blockNum = 0;
-    
+    std::vector<Child> childlist;
     if (entryFunc != nullptr) {
-        /*FunctionDecl *funDecl = manager->getFunctionDecl(entryFunc);
+        FunctionDecl *funDecl = manager->getFunctionDecl(entryFunc);
         SM = &manager->getFunctionDecl(entryFunc)->getASTContext().getSourceManager();
         std::cout << "The entry function is: "
                 << funDecl->getQualifiedNameAsString() << std::endl;
         std::cout << "Here is its dump: " << std::endl;
         funDecl->dump();
         std::cout << "Here are related Statements: " << std::endl;
-        Stmt* statement =  funDecl->getBody();*/
+        Stmt* statement =  funDecl->getBody();
 
+        std::vector<ASTFunction*> vec;
+        vec = call_graph->getChildren(entryFunc);
+        for(int i = 0;i<vec.size();i++){
+            Child child;
+            child.astfunc = vec[i];
+            child.funcDecl = manager->getFunctionDecl(vec[i]);
+            child.funcname = child.funcDecl->getQualifiedNameAsString();
+            child.param_num = child.funcDecl->getNumParams();
+            for(int k=0;k<child.param_num;k++)
+                child.parameter_init.push_back(1);
+            childlist.push_back(child);
+        }
         //print_stmt_kind(statement, 0);
-        for(int i = 0;i<allFunctions.size();i++){
+        /*for(int i = 0;i<allFunctions.size();i++){
             FunctionDecl *funDecl = manager->getFunctionDecl(allFunctions[i]);
             SM = &manager->getFunctionDecl(allFunctions[i])->getASTContext().getSourceManager();
             if(i == 0)
@@ -192,24 +222,114 @@ void UndefinedVariableChecker::check() {
             std::vector<BlockBitVector>().swap(blockbitvector);
             std::vector<UsefulStatementInfo>().swap(allusefulstatement);
             std::unordered_map<string,vector<string>>().swap(locationMap);
-        }
+        }*/
     }
-    /*LangOptions LangOpts;
+    LangOptions LangOpts;
     LangOpts.CPlusPlus = true;
     std::unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
     cfg->dump(LangOpts, true); 
     //
+    //get_cfg_stmt(cfg);
     count_definition(cfg);
     get_block_statement(cfg);
     init_blockvector(cfg);
     get_all_useful_statement();
+    get_useless_statement_variable();
     calculate_gen_kill();
     undefined_variable_check();
     dump_debug();
     
     blockvector_output();
-    find_dummy_definition();*/
-    //get_cfg_stmt(cfg);
+    find_dummy_definition(&childlist);
+    dump_func(childlist);
+    for(int i=0;i<childlist.size();i++){
+        reset();
+        for(int j=0;j<nodeNum;j++){
+            if(graph[j].funcname == childlist[i].funcname){
+                if(graph[j].isvisit == false){
+                    check_child(childlist[i]);
+                }
+            }
+        }
+    }
+}
+
+void UndefinedVariableChecker::check_child(Child child){
+    std::vector<Child> childlist;
+    std::vector<ASTFunction*> vec;
+    vec = call_graph->getChildren(child.astfunc);
+    for(int i = 0;i<vec.size();i++){
+        Child newchild;
+        newchild.astfunc = vec[i];
+        newchild.funcDecl = manager->getFunctionDecl(vec[i]);
+        newchild.funcname = newchild.funcDecl->getQualifiedNameAsString();
+        newchild.param_num = newchild.funcDecl->getNumParams();
+        for(int k=0;k<newchild.param_num;k++)
+            newchild.parameter_init.push_back(1);
+        childlist.push_back(newchild);
+    }
+    std::cout << "The function is: "
+                << child.funcDecl->getQualifiedNameAsString() << std::endl;
+    child.funcDecl->dump();
+    is_other_function(child.funcDecl);
+    LangOptions LangOpts;
+    LangOpts.CPlusPlus = true;
+    std::unique_ptr<CFG>& cfg = manager->getCFG(child.astfunc);
+    cfg->dump(LangOpts, true); 
+    count_definition(cfg);
+    get_block_statement(cfg);
+
+    init_blockvector(cfg);
+    change_definition_bit(child.parameter_init);
+    get_all_useful_statement();
+    get_useless_statement_variable();
+    calculate_gen_kill();
+    undefined_variable_check();
+    dump_debug();
+    
+    blockvector_output();
+    find_dummy_definition(&childlist);
+    dump_func(childlist);
+    int curnode = 0;
+    for(int i=0;i<nodeNum;i++){
+        if(graph[i].funcname == child.funcname){
+            curnode = i;
+            graph[i].isvisit = true;
+            break;
+        }
+    }
+    for(int i=0;i<childlist.size();i++){
+        reset();
+        for(int j=0;j<nodeNum;j++){
+            if(graph[j].funcname == childlist[i].funcname){
+                if(graph[j].isvisit == false){
+                    check_child(childlist[i]);
+                }
+            }
+        }
+    }
+    graph[curnode].isvisit = false;
+}
+
+void UndefinedVariableChecker::change_definition_bit(std::vector<int> param_bit){
+    for(int i=0;i<param_bit.size();i++){
+        if(param_bit[i] == 1){
+            for(int j=0;j<blockNum;j++){
+                blockbitvector[j].Invector[i] = 0;
+                blockbitvector[j].Outvector[i] = 0;
+            }
+        }
+    }
+}   
+
+void UndefinedVariableChecker::dump_func(std::vector<Child> childlist){
+    for(int i=0;i < childlist.size();i++){
+        std::cout << childlist[i].funcname << " " << childlist[i].param_num << " ";
+        for(int j=0;j<childlist[i].parameter_init.size();j++){
+            std::cout << childlist[i].parameter_init[j];
+        }
+        std::cout << std::endl;
+    }
 }
 
 void UndefinedVariableChecker::is_other_function(clang::FunctionDecl* func){
@@ -1267,6 +1387,13 @@ void UndefinedVariableChecker::recursive_find_usevariable(clang::Stmt* statement
         clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
         recursive_find_usevariable(unaryIter->getSubExpr(),info);
     }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+        clang::CallExpr* callIter = static_cast<clang::CallExpr*>(statement);
+        int argNum = callIter->getNumArgs();
+        for(int k = 0;k < argNum;k++){
+            recursive_find_usevariable(callIter->getArg(k),info);
+        }
+    }
     else{
         //assert(statement->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass);
         //actually this means coder uses char,int,double,long,etc, in a boolean expr,so we ignore it
@@ -1669,7 +1796,92 @@ void UndefinedVariableChecker::check_variable_use_in_block(string name,int block
     }
 }
 
-void UndefinedVariableChecker::find_dummy_definition(){
+bool UndefinedVariableChecker::get_arg_name(clang::Stmt* statement,string name){
+    bool ret = false;
+    if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+        clang::ImplicitCastExpr* impliexpr = static_cast<clang::ImplicitCastExpr*>(statement);
+        return get_arg_name(impliexpr->getSubExpr(),name);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+        clang::DeclRefExpr* declexpr = static_cast<clang::DeclRefExpr*>(statement);
+        if(declexpr->getNameInfo().getAsString() == name)
+            return true;
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+        clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+        bool left = get_arg_name(binaryIter->getLHS(),name);
+        bool right = get_arg_name(binaryIter->getRHS(),name);
+        if(left == false && right == false)
+            return false;
+        else    
+            return true;
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+        clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+        return get_arg_name(unaryIter->getSubExpr(),name);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
+        clang::ParenExpr* parenIter = static_cast<clang::ParenExpr*>(statement);
+        return get_arg_name(parenIter->getSubExpr(),name);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+        clang::ArraySubscriptExpr* arrayIter = static_cast<clang::ArraySubscriptExpr*>(statement);
+        bool left = get_arg_name(arrayIter->getLHS(),name);
+        bool right = get_arg_name(arrayIter->getRHS(),name);
+        if(left == false && right == false)
+            return false;
+        else    
+            return true;
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+        clang::MemberExpr* structIter = static_cast<clang::MemberExpr*>(statement);
+        string struct_name = analyze_struct(structIter);
+        if(name == struct_name)
+            return true;
+        else    
+            return false;
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass){
+        clang::CXXConstructExpr* cxxIter = static_cast<clang::CXXConstructExpr*>(statement);
+        auto iter = cxxIter->child_begin();
+        for(; iter != cxxIter->child_end(); iter++){
+            assert((*iter)!= NULL);
+            return get_arg_name((*iter),name);    
+        }
+    }
+    return ret;
+}
+
+void UndefinedVariableChecker::get_call_func_use(string name,int blockno,std::vector<Child>* childlist){
+    for(int i=0;i<useless_block_statement[blockno].usefulBlockStatement.size();i++){
+        for(int j=0;j<useless_block_statement[blockno].usefulBlockStatement[i].usedVariable.size();j++){
+            if(name == useless_block_statement[blockno].usefulBlockStatement[i].usedVariable[j].variable){
+                if(useless_block_statement[blockno].usefulBlockStatement[i].stmt->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+                    clang::CallExpr* callexpr = static_cast<clang::CallExpr*>(useless_block_statement[blockno].usefulBlockStatement[i].stmt);
+                    clang::Expr* expr = callexpr->getCallee();
+                    if(expr->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+                        clang::ImplicitCastExpr* impliexpr = static_cast<clang::ImplicitCastExpr*>(expr);
+                        assert(impliexpr->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
+                        clang::DeclRefExpr* declexpr = static_cast<clang::DeclRefExpr*>(impliexpr->getSubExpr());
+                        string func_name = declexpr->getNameInfo().getAsString();
+                        int arg_num = callexpr->getNumArgs();
+                        for(int k=0;k<arg_num;k++){
+                            if(get_arg_name(callexpr->getArg(k),name) == true){
+                                for(int t=0;t<childlist->size();t++){
+                                    if((*childlist)[t].funcname == func_name){
+                                        (*childlist)[t].parameter_init[k] = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void UndefinedVariableChecker::find_dummy_definition(std::vector<Child>* childlist){
     for(int i=0;i<definitionNum;i++){
         int target_statement_no = i;
         string name = var_vector[i].first;
@@ -1688,20 +1900,38 @@ void UndefinedVariableChecker::find_dummy_definition(){
                         statenum = statenum + block_statement[j].usefulBlockStatement.size();
                     check_variable_use_in_block(name,tempblock.blockid, statenum - 1);
                     check_all_use_in_block(name,tempblock.blockid);
+                    get_call_func_use(name,tempblock.blockid,childlist);
                 }
                 else{//kill unreachable
+                    //std::cout <<"kill***" << name << std::endl;
+                    bool isreplace = false;
                     for(int j=0;j<bitVectorLength;j++){
-                        if(tempblock.Outvector[j] == 1 && allusefulstatement[j-definitionNum].variable == name){ // gen variable  
+                        if(j >= definitionNum && tempblock.Outvector[j] == 1 && allusefulstatement[j-definitionNum].variable == name){ // gen variable  
                             //std::cout << name <<std::endl;                      
                             check_variable_use_in_block(name,tempblock.blockid, j);
+                            isreplace = true;
                             stop = true;
                         }
                     }
+                    if(isreplace == false)
+                        stop = true;
                 }
             }
-            if(stop == true) break;
+            else if(tempblock.blockid == blockNum-1){
+                if(tempblock.Outvector[target_statement_no] == 0){
+                    q.pop();
+                    continue;
+                }
+            }
+            if(stop == true) 
+            {   
+                q.pop();
+                continue;
+            }
+            //std::cout <<"1***********" << name << std::endl;
             for(int i=0;i<tempblock.succ.size();i++){
                 if(blockbitvector[tempblock.succ[i]].isvisit == false){
+                    //std::cout <<"add***********" << name << std::endl;
                     q.push(blockbitvector[tempblock.succ[i]]);
                     blockbitvector[tempblock.succ[i]].isvisit = true;
                 }

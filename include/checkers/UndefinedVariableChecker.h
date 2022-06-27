@@ -83,12 +83,25 @@ private:
     vector<Variable> rvalueString;
     bool isdummy;
   };
+  struct Child{
+    string funcname;
+    int param_num;
+    std::vector<int> parameter_init;
+    clang::FunctionDecl* funcDecl;
+    ASTFunction* astfunc;
+  };
+  struct InterNode{
+    string funcname;
+    bool isvisit;
+  };
   int request_fun;
   int maxPathInFun;
   int definitionNum;
   int blockNum;
   int bitVectorLength;
+  int nodeNum;
   clang::SourceManager *SM;
+  std::vector<InterNode> graph;
   std::vector<std::pair<string,Initvalue>> var_vector;
   std::vector<BlockInfo> block_statement;
   std::vector<BlockInfo> useless_block_statement;
@@ -108,7 +121,11 @@ public:
   UndefinedVariableChecker(ASTResource *resource, ASTManager *manager,
                   CallGraph *call_graph, Config *configure)
       : BasicChecker(resource, manager, call_graph, configure){};
+
+  void reset();
   void check();
+  void check_child(Child child);
+
   string get_statement_value(clang::Stmt* statement);
   vector<int> kill_variable(int statementno,string variable);
   void print_stmt_kind(Stmt* statement, int spaceCount);
@@ -129,8 +146,12 @@ public:
   void calculate_block(int num);
   void blockvector_output();
   void undefined_variable_check();
-  void find_dummy_definition();
+  void find_dummy_definition(std::vector<Child>* childlist);
   void dump_debug();
 
+  void change_definition_bit(std::vector<int> param_bit);
+  void get_call_func_use(string name,int blockno,std::vector<Child>* childlist);
+  bool get_arg_name(clang::Stmt* statement,string name);
+  void dump_func(std::vector<Child> childlist);
   void is_other_function(clang::FunctionDecl* func);
 };

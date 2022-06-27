@@ -7,5 +7,5 @@ clang++ -emit-ast -c example.cpp
 ../../cmake-build-debug/tools/UndefinedVariableChecker/UndefinedVariableChecker astList.txt config.txt
 #clang++ -emit-ast -c kill_gen.cpp
 #../../cmake-build-debug/tools/UndefinedVariableChecker/UndefinedVariableChecker kill_gen_astList.txt kill_gen_config.txt
-clang++ -emit-ast -c array.cpp
-../../cmake-build-debug/tools/UndefinedVariableChecker/UndefinedVariableChecker array_astList.txt array_config.txt
+#clang++ -emit-ast -c array.cpp
+#../../cmake-build-debug/tools/UndefinedVariableChecker/UndefinedVariableChecker array_astList.txt array_config.txt

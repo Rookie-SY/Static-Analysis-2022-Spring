@@ -1,3 +1,4 @@
 Callee of main  . 
- add  int  int  
-Callee of add  int  int  . 
+ add  int  int  struct A1  
+Callee of add  int  int  struct A1  . 
+ add  int  int  struct A1  
