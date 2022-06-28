@@ -167,7 +167,7 @@ void UndefinedVariableChecker::check() {
         std::cout << "The entry function is: "
                 << funDecl->getQualifiedNameAsString() << std::endl;
         std::cout << "Here is its dump: " << std::endl;
-        funDecl->dump();
+        //funDecl->dump();
         std::cout << "Here are related Statements: " << std::endl;
         Stmt* statement =  funDecl->getBody();
 
@@ -229,7 +229,7 @@ void UndefinedVariableChecker::check() {
     std::unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
     cfg->dump(LangOpts, true); 
     //
-    //get_cfg_stmt(cfg);
+    get_cfg_stmt(cfg);
     count_definition(cfg);
     get_block_statement(cfg);
     init_blockvector(cfg);
@@ -270,12 +270,14 @@ void UndefinedVariableChecker::check_child(Child child){
     }
     std::cout << "The function is: "
                 << child.funcDecl->getQualifiedNameAsString() << std::endl;
-    child.funcDecl->dump();
+    //child.funcDecl->dump();
     is_other_function(child.funcDecl);
     LangOptions LangOpts;
     LangOpts.CPlusPlus = true;
     std::unique_ptr<CFG>& cfg = manager->getCFG(child.astfunc);
     cfg->dump(LangOpts, true); 
+
+    //get_cfg_stmt(cfg);
     count_definition(cfg);
     get_block_statement(cfg);
 
@@ -376,6 +378,10 @@ string UndefinedVariableChecker::analyze_struct(clang::MemberExpr* structexpr){
         clang::DeclRefExpr* declexpr = static_cast<clang::DeclRefExpr*>(structexpr->getBase());
         return declexpr->getNameInfo().getAsString();
     }
+    else if(structexpr->getBase()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+        clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(structexpr->getBase());
+        return analyze_array(arrayexpr);
+    }
     return ret;
 }
 
@@ -446,9 +452,26 @@ string UndefinedVariableChecker::get_statement_value(clang::Stmt* statement){
         assert((*iter) != NULL);
         iter++;
         assert((*iter) != NULL);
-        assert((*iter)->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
-        clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>((*iter));
-        return declrefiter->getNameInfo().getAsString();
+        if((*iter)->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>((*iter));
+            return declrefiter->getNameInfo().getAsString();
+        }
+        else if((*iter)->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>((*iter));
+            return analyze_struct(memberexpr);
+        }
+        else{
+            std::cout <<"missing something\n";
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+        std::cout <<"now\n";
+        clang::ImplicitCastExpr* impliexpr = static_cast<clang::ImplicitCastExpr*>(statement);
+        return get_statement_value(impliexpr->getSubExpr());
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
+        clang::ParenExpr* parenexpr = static_cast<clang::ParenExpr*>(statement);
+        return get_statement_value(parenexpr->getSubExpr());
     }
     return ret;
 }
@@ -563,13 +586,14 @@ void UndefinedVariableChecker::recursive_get_binaryop(clang::Stmt* statement,Use
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
         clang::MemberExpr* structIter = static_cast<clang::MemberExpr*>(statement);
-        string structname = analyze_struct(structIter);
+        /*string structname = analyze_struct(structIter);
         if(info->rvalueKind == 0 || info->rvalueKind == Literal)
             info->rvalueKind = Ref;
         Variable variable;
         variable.variable = structname;
         variable.loc = structIter->getBeginLoc();
-        info->rvalueString.push_back(variable);
+        info->rvalueString.push_back(variable);*/
+        recursive_get_binaryop(structIter->getBase(),info);
     }
 }
 
@@ -699,6 +723,23 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt* statement,UsefulStatement
                 info->rvalueLiteral = 0;
             }
         }
+        else if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberIter = static_cast<clang::MemberExpr*>(binaryIter->getLHS());
+            string structname = analyze_struct(memberIter);
+            recursive_get_binaryop(memberIter,info);
+            if(info->rvalueKind == Ref){
+                for(auto iter = info->rvalueString.begin();iter != info->rvalueString.end();iter++){
+                    if(structname == iter->variable){
+                        info->rvalueString.erase(iter);
+                        break;
+                    }
+                }
+            }
+            if(info->rvalueString.size() == 0){
+                info->rvalueKind = 0;
+                info->rvalueLiteral = 0;
+            }
+        }
         recursive_get_binaryop(binaryIter->getRHS(),info);
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
@@ -767,6 +808,10 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt* statement,UsefulStatement
                 }
             }*/
         }
+        else{
+            recursive_get_binaryop(compoundIter->getLHS(),info);
+            recursive_get_binaryop(compoundIter->getRHS(),info);
+        }
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
         clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
@@ -789,6 +834,9 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt* statement,UsefulStatement
             info->rvalueString.push_back(variable);*/
             recursive_get_binaryop(arrayiter->getLHS(),info);
             recursive_get_binaryop(arrayiter->getRHS(),info);
+        }
+        else{
+            recursive_get_binaryop(unaryIter->getSubExpr(),info);
         }
     }//x++
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
@@ -1248,12 +1296,22 @@ void UndefinedVariableChecker::get_block_statement(unique_ptr<CFG>& cfg){
                             }
                         }//x ++ or x-- or ++x or --x
                         else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
-                            StatementInfo statementPair;
-                            statementPair.statementno = statementNum;
-                            statementNum++;
-                            statementPair.stmt = statement;
-                            statementPair.isdummy = false;
-                            blockInfo.usefulBlockStatement.push_back(statementPair);
+                            clang::CXXOperatorCallExpr* cxxopIter = static_cast<clang::CXXOperatorCallExpr*>(statement);
+                            auto iter = cxxopIter->child_begin();
+                            if((*iter) != NULL){
+                                clang::ImplicitCastExpr* impliIter = static_cast<clang::ImplicitCastExpr*>((*iter));
+                                assert(impliIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
+                                clang::DeclRefExpr* declIter = static_cast<clang::DeclRefExpr*>(impliIter->getSubExpr());
+                                if(declIter->getNameInfo().getAsString() == "operator="){
+                                    StatementInfo statementPair;
+                                    statementPair.statementno = statementNum;
+                                    statementNum++;
+                                    statementPair.stmt = statement;
+                                    statementPair.isdummy = false;
+                                    blockInfo.usefulBlockStatement.push_back(statementPair);
+                                }
+                            }
+                            
                         }
                         else{
                             assert(statement->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass || statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass || statement->getStmtClass() == clang::Stmt::StmtClass::ReturnStmtClass || statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass);
@@ -1394,6 +1452,18 @@ void UndefinedVariableChecker::recursive_find_usevariable(clang::Stmt* statement
             recursive_find_usevariable(callIter->getArg(k),info);
         }
     }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+        clang::MemberExpr* memberIter = static_cast<clang::MemberExpr*>(statement);
+        recursive_find_usevariable(memberIter->getBase(),info);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass){
+        clang::CXXConstructExpr* cxxIter = static_cast<clang::CXXConstructExpr*>(statement);
+        auto iter = cxxIter->child_begin();
+        for(; iter != cxxIter->child_end(); iter++){
+            assert((*iter)!= NULL);
+            recursive_find_usevariable((*iter),info);
+        }
+    }
     else{
         //assert(statement->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass);
         //actually this means coder uses char,int,double,long,etc, in a boolean expr,so we ignore it
@@ -1512,6 +1582,27 @@ void UndefinedVariableChecker::calculate_gen_kill(){
                         }
                     }
                 }
+                else if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+                    clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(binaryIter->getLHS());
+                    string variableName = analyze_struct(memberexpr);
+                    bool isexist = false;
+                    for(int k=0;k<alreadyCalulateVariable.size();k++){
+                        if(alreadyCalulateVariable[k] == variableName){
+                            isexist = true;
+                            break;
+                        }
+                    }
+                    if(isexist == false){
+                        alreadyCalulateVariable.push_back(variableName);
+                        assert(i == blockbitvector[i].blockid);
+                        blockbitvector[i].Genvector[block_statement[i].usefulBlockStatement[j].statementno] = 1;
+                        vector<int> kill;
+                        kill = kill_variable(block_statement[i].usefulBlockStatement[j].statementno-definitionNum,variableName);
+                        for(int t=0;t<kill.size();t++){
+                            blockbitvector[i].Killvector[kill[t]+definitionNum] = 1;
+                        }
+                    }
+                }
             }
             else if(block_statement[i].usefulBlockStatement[j].stmt->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
                 clang::CompoundAssignOperator* compoundIter = static_cast<clang::CompoundAssignOperator*>(block_statement[i].usefulBlockStatement[j].stmt);
@@ -1539,6 +1630,27 @@ void UndefinedVariableChecker::calculate_gen_kill(){
                 else if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
                     clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(compoundIter->getLHS());
                     string variableName = analyze_array(arrayexpr);
+                    bool isexist = false;
+                    for(int k=0;k<alreadyCalulateVariable.size();k++){
+                        if(alreadyCalulateVariable[k] == variableName){
+                            isexist = true;
+                            break;
+                        }
+                    }
+                    if(isexist == false){
+                        alreadyCalulateVariable.push_back(variableName);
+                        assert(i == blockbitvector[i].blockid);
+                        blockbitvector[i].Genvector[block_statement[i].usefulBlockStatement[j].statementno] = 1;
+                        vector<int> kill;
+                        kill = kill_variable(block_statement[i].usefulBlockStatement[j].statementno-definitionNum,variableName);
+                        for(int t=0;t<kill.size();t++){
+                            blockbitvector[i].Killvector[kill[t]+definitionNum] = 1;
+                        }
+                    }
+                }
+                else if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+                    clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(compoundIter->getLHS());
+                    string variableName = analyze_struct(memberexpr);
                     bool isexist = false;
                     for(int k=0;k<alreadyCalulateVariable.size();k++){
                         if(alreadyCalulateVariable[k] == variableName){
@@ -1602,6 +1714,77 @@ void UndefinedVariableChecker::calculate_gen_kill(){
                         }
                     }
                 }
+                else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+                    clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(unaryIter->getSubExpr());
+                    string variableName = analyze_struct(memberexpr);
+                    bool isexist = false;
+                    for(int k=0;k<alreadyCalulateVariable.size();k++){
+                        if(alreadyCalulateVariable[k] == variableName){
+                            isexist = true;
+                            break;
+                        }
+                    }
+                    if(isexist == false){
+                        alreadyCalulateVariable.push_back(variableName);
+                        assert(i == blockbitvector[i].blockid);
+                        blockbitvector[i].Genvector[block_statement[i].usefulBlockStatement[j].statementno] = 1;
+                        vector<int> kill;
+                        kill = kill_variable(block_statement[i].usefulBlockStatement[j].statementno-definitionNum,variableName);
+                        for(int t=0;t<kill.size();t++){
+                            blockbitvector[i].Killvector[kill[t]+definitionNum] = 1;
+                        }
+                    }
+                }
+            }
+            else if(block_statement[i].usefulBlockStatement[j].stmt->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
+                clang::CXXOperatorCallExpr* cxxoperatorIter = static_cast<clang::CXXOperatorCallExpr*>(block_statement[i].usefulBlockStatement[j].stmt);
+                auto iter = cxxoperatorIter->child_begin();
+                assert((*iter) != NULL);
+                iter++;
+                assert((*iter) != NULL);
+                if((*iter)->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+                    clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>((*iter));
+                    string variableName = declrefiter->getNameInfo().getAsString();
+                    bool isexist = false;
+                    for(int k=0;k<alreadyCalulateVariable.size();k++){
+                        if(alreadyCalulateVariable[k] == variableName){
+                            isexist = true;
+                            break;
+                        }
+                    }
+                    if(isexist == false){
+                        alreadyCalulateVariable.push_back(variableName);
+                        assert(i == blockbitvector[i].blockid);
+                        blockbitvector[i].Genvector[block_statement[i].usefulBlockStatement[j].statementno] = 1;
+                        vector<int> kill;
+                        kill = kill_variable(block_statement[i].usefulBlockStatement[j].statementno-definitionNum,variableName);
+                        for(int t=0;t<kill.size();t++){
+                            blockbitvector[i].Killvector[kill[t]+definitionNum] = 1;
+                        }
+                    }
+                }
+                else if((*iter)->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+                    clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>((*iter));
+                    string variableName = analyze_struct(memberexpr);
+                    bool isexist = false;
+                    for(int k=0;k<alreadyCalulateVariable.size();k++){
+                        if(alreadyCalulateVariable[k] == variableName){
+                            isexist = true;
+                            break;
+                        }
+                    }
+                    if(isexist == false){
+                        alreadyCalulateVariable.push_back(variableName);
+                        assert(i == blockbitvector[i].blockid);
+                        blockbitvector[i].Genvector[block_statement[i].usefulBlockStatement[j].statementno] = 1;
+                        vector<int> kill;
+                        kill = kill_variable(block_statement[i].usefulBlockStatement[j].statementno-definitionNum,variableName);
+                        for(int t=0;t<kill.size();t++){
+                            blockbitvector[i].Killvector[kill[t]+definitionNum] = 1;
+                        }
+                    }
+                }
+
             }
         }
         if(alreadyCalulateVariable.empty() == false){

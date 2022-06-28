@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+int global;
+
 struct A1{
     int m;
     int array1[5];
@@ -18,6 +20,7 @@ int main()
     //int array[10] = {0,1,2,2,3,5};
     struct A1 c;
     int a,x,y = 85;
+    a = global;
     if(x > 0)
         printf("%d\n",a);
     int z = -((x+y)*a);
