@@ -33,6 +33,7 @@ private:
 };
 
 class ControlFlowGraph;
+class ForwardDominanceTree;
 
 class CallGraph {
 public:
@@ -58,6 +59,8 @@ public:
   */
   void writeNodeDot(std::ostream& out, CallGraphNode* node);
   friend class ControlFlowGraph;
+  friend class ForwardDominanceTree;
+  friend class ProgramDependencyGraph;
 protected:
   std::unordered_map<std::string, CallGraphNode *> nodes;
   std::vector<ASTFunction *> topLevelFunctions;

@@ -15,6 +15,7 @@
 #include "framework/Config.h"
 #include "framework/Logger.h"
 #include "framework/ControlFlowGraph.h"
+#include "framework/ProgramDependencyGraph.h"
 
 using namespace clang;
 using namespace llvm;
@@ -41,6 +42,7 @@ int main(int argc, const char *argv[]) {
   ASTManager manager(ASTs, resource, configure);
   CallGraph call_graph(manager, resource);
   ControlFlowGraph control_flow_graph(&manager, &resource, &call_graph);
+  ForwardDominanceTree fdt(&manager, &resource, &call_graph);
 
   auto enable = configure.getOptionBlock("CheckerEnable");
   
@@ -90,7 +92,7 @@ int main(int argc, const char *argv[]) {
         << endl;
   }
   control_flow_graph.drawCfg();
-
+  fdt.ConstructFDTFromCfg();
   endCTime = clock();
   unsigned sec = unsigned((endCTime - startCTime) / CLOCKS_PER_SEC);
   unsigned min = sec / 60;
