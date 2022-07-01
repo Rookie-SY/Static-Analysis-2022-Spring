@@ -14,6 +14,7 @@
 #include "framework/CallGraph.h"
 #include "framework/Config.h"
 #include "framework/Logger.h"
+#include "framework/ControlFlowGraph.h"
 
 using namespace clang;
 using namespace llvm;
@@ -39,7 +40,8 @@ int main(int argc, const char *argv[]) {
   ASTResource resource;
   ASTManager manager(ASTs, resource, configure);
   CallGraph call_graph(manager, resource);
-  
+  ControlFlowGraph control_flow_graph(&manager, &resource, &call_graph);
+
   auto enable = configure.getOptionBlock("CheckerEnable");
   
   Logger::configure_UndefinedVariable(configure);
@@ -87,6 +89,7 @@ int main(int argc, const char *argv[]) {
            "check\n-----------------------------------------------------------"
         << endl;
   }
+  control_flow_graph.drawCfg();
 
   endCTime = clock();
   unsigned sec = unsigned((endCTime - startCTime) / CLOCKS_PER_SEC);

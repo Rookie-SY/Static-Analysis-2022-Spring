@@ -229,7 +229,7 @@ void UndefinedVariableChecker::check() {
     std::unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
     cfg->dump(LangOpts, true); 
     //
-    get_cfg_stmt(cfg);
+    //get_cfg_stmt(cfg);
     count_definition(cfg);
     get_block_statement(cfg);
     init_blockvector(cfg);

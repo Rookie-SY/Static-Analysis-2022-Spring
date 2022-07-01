@@ -79,6 +79,7 @@
         "queue": "cpp",
         "stack": "cpp",
         "*.inc": "cpp",
-        "*.def": "cpp"
+        "*.def": "cpp",
+        "__functional_03": "cpp"
     }
 }

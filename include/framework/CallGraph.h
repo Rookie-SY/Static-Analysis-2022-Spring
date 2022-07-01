@@ -32,6 +32,8 @@ private:
   std::vector<ASTFunction *> children;
 };
 
+class ControlFlowGraph;
+
 class CallGraph {
 public:
   CallGraph(ASTManager &manager, const ASTResource &resource);
@@ -55,7 +57,7 @@ public:
      @param out  输出流
   */
   void writeNodeDot(std::ostream& out, CallGraphNode* node);
-
+  friend class ControlFlowGraph;
 protected:
   std::unordered_map<std::string, CallGraphNode *> nodes;
   std::vector<ASTFunction *> topLevelFunctions;
