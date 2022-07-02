@@ -26,6 +26,8 @@ void ForwardDominanceTree::ConstructFDTFromCfg(){
         ConstructFDT();
         Getidom();
         dumpFDT();
+        blockcfg_forest.push_back(blockcfg);
+        FDT_forest.push_back(FDT);
         vector<BlockInfo>().swap(blockcfg);
         vector<TreeNode>().swap(FDT);
     }
@@ -248,6 +250,7 @@ void ForwardDominanceTree::Getidom(){
 }
 
 void ForwardDominanceTree::dumpFDT(){
+    std::cout << endl;
     for(int i=0;i<blockNum;i++){
         std::cout << "BLOCK " << FDT[i].blockid << std::endl;
         std::cout << "   succ: ";
@@ -259,6 +262,115 @@ void ForwardDominanceTree::dumpFDT(){
                 std::cout << FDT[i].real_succ[j] << " ";
             }
             std::cout << std::endl;
+        }
+    }
+    std::cout << std::endl;
+    /*for(int i=0;i<blockNum;i++){
+        std::cout << "BLOCK " << FDT[i].blockid << std::endl;
+        for(int j=0;j<blockNum;j++){
+            std::cout << FDT[i].Outvector[j] <<" ";
+        }
+        std::cout << endl;
+    }*/
+}
+
+ControlDependenceGraph::ControlDependenceGraph(ASTManager *manager, ASTResource *resource, CallGraph *call_graph,ForwardDominanceTree *forwarddominancetree){
+    this->manager = manager;
+    this->resource = resource;
+    this->call_graph = call_graph;
+    this->forward_dominance_tree = forwarddominancetree;
+}
+
+void ControlDependenceGraph::ConstructCDG(){
+    for(int i=0;i<forward_dominance_tree->blockcfg_forest.size();i++){
+        vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[i];
+        vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[i];
+        for(int j=0;j<tempcfg.size();j++){
+            CDGNode cdgnode;
+            cdgnode.blockid = tempcfg[j].blockid;
+            CalculateControlDependent(&cdgnode,i);
+            CDG.push_back(cdgnode);
+        }
+        FillPred();
+        CDG_forest.push_back(CDG);
+        vector<CDGNode>().swap(CDG);
+    }
+}
+
+void ControlDependenceGraph::CalculateControlDependent(CDGNode *cdgnode,int treenum){
+    vector<int> UnionPostDom = CalculateUnionSuccPostdom(cdgnode->blockid,treenum);
+    vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[treenum];
+    vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[treenum];
+    int blockNum = tempfdt.size();
+    for(int i=0;i<blockNum;i++){
+        cdgnode->controldependent.push_back(0);
+    }
+    for(int i=0;i<tempcfg[cdgnode->blockid].succ.size();i++){
+        for(int j=0;j<blockNum;j++){
+            if(tempfdt[tempcfg[cdgnode->blockid].succ[i]].Outvector[j] == 1){
+                if(UnionPostDom[j] == 0){
+                    cdgnode->controldependent[j] = 1;
+                }
+            }
+        }
+    }
+    for(int i=0;i<cdgnode->controldependent.size();i++){
+        if(cdgnode->controldependent[i] == 1){
+            cdgnode->succ.push_back(i);
+        }
+    }
+}
+
+vector<int> ControlDependenceGraph::CalculateUnionSuccPostdom(int blockid,int treenum){
+    vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[treenum];
+    vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[treenum];
+    int blockNum = tempfdt.size();
+    vector<int> UnionPost;
+    for(int i=0;i<blockNum;i++)
+        UnionPost.push_back(1);
+    for(int i=0;i<tempcfg[blockid].succ.size();i++){
+        for(int j=0;j<blockNum;j++){
+            if(tempfdt[tempcfg[blockid].succ[i]].Outvector[j] == 0){
+                UnionPost[j] = 0;
+            }
+        }
+    }
+    return UnionPost;
+}
+
+void ControlDependenceGraph::FillPred(){
+    for(int i=0;i<CDG.size();i++){
+        for(int j=0;j<CDG[i].succ.size();j++){
+            CDG[CDG[i].succ[j]].pred.push_back(i);
+        }
+    }
+}
+
+void ControlDependenceGraph::dumpCDG(){
+    for(int i=0;i<CDG_forest.size();i++){
+        vector<CDGNode> tempcdg = CDG_forest[i];
+        for(int j=0;j<tempcdg.size();j++){
+            std::cout << "BLOCK " << tempcdg[j].blockid << std::endl;
+            std::cout << "   pred: ";
+            if(tempcdg[j].pred.size() == 0){
+                std::cout << "NULL" << std::endl;
+            }
+            else{
+                for(int k=0;k<tempcdg[j].pred.size();k++){
+                    std::cout << tempcdg[j].pred[k] << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << "   succ: ";
+            if(tempcdg[j].succ.size() == 0){
+                std::cout << "NULL" << std::endl;
+            }
+            else{
+                for(int k=0;k<tempcdg[j].succ.size();k++){
+                    std::cout << tempcdg[j].succ[k] << " ";
+                }
+                std::cout << std::endl;
+            }
         }
     }
 }
