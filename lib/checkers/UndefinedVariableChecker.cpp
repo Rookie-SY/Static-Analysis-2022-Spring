@@ -100,8 +100,10 @@ void UndefinedVariableChecker::get_cfg_stmt(unique_ptr<CFG>& cfg)
                 llvm::Optional<CFGStmt> stmt = element.getAs<CFGStmt>();
                 if(stmt.hasValue() == true){
                     Stmt* statement = const_cast<Stmt* >(stmt.getValue().getStmt());
-                    print_stmt_kind(statement,0);
+                    //print_stmt_kind(statement,0);
+                    
                 }
+                
             }
             else if(element.getKind() == clang::CFGElement::Kind::Constructor){
                 // may have no use

@@ -21,11 +21,14 @@ void ForwardDominanceTree::ConstructFDTFromCfg(){
         LangOpts.CPlusPlus = true;
         std::unique_ptr<CFG>& cfg = manager->getCFG(call_graph->allFunctions[i]);
         completeCfgRelation(cfg);
+        ConstructStmtCFG();
+        dumpStmtCFG();
         //writeDotFile(funDecl->getQualifiedNameAsString());
         InitTreeNodeVector();
         ConstructFDT();
         Getidom();
         dumpFDT();
+        dumpStmtFDT();
         blockcfg_forest.push_back(blockcfg);
         FDT_forest.push_back(FDT);
         vector<BlockInfo>().swap(blockcfg);
@@ -36,8 +39,9 @@ void ForwardDominanceTree::ConstructFDTFromCfg(){
 void ForwardDominanceTree::completeCfgRelation(unique_ptr<CFG>& cfg){
     clang::CFG::iterator blockIter;
     for(blockIter = cfg->begin(); blockIter != cfg->end(); blockIter++){
-        blockNum++;
+        int blockstmtnum = 0;
         CFGBlock* block = *blockIter;
+        blockNum++;
         BlockInfo blockelement;
         blockelement.blockid = block->getBlockID();
         TreeNode treenode;
@@ -66,10 +70,137 @@ void ForwardDominanceTree::completeCfgRelation(unique_ptr<CFG>& cfg){
                 }
             }
         }
+        BumpVector<CFGElement>::reverse_iterator elementIter;
+        for(elementIter = block->begin(); elementIter != block->end(); elementIter++){
+            CFGElement element = *elementIter;
+            if(element.getKind() == clang::CFGElement::Kind::Statement){
+                llvm::Optional<CFGStmt> stmt = element.getAs<CFGStmt>();
+                if(stmt.hasValue() == true){
+                    Stmt* statement = const_cast<Stmt* >(stmt.getValue().getStmt());
+                    CFGInfo cfginfo;
+                    cfginfo.statement = statement;
+                    cfginfo.statementid = blockstmtnum;
+                    blockstmtnum++;
+                    blockelement.blockstatement.push_back(cfginfo);
+                }
+            }
+            else if(element.getKind() == clang::CFGElement::Kind::Constructor){
+                // may have no use
+                std::cout <<"Check here.\n" << std::endl;
+            }   
+        }
         blockcfg.push_back(blockelement);
         FDT.push_back(treenode);
     }
     std::cout << blockNum << std::endl;
+}
+
+void ForwardDominanceTree::ConstructStmtCFG(){
+    allStmtNum = 0;
+    for(int i=0;i<blockNum;i++){
+        allStmtNum = allStmtNum + blockcfg[i].blockstatement.size();
+    }
+    for(int i=0;i<blockNum;i++){
+        if(blockcfg[i].blockstatement.size() == 0){
+            if(blockcfg[i].pred.size() != 0 && blockcfg[i].succ.size() == 0){
+                CFGInfo cfginfo;
+                cfginfo.statementid = 0;
+                cfginfo.statement = NULL;
+                Edge edge;
+                edge.blockid = blockcfg[i].pred[0];
+                edge.statementid = blockcfg[blockcfg[i].pred[0]].blockstatement.size()-1;
+                cfginfo.pred.push_back(edge);
+                blockcfg[i].blockstatement.push_back(cfginfo);
+            }//exit
+            else if(blockcfg[i].succ.size() != 0 && blockcfg[i].pred.size() == 0){
+                CFGInfo cfginfo;
+                cfginfo.statementid = 0;
+                cfginfo.statement = NULL;
+                Edge edge;
+                edge.blockid = blockcfg[i].succ[0];
+                edge.statementid = 0;
+                cfginfo.succ.push_back(edge);
+                blockcfg[i].blockstatement.push_back(cfginfo);
+            }//entry
+            else{
+                CFGInfo cfginfo;
+                cfginfo.statementid = 0;
+                cfginfo.statement = NULL;
+                Edge edge;
+                edge.blockid = blockcfg[i].succ[0];
+                edge.statementid = 0;
+                cfginfo.succ.push_back(edge);
+                Edge edge1;
+                edge1.blockid = blockcfg[i].pred[0];
+                edge1.statementid = blockcfg[blockcfg[i].pred[0]].blockstatement.size()-1;
+                cfginfo.pred.push_back(edge1);
+                blockcfg[i].blockstatement.push_back(cfginfo);
+            }
+        }// entry or exit
+        else{
+            for(int j=0;j<blockcfg[i].blockstatement.size();j++){  
+                if(j==0){
+                    for(int k=0;k<blockcfg[i].pred.size();k++){
+                        Edge edge;
+                        edge.blockid = blockcfg[i].pred[k];
+                        if(edge.blockid == blockNum-1)
+                            edge.statementid = 0;
+                        else
+                            edge.statementid = blockcfg[edge.blockid].blockstatement.size()-1;
+                        blockcfg[i].blockstatement[j].pred.push_back(edge);
+                    }
+                }
+                else{
+                    Edge edge;
+                    edge.blockid = i;
+                    edge.statementid = j-1;
+                    blockcfg[i].blockstatement[j].pred.push_back(edge);
+                }
+                if(j == blockcfg[i].blockstatement.size()-1)
+                {
+                    for(int k=0;k<blockcfg[i].succ.size();k++){
+                        Edge edge;
+                        edge.blockid = blockcfg[i].succ[k];
+                        edge.statementid = 0;
+                        blockcfg[i].blockstatement[j].succ.push_back(edge);
+                    }
+                }
+                else{
+                    Edge edge;
+                    edge.blockid = i;
+                    edge.statementid = j+1;
+                    blockcfg[i].blockstatement[j].succ.push_back(edge);
+                }
+            }
+        }
+    }
+}
+
+void ForwardDominanceTree::dumpStmtCFG(){
+    for(int i=0;i<blockNum;i++){
+        for(int j=0;j<blockcfg[i].blockstatement.size();j++){
+            std::cout << "Block " << blockcfg[i].blockid << " ";
+            std::cout << "Stmt " << blockcfg[i].blockstatement[j].statementid << " \n";
+            std::cout << "   pred:";
+            if(blockcfg[i].blockstatement[j].pred.size() == 0)
+                cout << "NULL\n";
+            else{
+                for(int k=0;k<blockcfg[i].blockstatement[j].pred.size();k++){
+                    std::cout << "block " << blockcfg[i].blockstatement[j].pred[k].blockid << " " << "stmt " << blockcfg[i].blockstatement[j].pred[k].statementid <<" ";
+                }
+            }
+            std::cout << "\n   succ:";
+            if(blockcfg[i].blockstatement[j].succ.size() == 0)
+                cout << "NULL\n";
+            else{
+                for(int k=0;k<blockcfg[i].blockstatement[j].succ.size();k++){
+                    std::cout << "block " << blockcfg[i].blockstatement[j].succ[k].blockid << " " << "stmt " << blockcfg[i].blockstatement[j].succ[k].statementid <<" ";
+                }
+            }
+            std::cout << endl;
+        }
+        std::cout << endl;
+    }
 }
 
 
@@ -194,7 +325,6 @@ void ForwardDominanceTree::Getidom(){
             }
         }
     }
-
     /*for(int i=0;i<blockNum;i++){
         std::cout << "BLOCK " << FDT[i].blockid <<"   "<< std::endl;
         for(int j=0;j<FDT[i].postdom.size();j++){
@@ -202,18 +332,23 @@ void ForwardDominanceTree::Getidom(){
         }
         std::cout <<endl;
     }*/
-
     for(int i=0;i<blockNum;i++){
         for(auto iter= FDT[i].postdom.begin();iter != FDT[i].postdom.end();iter++){
             int trypost = *iter;
             std::vector<int> temp(FDT[i].postdom.begin(),FDT[i].postdom.end());
             auto newiter = std::remove(std::begin(temp),std::end(temp),trypost);
             temp.erase(newiter,std::end(temp));
-            
+            //std::cout <<i <<"temp\n";
+            //for(int j=0;j<temp.size();j++)
+             //   std::cout<< temp[j];
+            //std::cout <<endl;
+            //std::cout <<"temp\n";
             if(FDT[trypost].postdom.size() == temp.size()){
+                //std::cout <<"post = " << trypost << " "<<endl;
                 bool issame = true;
                 for(int k=0;k<FDT[trypost].postdom.size();k++){
-                    if(FDT[trypost].postdom[k] == FDT[i].postdom[k]){
+                    //std::cout << "trypost " << FDT[trypost].postdom[k] << " " << "cur" << temp[k]<<endl;
+                    if(FDT[trypost].postdom[k] == temp[k]){
 
                     }
                     else
@@ -230,7 +365,7 @@ void ForwardDominanceTree::Getidom(){
                 continue;
         }
     }
-    for(int i=0;i<blockNum;i++){
+    /*for(int i=0;i<blockNum;i++){
         if(i !=0){
             std::cout << "BLOCK " << FDT[i].blockid <<"   "<< std::endl;
             std::cout << FDT[i].idom;
@@ -241,18 +376,103 @@ void ForwardDominanceTree::Getidom(){
             std::cout << "";
             std::cout << std::endl;
         }
-    }
+    }*/
     for(int i=0;i<blockNum;i++){
         if(i!=0){
             FDT[FDT[i].idom].real_succ.push_back(FDT[i].blockid);
         }
     }
+    for(int i=0;i<blockNum;i++){
+        FDT[i].blockstatement = blockcfg[i].blockstatement;
+    }
+    for(int i=0;i<blockNum;i++){
+        if(i == 0){
+            vector<Edge>().swap(FDT[0].blockstatement[0].pred);
+            vector<Edge>().swap(FDT[0].blockstatement[0].succ);
+            for(int j=0;j<FDT[i].real_succ.size();j++){
+                Edge edge;
+                edge.blockid = FDT[i].real_succ[j];
+                edge.statementid = blockcfg[edge.blockid].blockstatement.size()-1;
+                FDT[0].blockstatement[0].succ.push_back(edge);
+            }
+        }
+        else if(i == blockNum - 1){
+            vector<Edge>().swap(FDT[i].blockstatement[0].pred);
+            vector<Edge>().swap(FDT[i].blockstatement[0].succ);
+            Edge edge;
+            edge.blockid = FDT[i].idom;
+            edge.statementid = 0;
+            FDT[i].blockstatement[0].pred.push_back(edge);
+        }
+        else{
+            for(int j=0;j<FDT[i].blockstatement.size();j++){
+                vector<Edge>().swap(FDT[i].blockstatement[j].pred);
+                vector<Edge>().swap(FDT[i].blockstatement[j].succ);
+                if(j==0){
+                    for(int k=0;k<FDT[i].real_succ.size();k++){
+                        Edge edge;
+                        edge.blockid = FDT[i].real_succ[k];
+                        edge.statementid = blockcfg[edge.blockid].blockstatement.size()-1;
+                        FDT[i].blockstatement[j].succ.push_back(edge);
+                    }
+                }
+                else{
+                    Edge edge;
+                    edge.blockid = i;
+                    edge.statementid = j-1;
+                    FDT[i].blockstatement[j].succ.push_back(edge);
+                }
+                if(j==FDT[i].blockstatement.size()-1){
+                    Edge edge;
+                    edge.blockid = FDT[i].idom;
+                    edge.statementid = 0;
+                    FDT[i].blockstatement[j].pred.push_back(edge);
+                }
+                else{
+                    Edge edge;
+                    edge.blockid = i;
+                    edge.statementid = j+1;
+                    FDT[i].blockstatement[j].pred.push_back(edge);
+                }
+            }
+        }
+    }
+    vector<BlockStmt> temp;
+    for(int i=0;i<blockNum;i++){
+        BlockStmt blockstmt;
+        blockstmt.stmtnum = FDT[i].blockstatement.size();
+        for(int j=0;j<blockstmt.stmtnum;j++)
+            blockstmt.fpostdom.push_back(0);
+        temp.push_back(blockstmt);
+    }
+    for(int i=0;i<blockNum;i++){
+        for(int j=0;j<FDT[i].blockstatement.size();j++){
+            vector<BlockStmt> tempb_stmt = temp;
+            std::cout << "block " << i << " stmt " << j << endl;
+            for(int k=0;k<FDT[i].postdom.size();k++){
+                std::cout <<"fdt " << FDT[i].postdom[k] << " ";
+                for(int t=0;t<tempb_stmt[FDT[i].postdom[k]].stmtnum;t++){
+                    tempb_stmt[FDT[i].postdom[k]].fpostdom[t] = 1;
+                }
+            }
+            int cur_stmtid = FDT[i].blockstatement[j].statementid;
+            //cout << "\ncur_stmtid = " << cur_stmtid << " " << FDT[i].blockstatement.size()<< endl;
+            for(int k=cur_stmtid;k < FDT[i].blockstatement.size();k++){
+                std::cout << "stmtid " << k << " ";
+                tempb_stmt[FDT[i].blockid].fpostdom[k] = 1;
+            }
+            FDT[i].blockstatement[j].postdom_stmt = tempb_stmt;
+            //std::cout << "good\n";
+            std::cout << endl;
+        }
+    }
+    // TODO: construct stmtcfg edge;
 }
 
 void ForwardDominanceTree::dumpFDT(){
     std::cout << endl;
     for(int i=0;i<blockNum;i++){
-        std::cout << "BLOCK " << FDT[i].blockid << std::endl;
+        std::cout << "BLOCK " << FDT[i].blockid << " " << FDT[i].blockstatement.size() << std::endl;
         std::cout << "   succ: ";
         if(FDT[i].real_succ.size() == 0){
             std::cout << "NULL" << std::endl;
@@ -274,6 +494,33 @@ void ForwardDominanceTree::dumpFDT(){
     }*/
 }
 
+void ForwardDominanceTree::dumpStmtFDT(){
+    std::cout << endl;
+    for(int i=0;i<blockNum;i++){
+        for(int j=0;j<FDT[i].blockstatement.size();j++){
+            std::cout << "Block " << FDT[i].blockid << " ";
+            std::cout << "Stmt " << FDT[i].blockstatement[j].statementid << " \n";
+            std::cout << "   pred:";
+            if(FDT[i].blockstatement[j].pred.size() == 0)
+                cout << "NULL";
+            else{
+                for(int k=0;k<FDT[i].blockstatement[j].pred.size();k++){
+                    std::cout << "block " << FDT[i].blockstatement[j].pred[k].blockid << " " << "stmt " << FDT[i].blockstatement[j].pred[k].statementid <<" ";
+                }
+            }
+            std::cout << "\n   succ:";
+            if(FDT[i].blockstatement[j].succ.size() == 0)
+                cout << "NULL";
+            else{
+                for(int k=0;k<FDT[i].blockstatement[j].succ.size();k++){
+                    std::cout << "block " << FDT[i].blockstatement[j].succ[k].blockid << " " << "stmt " << FDT[i].blockstatement[j].succ[k].statementid <<" ";
+                }
+            }
+            std::cout << endl;
+        }
+    }
+}
+
 ControlDependenceGraph::ControlDependenceGraph(ASTManager *manager, ASTResource *resource, CallGraph *call_graph,ForwardDominanceTree *forwarddominancetree){
     this->manager = manager;
     this->resource = resource;
@@ -286,18 +533,31 @@ void ControlDependenceGraph::ConstructCDG(){
         vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[i];
         vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[i];
         for(int j=0;j<tempcfg.size();j++){
+            BlockStmt blockstmt;
+            blockstmt.stmtnum = tempcfg[j].blockstatement.size();
+            for(int k=0;k<blockstmt.stmtnum;k++)
+                blockstmt.fpostdom.push_back(0);
+            Postdom.push_back(blockstmt);
+        }
+        for(int j=0;j<tempcfg.size();j++){
             CDGNode cdgnode;
             cdgnode.blockid = tempcfg[j].blockid;
+            cdgnode.blockstatement = tempfdt[j].blockstatement;
             CalculateControlDependent(&cdgnode,i);
             CDG.push_back(cdgnode);
         }
         FillPred();
+        CompleteCFGEdge();
         CDG_forest.push_back(CDG);
         vector<CDGNode>().swap(CDG);
     }
 }
 
 void ControlDependenceGraph::CalculateControlDependent(CDGNode *cdgnode,int treenum){
+    std::cout << cdgnode->blockid << endl;
+    for(int i=0;i<cdgnode->blockstatement.size();i++){
+        vector<BlockStmt> UnionPostDom = CalculateStmtUnionSuccPostdom(cdgnode->blockid,cdgnode->blockstatement[i].statementid,treenum);
+    }
     vector<int> UnionPostDom = CalculateUnionSuccPostdom(cdgnode->blockid,treenum);
     vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[treenum];
     vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[treenum];
@@ -317,8 +577,18 @@ void ControlDependenceGraph::CalculateControlDependent(CDGNode *cdgnode,int tree
     for(int i=0;i<cdgnode->controldependent.size();i++){
         if(cdgnode->controldependent[i] == 1){
             cdgnode->succ.push_back(i);
+            int target_stmt = cdgnode->blockstatement.size() - 1;
+            Edge edge;
+            edge.blockid = i;
+            edge.statementid = 0;
+            cdgnode->blockstatement[target_stmt].succ.push_back(edge);
         }
     }
+}
+
+vector<BlockStmt> ControlDependenceGraph::CalculateStmtUnionSuccPostdom(int blockid,int stmtid,int treenum){
+    vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[treenum];
+    vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[treenum];
 }
 
 vector<int> ControlDependenceGraph::CalculateUnionSuccPostdom(int blockid,int treenum){
@@ -342,6 +612,29 @@ void ControlDependenceGraph::FillPred(){
     for(int i=0;i<CDG.size();i++){
         for(int j=0;j<CDG[i].succ.size();j++){
             CDG[CDG[i].succ[j]].pred.push_back(i);
+            Edge edge;
+            edge.blockid = i;
+            edge.statementid = CDG[i].blockstatement.size()-1;
+            CDG[CDG[i].succ[j]].blockstatement[0].pred.push_back(edge);
+        }
+    }
+}
+
+void ControlDependenceGraph::CompleteCFGEdge(){
+    for(int i=0;i<CDG.size();i++){
+        for(int j=0;j<CDG[i].blockstatement.size();j++){
+                if(j != 0){
+                    Edge edge;
+                    edge.blockid = i;
+                    edge.statementid = j - 1;
+                    CDG[i].blockstatement[j].pred.push_back(edge);
+                }
+                if(j != CDG[i].blockstatement.size()-1){
+                    Edge edge;
+                    edge.blockid = i;
+                    edge.statementid = j+1;
+                    CDG[i].blockstatement[j].succ.push_back(edge);
+                }
         }
     }
 }
@@ -350,7 +643,7 @@ void ControlDependenceGraph::dumpCDG(){
     for(int i=0;i<CDG_forest.size();i++){
         vector<CDGNode> tempcdg = CDG_forest[i];
         for(int j=0;j<tempcdg.size();j++){
-            std::cout << "BLOCK " << tempcdg[j].blockid << std::endl;
+            std::cout << "BLOCK " << tempcdg[j].blockid << " " << tempcdg[j].blockstatement.size()<< std::endl;
             std::cout << "   pred: ";
             if(tempcdg[j].pred.size() == 0){
                 std::cout << "NULL" << std::endl;
@@ -373,4 +666,66 @@ void ControlDependenceGraph::dumpCDG(){
             }
         }
     }
+    std::cout << endl;
+}
+
+int ControlDependenceGraph::CalculateStmtNo(Edge edge,int treenum){
+    int res = 0;
+    for(int i=0;i<edge.blockid;i++){
+        res = res + CDG_forest[treenum][i].blockstatement.size();
+    }
+    res = res + edge.statementid + 1 - 1;
+    return res;
+}
+
+void ControlDependenceGraph::dumpStmtCDG(){
+    std::cout << "dumpstmt\n";
+     for(int i=0;i<CDG_forest.size();i++){
+        vector<CDGNode> tempcdg = CDG_forest[i];
+        for(int j=0;j<tempcdg.size();j++){
+            int stmtblock = 0;
+            std::cout << "STMTBLOCK " << stmtblock << std::endl;
+            std::cout << "   pred: ";
+            if(tempcdg[j].blockstatement.size() == 0){
+                std::cout << "NULL\n";
+            }
+            else{
+            for(int k=0;k<tempcdg[j].blockstatement.size();k++){
+                std::cout << j << " " <<  tempcdg[j].blockstatement.size()<<endl;
+                if(tempcdg[j].blockstatement[k].pred.size() != 0){
+                    for(int m=0;m<tempcdg[j].blockstatement[k].pred.size();m++){
+                        Edge edge = tempcdg[j].blockstatement[k].pred[m];
+                        int no = CalculateStmtNo(edge,i);
+                        std::cout << no << " ";
+                    }
+                    std::cout << endl;
+                }
+                else{
+                    std::cout << "NULL\n";
+                }
+                stmtblock++;
+            }
+            }
+            std::cout << "   succ: ";
+            if(tempcdg[j].blockstatement.size() == 0){
+                std::cout << "NULL\n";
+            }
+            else{
+            for(int k=0;k<tempcdg[j].blockstatement.size();k++){
+                if(tempcdg[j].blockstatement[k].succ.size() != 0){
+                    for(int m=0;m<tempcdg[j].blockstatement[k].succ.size();m++){
+                        Edge edge = tempcdg[j].blockstatement[k].succ[m];
+                        int no = CalculateStmtNo(edge,i);
+                        std::cout << no << " ";
+                    }
+                    std::cout << endl;
+                }
+                else{
+                    std::cout << "NULL\n";
+                }
+                stmtblock++;
+            }
+            }
+        }
+     }
 }
