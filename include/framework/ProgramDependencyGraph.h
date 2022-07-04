@@ -121,8 +121,8 @@ struct StmtBitVector{
     int stmtid;
     clang::Stmt* statement;
     bool isusefulstmt;
-    string variable;
-    vector<string> rvalue;
+    string variable;// lvalue
+    vector<string> rvalue;// rvalue
     vector<int> Invector;
     vector<int> Outvector;
     vector<int> Genvector;
@@ -153,6 +153,19 @@ public:
     void AnalyzeStmt();
     int SwitchEdgeToStmtid(Edge edge);
     string GetStmtLvalue(clang::Stmt* statement);
+    void GetStmtRvalue(clang::Stmt* statement,vector<string>* rvalue);
+    void RecursiveGetOperator(clang::Stmt* statement,vector<string>* rvalue);
+    void RecursiveGetOperatorU(clang::Stmt* statement,vector<string>* rvalue);
+    void GetStmtRvalueU(clang::Stmt* statement,vector<string>* rvalue);
+
+    string analyze_array(clang::ArraySubscriptExpr* arrayexpr);
+    string analyze_struct(clang::MemberExpr* structexpr);
+
+    void CalculateGenKill();
+    vector<int> KillVariable(string variable);
+
+    void DataDependenceCheck();
+    void CalculateBlock(int num);
 };
 
 #endif

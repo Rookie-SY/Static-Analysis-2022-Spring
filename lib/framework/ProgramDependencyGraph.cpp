@@ -778,6 +778,9 @@ void DataDependenceGraph::ConstructDDG(){
         this->allstmtnum = this->allstmtnum + blockcfg[i].blockstatement.size();
     }
     CompleteStmtCFG();
+    AnalyzeStmt();
+    CalculateGenKill();
+    DataDependenceCheck();
 }
 
 void DataDependenceGraph::CompleteStmtCFG(){
@@ -834,7 +837,8 @@ void DataDependenceGraph::AnalyzeStmt(){
                 clang::DeclStmt* declstmt = static_cast<clang::DeclStmt*>(statement);
                 if(declstmt->isSingleDecl()){
                     clang::Decl* oneDecl = declstmt->getSingleDecl();
-                    GetStmtLvalue(statement);   
+                    stmtcfg[i].variable = GetStmtLvalue(statement);   
+                    GetStmtRvalue(statement,&stmtcfg[i].rvalue);
                     if(oneDecl->getKind() == clang::Decl::Kind::Var){
                         clang::VarDecl* vardecl = static_cast<clang::VarDecl*>(oneDecl);
                     }
@@ -846,64 +850,547 @@ void DataDependenceGraph::AnalyzeStmt(){
             else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
                 clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
                 if(binaryIter->isAssignmentOp()){
-                    stmtcfg[i].isusefulstmt = true;           
+                    stmtcfg[i].isusefulstmt = true;  
+                    stmtcfg[i].variable = GetStmtLvalue(statement); 
+                    GetStmtRvalue(statement,&stmtcfg[i].rvalue);        
                 }// x = 1
                 else if(binaryIter->isCompoundAssignmentOp()){
                     stmtcfg[i].isusefulstmt = true;  
+                    stmtcfg[i].variable = GetStmtLvalue(statement);
+                    GetStmtRvalue(statement,&stmtcfg[i].rvalue);
                 }// ?
                 else{
                     stmtcfg[i].isusefulstmt = false;
+                    GetStmtRvalueU(statement,&stmtcfg[i].rvalue);
                 }
             }
-                        else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
-                            StatementInfo statementPair;
-                            statementPair.statementno = statementNum;
-                            statementNum++;
-                            statementPair.stmt = statement;
-                            statementPair.isdummy = false;
-                            blockInfo.usefulBlockStatement.push_back(statementPair);
-                        }// x += 1
-                        else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
-                            clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
-                            if(unaryIter->isIncrementDecrementOp()){
-                                StatementInfo statementPair;
-                                statementPair.statementno = statementNum;
-                                statementNum++;
-                                statementPair.stmt = statement;
-                                statementPair.isdummy = false;
-                                blockInfo.usefulBlockStatement.push_back(statementPair);
-                            }
-                            else if(unaryIter->isArithmeticOp()){
-                                StatementInfo statementPair;
-                                statementPair.statementno = uselessStatementNum;
-                                uselessStatementNum++;
-                                statementPair.stmt = statement;
-                                statementPair.isdummy = false;
-                                uselessBlockInfo.usefulBlockStatement.push_back(statementPair);
-                            }
-                        }//x ++ or x-- or ++x or --x
-                        else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
-                            clang::CXXOperatorCallExpr* cxxopIter = static_cast<clang::CXXOperatorCallExpr*>(statement);
-                            auto iter = cxxopIter->child_begin();
-                            if((*iter) != NULL){
-                                clang::ImplicitCastExpr* impliIter = static_cast<clang::ImplicitCastExpr*>((*iter));
-                                assert(impliIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
-                                clang::DeclRefExpr* declIter = static_cast<clang::DeclRefExpr*>(impliIter->getSubExpr());
-                                if(declIter->getNameInfo().getAsString() == "operator="){
-                                    StatementInfo statementPair;
-                                    statementPair.statementno = statementNum;
-                                    statementNum++;
-                                    statementPair.stmt = statement;
-                                    statementPair.isdummy = false;
-                                    blockInfo.usefulBlockStatement.push_back(statementPair);
-                                }
-                            }
-                            
+            else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
+                stmtcfg[i].isusefulstmt = true;  
+                stmtcfg[i].variable = GetStmtLvalue(statement); 
+                GetStmtRvalue(statement,&stmtcfg[i].rvalue);
+            }// x += 1
+            else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+                clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+                if(unaryIter->isIncrementDecrementOp()){
+                    stmtcfg[i].isusefulstmt = true;  
+                    stmtcfg[i].variable = GetStmtLvalue(statement);
+                    GetStmtRvalue(statement,&stmtcfg[i].rvalue);
+                }
+                else if(unaryIter->isArithmeticOp()){
+                    stmtcfg[i].isusefulstmt = false;  
+                    GetStmtRvalueU(statement,&stmtcfg[i].rvalue);
+                }
+            }//x ++ or x-- or ++x or --x
+            else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
+                clang::CXXOperatorCallExpr* cxxopIter = static_cast<clang::CXXOperatorCallExpr*>(statement);
+                auto iter = cxxopIter->child_begin();
+                if((*iter) != NULL){
+                    clang::ImplicitCastExpr* impliIter = static_cast<clang::ImplicitCastExpr*>((*iter));
+                    if(impliIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+                        clang::DeclRefExpr* declIter = static_cast<clang::DeclRefExpr*>(impliIter->getSubExpr());
+                        if(declIter->getNameInfo().getAsString() == "operator="){
+                            stmtcfg[i].isusefulstmt = true;  
+                            stmtcfg[i].variable = GetStmtLvalue(statement);
+                            GetStmtRvalue(statement,&stmtcfg[i].rvalue);
                         }
+                    }
+                }     
+            }
+            else{
+                //callexpr, returnstmt, cxxconstruct, implicitcast
+                stmtcfg[i].isusefulstmt = false;
+                if(statement->getStmtClass() != clang::Stmt::StmtClass::CXXConstructExprClass){
+                    GetStmtRvalueU(statement,&stmtcfg[i].rvalue);
+                }
+            }
         }
     }
 }
 
 string DataDependenceGraph::GetStmtLvalue(clang::Stmt* statement){
+    string ret = "nothing";
+    if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass){
+        clang::DeclStmt* declstmt = static_cast<clang::DeclStmt*>(statement);
+        if(declstmt->isSingleDecl()){
+            clang::Decl* oneDecl = declstmt->getSingleDecl();   
+            if(oneDecl->getKind() == clang::Decl::Kind::Var){
+                clang::VarDecl* vardecl = static_cast<clang::VarDecl*>(oneDecl);
+                string variableName = vardecl->getNameAsString();
+                return variableName;
+            }
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+        clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+        if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>(binaryIter->getLHS());
+            string variableName = declrefiter->getNameInfo().getAsString();
+            return variableName;
+        }
+        else if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(binaryIter->getLHS());
+            return analyze_array(arrayexpr);
+        }
+        else if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(binaryIter->getLHS());
+            return analyze_struct(memberexpr);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
+        clang::CompoundAssignOperator* compoundIter = static_cast<clang::CompoundAssignOperator*>(statement);
+        if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>(compoundIter->getLHS());
+            string variableName = declrefiter->getNameInfo().getAsString();
+            return variableName;
+        }
+        else if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(compoundIter->getLHS());
+            return analyze_array(arrayexpr);
+        }
+        else if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(compoundIter->getLHS());
+            return analyze_struct(memberexpr);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+        clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+        if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>(unaryIter->getSubExpr());
+            string variableName = declrefiter->getNameInfo().getAsString();
+            return variableName;
+        }
+        else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(unaryIter->getSubExpr());
+            return analyze_array(arrayexpr);
+        }
+        else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(unaryIter->getSubExpr());
+            return analyze_struct(memberexpr);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
+        clang::CXXOperatorCallExpr* cxxoperatorIter = static_cast<clang::CXXOperatorCallExpr*>(statement);
+        auto iter = cxxoperatorIter->child_begin();
+        assert((*iter) != NULL);
+        iter++;
+        assert((*iter) != NULL);
+        if((*iter)->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>((*iter));
+            return declrefiter->getNameInfo().getAsString();
+        }
+        else if((*iter)->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>((*iter));
+            return analyze_struct(memberexpr);
+        }
+        else{
+            std::cout <<"missing something\n";
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+        clang::ImplicitCastExpr* impliexpr = static_cast<clang::ImplicitCastExpr*>(statement);
+        return GetStmtLvalue(impliexpr->getSubExpr());
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
+        clang::ParenExpr* parenexpr = static_cast<clang::ParenExpr*>(statement);
+        return GetStmtLvalue(parenexpr->getSubExpr());
+    }
+    else{
+        std::cout << "missing some kind of condition\n";
+    }
+    return ret;
+}
 
+string DataDependenceGraph::analyze_array(clang::ArraySubscriptExpr* arrayexpr){
+    string ret = "nothing";
+    if(arrayexpr->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+        clang::ImplicitCastExpr* Implicitexpr = static_cast<clang::ImplicitCastExpr*>(arrayexpr->getLHS());
+        if(Implicitexpr->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            clang::ArraySubscriptExpr* Newarrayexpr = static_cast<clang::ArraySubscriptExpr*>(Implicitexpr->getSubExpr());
+            return analyze_array(Newarrayexpr);
+        }
+        else if(Implicitexpr->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            clang::DeclRefExpr* Declexpr = static_cast<clang::DeclRefExpr*>(Implicitexpr->getSubExpr());
+            return Declexpr->getNameInfo().getAsString();
+        }
+        else if(Implicitexpr->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberexpr = static_cast<clang::MemberExpr*>(Implicitexpr->getSubExpr());
+            return analyze_struct(memberexpr);
+        }
+    }
+    return ret;
+}
+
+string DataDependenceGraph::analyze_struct(clang::MemberExpr* structexpr){
+    string ret = "nothing";
+    if(structexpr->getBase()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+        clang::MemberExpr* newstructIter = static_cast<clang::MemberExpr*>(structexpr->getBase());
+        return analyze_struct(newstructIter);
+    }
+    else if(structexpr->getBase()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+        clang::DeclRefExpr* declexpr = static_cast<clang::DeclRefExpr*>(structexpr->getBase());
+        return declexpr->getNameInfo().getAsString();
+    }
+    else if(structexpr->getBase()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+        clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(structexpr->getBase());
+        return analyze_array(arrayexpr);
+    }
+    return ret;
+}
+
+void DataDependenceGraph::GetStmtRvalue(clang::Stmt* statement,vector<string>* rvalue){
+    if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass){
+        clang::DeclStmt* declstmt = static_cast<clang::DeclStmt*>(statement);
+        if(declstmt->isSingleDecl()){
+            clang::Decl* oneDecl = declstmt->getSingleDecl();   
+            if(oneDecl->getKind() == clang::Decl::Kind::Var){
+                clang::VarDecl* vardecl = static_cast<clang::VarDecl*>(oneDecl);
+                if(vardecl->getInit()!= nullptr){
+                    clang::Expr* initexpr = vardecl->getInit();
+                    if(initexpr->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass){
+                        //rvalue is literal
+                    }
+                    else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::InitListExprClass){
+                        //ravlue is literal but array 
+                    }
+                    else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+                        clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(initexpr);
+                        RecursiveGetOperator(implicitit->getSubExpr(),rvalue);
+                    }//int x = y || int x = !y || int z = 0.5
+                    else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+                        RecursiveGetOperator(initexpr,rvalue);
+                    }
+                    else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+                        RecursiveGetOperator(initexpr,rvalue);
+                    }
+                    else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+                        RecursiveGetOperator(initexpr,rvalue);
+                    }
+                    else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass){
+                        clang::CXXConstructExpr* structIter = static_cast<clang::CXXConstructExpr*>(initexpr);
+                        auto iter = structIter->child_begin();
+                        for(; iter != structIter->child_end(); iter++){
+                            assert((*iter)!= NULL);
+                            RecursiveGetOperator((*iter),rvalue);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+        clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+        if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            clang::ArraySubscriptExpr* arrayIter = static_cast<clang::ArraySubscriptExpr*>(binaryIter->getLHS());
+            string arrayname = analyze_array(arrayIter);
+            RecursiveGetOperator(arrayIter,rvalue);
+            for(int i=0;i<rvalue->size();i++){
+                if(arrayname == (*rvalue)[i]){
+                    auto newiter = std::remove(std::begin((*rvalue)),std::end((*rvalue)),arrayname);
+                    rvalue->erase(newiter,std::end((*rvalue)));
+                    break;
+                }
+            }
+        }
+        else if(binaryIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+            clang::MemberExpr* memberIter = static_cast<clang::MemberExpr*>(binaryIter->getLHS());
+            string structname = analyze_struct(memberIter);
+            RecursiveGetOperator(memberIter,rvalue);
+            for(int i=0;i<rvalue->size();i++){
+                if(structname == (*rvalue)[i]){
+                    auto newiter = std::remove(std::begin((*rvalue)),std::end((*rvalue)),structname);
+                    rvalue->erase(newiter,std::end((*rvalue)));
+                    break;
+                }
+            }
+        }
+        RecursiveGetOperator(binaryIter->getRHS(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
+        clang::CompoundAssignOperator* compoundIter = static_cast<clang::CompoundAssignOperator*>(statement);
+        if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            clang::DeclRefExpr* declrefiter = static_cast<clang::DeclRefExpr*>(compoundIter->getLHS());
+            RecursiveGetOperator(compoundIter->getLHS(),rvalue);    
+            RecursiveGetOperator(compoundIter->getRHS(),rvalue);
+        }
+        else if(compoundIter->getLHS()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            clang::ArraySubscriptExpr* newarrayexpr = static_cast<clang::ArraySubscriptExpr*>(compoundIter->getLHS());
+            RecursiveGetOperator(newarrayexpr->getLHS(),rvalue);
+            RecursiveGetOperator(newarrayexpr->getRHS(),rvalue);
+            RecursiveGetOperator(compoundIter->getRHS(),rvalue);
+        }
+        else{
+            RecursiveGetOperator(compoundIter->getLHS(),rvalue);
+            RecursiveGetOperator(compoundIter->getRHS(),rvalue);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+        clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+        if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+            RecursiveGetOperator(unaryIter->getSubExpr(),rvalue);
+        }
+        else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+            clang::ArraySubscriptExpr* arrayiter = static_cast<clang::ArraySubscriptExpr*>(unaryIter->getSubExpr());
+            RecursiveGetOperator(arrayiter->getLHS(),rvalue);
+            RecursiveGetOperator(arrayiter->getRHS(),rvalue);
+        }
+        else{
+            RecursiveGetOperator(unaryIter->getSubExpr(),rvalue);
+        }
+    }//x++
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
+        clang::CXXOperatorCallExpr* cxxoperatorIter = static_cast<clang::CXXOperatorCallExpr*>(statement);
+        auto iter = cxxoperatorIter->child_begin();
+        assert((*iter) != NULL);
+        iter++;
+        assert((*iter) != NULL);
+        iter++;
+        assert((*iter) != NULL);
+        return RecursiveGetOperator((*iter),rvalue);
+    }//chongzai danshi zhineng chongzai =
+}
+
+void DataDependenceGraph::RecursiveGetOperator(clang::Stmt* statement,vector<string>* rvalue){
+    if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+        clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(statement);
+        string name = declrefexp->getNameInfo().getAsString();
+        rvalue->push_back(name);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+        clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+        RecursiveGetOperator(binaryIter->getLHS(),rvalue);
+        RecursiveGetOperator(binaryIter->getRHS(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+        clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(statement);
+        RecursiveGetOperator(implicitit->getSubExpr(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass || statement->getStmtClass() == clang::Stmt::StmtClass::FloatingLiteralClass || statement->getStmtClass() == clang::Stmt::StmtClass::CharacterLiteralClass){
+        
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
+        clang::ParenExpr* parenexp = static_cast<clang::ParenExpr*>(statement);
+        RecursiveGetOperator(parenexp->getSubExpr(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+        clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+        RecursiveGetOperator(unaryIter->getSubExpr(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+        clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(statement);
+        RecursiveGetOperator(arrayexpr->getLHS(),rvalue);
+        RecursiveGetOperator(arrayexpr->getRHS(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+        clang::CallExpr* callIter = static_cast<clang::CallExpr*>(statement);
+        int argNum = callIter->getNumArgs();
+        for(int k = 0;k < argNum;k++){
+            RecursiveGetOperator(callIter->getArg(k),rvalue);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+        clang::MemberExpr* structIter = static_cast<clang::MemberExpr*>(statement);
+        RecursiveGetOperator(structIter->getBase(),rvalue);
+    }
+    else{
+        std::cout << "missing sth in rvalue\n";
+    }
+}
+
+void DataDependenceGraph::GetStmtRvalueU(clang::Stmt* statement,vector<string>* rvalue){
+    if(statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+        clang::CallExpr* callIter = static_cast<clang::CallExpr*>(statement);
+        int argNum = callIter->getNumArgs();
+        for(int k = 0;k < argNum;k++){
+            RecursiveGetOperatorU(callIter->getArg(k),rvalue);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ReturnStmtClass){
+        clang::ReturnStmt* returnIter = static_cast<clang::ReturnStmt*>(statement);
+        RecursiveGetOperatorU(returnIter->getRetValue(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+        clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+        assert(unaryIter->isArithmeticOp() == true);
+        if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+            clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(unaryIter->getSubExpr());
+            RecursiveGetOperatorU(implicitit->getSubExpr(),rvalue);
+        }//!x (x maybe a boolean or other kind),
+        else if(unaryIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
+            clang::ParenExpr* parenexp = static_cast<clang::ParenExpr*>(unaryIter->getSubExpr());
+            RecursiveGetOperatorU(parenexp->getSubExpr(),rvalue);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+        clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+        RecursiveGetOperatorU(binaryIter->getLHS(),rvalue);
+        RecursiveGetOperatorU(binaryIter->getRHS(),rvalue);
+    }
+    else{
+        std::cout << "missing sth in useless stmt\n";
+    }
+}
+
+void DataDependenceGraph::RecursiveGetOperatorU(clang::Stmt* statement,vector<string>* rvalue){
+    if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+        clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(statement);
+        string name = declrefexp->getNameInfo().getAsString();
+        rvalue->push_back(name);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ArraySubscriptExprClass){
+        clang::ArraySubscriptExpr* arrayexpr = static_cast<clang::ArraySubscriptExpr*>(statement);
+        RecursiveGetOperatorU(arrayexpr->getLHS(),rvalue);
+        RecursiveGetOperatorU(arrayexpr->getRHS(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+        clang::ImplicitCastExpr* implicitIter = static_cast<clang::ImplicitCastExpr*>(statement);
+        RecursiveGetOperatorU(implicitIter->getSubExpr(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass){
+        clang::ParenExpr* parenexp = static_cast<clang::ParenExpr*>(statement);
+        RecursiveGetOperatorU(parenexp->getSubExpr(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+        clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+        RecursiveGetOperatorU(binaryIter->getLHS(),rvalue);
+        RecursiveGetOperatorU(binaryIter->getRHS(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+        clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+        RecursiveGetOperatorU(unaryIter->getSubExpr(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
+        clang::CallExpr* callIter = static_cast<clang::CallExpr*>(statement);
+        int argNum = callIter->getNumArgs();
+        for(int k = 0;k < argNum;k++){
+            RecursiveGetOperatorU(callIter->getArg(k),rvalue);
+        }
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::MemberExprClass){
+        clang::MemberExpr* memberIter = static_cast<clang::MemberExpr*>(statement);
+        RecursiveGetOperatorU(memberIter->getBase(),rvalue);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass){
+        clang::CXXConstructExpr* cxxIter = static_cast<clang::CXXConstructExpr*>(statement);
+        auto iter = cxxIter->child_begin();
+        for(; iter != cxxIter->child_end(); iter++){
+            assert((*iter)!= NULL);
+            RecursiveGetOperatorU((*iter),rvalue);
+        }
+    }
+    else{
+        //assert(statement->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass);
+        //actually this means coder uses char,int,double,long,etc, in a boolean expr,so we ignore it
+        return;
+    }
+}
+
+void DataDependenceGraph::CalculateGenKill(){
+    for(int i=0;i<allstmtnum;i++){
+        if(stmtcfg[i].isusefulstmt == true){
+            stmtcfg[i].Genvector[stmtcfg[i].stmtid] = 1;
+            vector<int> Kill = KillVariable(stmtcfg[i].variable);
+            assert(Kill.size() == allstmtnum);
+            for(int j=0;j<Kill.size();j++){
+                stmtcfg[i].Killvector[j] == Kill[j];
+            }
+        }
+    }
+    
+}
+
+vector<int> DataDependenceGraph::KillVariable(string variable){
+    vector<int> kill;
+    for(int i=0;i<allstmtnum;i++){
+        if(stmtcfg[i].isusefulstmt == true){
+            if(variable == stmtcfg[i].variable)
+                kill.push_back(1);
+            else
+                kill.push_back(0);
+        }
+        else
+            kill.push_back(0);
+    }
+    return kill;
+}
+
+void DataDependenceGraph::DataDependenceCheck(){
+    bool ischanging = true;
+    std::vector<StmtBitVector> prestmtcfg;
+    for(int i=0;i<allstmtnum;i++){
+        prestmtcfg.push_back(stmtcfg[i]);
+    }
+    int count = 0;
+    while(ischanging){
+        CalculateBlock(allstmtnum-1);
+        for(int i=0;i<allstmtnum;i++){
+            if(stmtcfg[i].isvisit == false){
+                for(int j=0;j<allstmtnum;j++){
+                    stmtcfg[i].Invector[j] = 0;
+                    stmtcfg[i].Outvector[j] = 0;
+                }
+            }
+        }
+        bool allchange = false;
+        for(int i=0;i<allstmtnum;i++){
+            if(prestmtcfg[i].Outvector != stmtcfg[i].Outvector){
+                allchange = true;
+            }
+        }
+        if(allchange == true){
+            ischanging = true;
+            for(int i=0;i<allstmtnum;i++)
+                stmtcfg[i].isvisit = false;
+            for(int i=0;i<allstmtnum;i++)
+                prestmtcfg[i] = stmtcfg[i];
+        }
+        else{
+            ischanging = false;
+            for(int i=0;i<allstmtnum;i++)
+                stmtcfg[i].isvisit = false;
+        }
+        count++;
+    }
+    std::cout<< "iteration time: " << count <<std::endl;
+}
+
+void DataDependenceGraph::CalculateBlock(int num){
+    if(stmtcfg[num].isvisit == true) return;
+    queue<StmtBitVector> q;
+    q.push(stmtcfg[num]);
+    stmtcfg[num].isvisit = true;
+    while(!q.empty()){
+        StmtBitVector tempblock = q.front();
+        vector<int> temp;
+        for(int i=0;i<allstmtnum;i++)
+            temp.push_back(0);
+        if(tempblock.pred.empty() == false){
+            for(int i=0;i<tempblock.pred.size();i++){
+                for(int j=0;j<allstmtnum;j++){
+                    if(stmtcfg[tempblock.pred[i]].Outvector[j] == 1)
+                        temp[j] = 1;
+                }
+            }
+            tempblock.Invector = temp;
+        }
+        vector<int> res;
+        for(int i=0;i<allstmtnum;i++)
+            res.push_back(tempblock.Invector[i]);
+        for(int i=0;i<allstmtnum;i++){
+            if(tempblock.Killvector[i] == 1)
+                res[i] = 0;
+        }
+        for(int i=0;i<allstmtnum;i++)
+        {
+            if(tempblock.Genvector[i] == 1)
+                res[i] = 1;
+        }
+        stmtcfg[tempblock.stmtid].Outvector = res;
+        for(int i=0;i<tempblock.succ.size();i++){
+            if(stmtcfg[tempblock.succ[i]].isvisit == false){
+                q.push(stmtcfg[tempblock.succ[i]]);
+                stmtcfg[tempblock.succ[i]].isvisit = true;
+            }
+        }
+        q.pop();
+    }
 }
