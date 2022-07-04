@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-/*int main()
+int main()
 {
     int a,b;
     float c;
@@ -14,9 +14,9 @@
     else
       a = a-b;
     return 0;
-}*/
+}
 
-int main()
+/*int main()
 {
     int a,b;
     float c;
@@ -28,4 +28,4 @@ int main()
     else
       a = a-b;
     return 0;
-}
+}*/

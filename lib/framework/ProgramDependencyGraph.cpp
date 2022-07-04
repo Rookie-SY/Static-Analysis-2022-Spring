@@ -547,16 +547,37 @@ void ControlDependenceGraph::ConstructCDG(){
             CDG.push_back(cdgnode);
         }
         FillPred();
-        CompleteCFGEdge();
+        //CompleteCFGEdge();
         CDG_forest.push_back(CDG);
         vector<CDGNode>().swap(CDG);
     }
 }
 
 void ControlDependenceGraph::CalculateControlDependent(CDGNode *cdgnode,int treenum){
-    std::cout << cdgnode->blockid << endl;
+    //std::cout << cdgnode->blockid << endl;
     for(int i=0;i<cdgnode->blockstatement.size();i++){
         vector<BlockStmt> UnionPostDom = CalculateStmtUnionSuccPostdom(cdgnode->blockid,cdgnode->blockstatement[i].statementid,treenum);
+        vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[treenum];
+        vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[treenum];
+        vector<Edge>().swap(cdgnode->blockstatement[i].succ);
+        vector<Edge>().swap(cdgnode->blockstatement[i].pred);
+        int blockNum = tempcfg.size();
+        for(int j=0;j<tempcfg[cdgnode->blockid].blockstatement[cdgnode->blockstatement[i].statementid].succ.size();j++){
+            for(int k=0;k<blockNum;k++){
+                Edge edge = tempcfg[cdgnode->blockid].blockstatement[cdgnode->blockstatement[i].statementid].succ[j];
+                vector<int> tempfdom = tempfdt[edge.blockid].blockstatement[edge.statementid].postdom_stmt[k].fpostdom;
+                for(int t=0;t<tempfdom.size();t++){
+                    if(tempfdom[t] == 1){
+                        if(UnionPostDom[k].fpostdom[t] == 0){
+                            Edge edge1;
+                            edge1.blockid = k;
+                            edge1.statementid = t;
+                            cdgnode->blockstatement[i].succ.push_back(edge1);
+                        }
+                    }
+                }
+            }
+        }
     }
     vector<int> UnionPostDom = CalculateUnionSuccPostdom(cdgnode->blockid,treenum);
     vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[treenum];
@@ -577,11 +598,6 @@ void ControlDependenceGraph::CalculateControlDependent(CDGNode *cdgnode,int tree
     for(int i=0;i<cdgnode->controldependent.size();i++){
         if(cdgnode->controldependent[i] == 1){
             cdgnode->succ.push_back(i);
-            int target_stmt = cdgnode->blockstatement.size() - 1;
-            Edge edge;
-            edge.blockid = i;
-            edge.statementid = 0;
-            cdgnode->blockstatement[target_stmt].succ.push_back(edge);
         }
     }
 }
@@ -589,6 +605,26 @@ void ControlDependenceGraph::CalculateControlDependent(CDGNode *cdgnode,int tree
 vector<BlockStmt> ControlDependenceGraph::CalculateStmtUnionSuccPostdom(int blockid,int stmtid,int treenum){
     vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[treenum];
     vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[treenum];
+    int blockNum = tempfdt.size();
+    vector<BlockStmt> Unionpost;
+    for(int i=0;i<blockNum;i++){
+        BlockStmt blockstmt;
+        blockstmt.stmtnum = tempfdt[i].blockstatement.size();
+        for(int j=0;j<blockstmt.stmtnum;j++)
+            blockstmt.fpostdom.push_back(1);
+        Unionpost.push_back(blockstmt);
+    }
+    for(int i=0;i<tempcfg[blockid].blockstatement[stmtid].succ.size();i++){
+        for(int j=0;j<blockNum;j++){
+            vector<int> tempfdom = tempfdt[tempcfg[blockid].blockstatement[stmtid].succ[i].blockid].blockstatement[tempcfg[blockid].blockstatement[stmtid].succ[i].statementid].postdom_stmt[j].fpostdom;
+            for(int k=0;k<tempfdom.size();k++){
+                if(tempfdom[k] == 0){
+                    Unionpost[j].fpostdom[k] = 0;
+                }
+            }
+        }
+    }
+    return Unionpost;
 }
 
 vector<int> ControlDependenceGraph::CalculateUnionSuccPostdom(int blockid,int treenum){
@@ -612,10 +648,18 @@ void ControlDependenceGraph::FillPred(){
     for(int i=0;i<CDG.size();i++){
         for(int j=0;j<CDG[i].succ.size();j++){
             CDG[CDG[i].succ[j]].pred.push_back(i);
-            Edge edge;
-            edge.blockid = i;
-            edge.statementid = CDG[i].blockstatement.size()-1;
-            CDG[CDG[i].succ[j]].blockstatement[0].pred.push_back(edge);
+            
+        }
+    }
+    for(int i=0;i<CDG.size();i++){
+        for(int j=0;j<CDG[i].blockstatement.size();j++){
+            for(int k=0;k<CDG[i].blockstatement[j].succ.size();k++){
+                Edge edge = CDG[i].blockstatement[j].succ[k];
+                Edge predge;
+                predge.blockid = i;
+                predge.statementid = j;
+                CDG[edge.blockid].blockstatement[edge.statementid].pred.push_back(predge);
+            }
         }
     }
 }
@@ -683,49 +727,183 @@ void ControlDependenceGraph::dumpStmtCDG(){
      for(int i=0;i<CDG_forest.size();i++){
         vector<CDGNode> tempcdg = CDG_forest[i];
         for(int j=0;j<tempcdg.size();j++){
-            int stmtblock = 0;
-            std::cout << "STMTBLOCK " << stmtblock << std::endl;
-            std::cout << "   pred: ";
-            if(tempcdg[j].blockstatement.size() == 0){
-                std::cout << "NULL\n";
-            }
-            else{
             for(int k=0;k<tempcdg[j].blockstatement.size();k++){
-                std::cout << j << " " <<  tempcdg[j].blockstatement.size()<<endl;
+                std::cout << "BLOCK " << tempcdg[j].blockid << " Stmt" << tempcdg[j].blockstatement[k].statementid<< std::endl;
+                std::cout << "   pred: ";
                 if(tempcdg[j].blockstatement[k].pred.size() != 0){
                     for(int m=0;m<tempcdg[j].blockstatement[k].pred.size();m++){
                         Edge edge = tempcdg[j].blockstatement[k].pred[m];
-                        int no = CalculateStmtNo(edge,i);
-                        std::cout << no << " ";
+                        std::cout << "block " << edge.blockid << " stmt " << edge.statementid << " ";
                     }
                     std::cout << endl;
                 }
                 else{
                     std::cout << "NULL\n";
                 }
-                stmtblock++;
-            }
-            }
-            std::cout << "   succ: ";
-            if(tempcdg[j].blockstatement.size() == 0){
-                std::cout << "NULL\n";
-            }
-            else{
-            for(int k=0;k<tempcdg[j].blockstatement.size();k++){
+                std::cout << "   succ: ";
                 if(tempcdg[j].blockstatement[k].succ.size() != 0){
                     for(int m=0;m<tempcdg[j].blockstatement[k].succ.size();m++){
                         Edge edge = tempcdg[j].blockstatement[k].succ[m];
-                        int no = CalculateStmtNo(edge,i);
-                        std::cout << no << " ";
+                        std::cout << "block " << edge.blockid << " stmt " << edge.statementid << " ";
                     }
                     std::cout << endl;
                 }
                 else{
                     std::cout << "NULL\n";
                 }
-                stmtblock++;
-            }
             }
         }
      }
+}
+
+DataDependenceGraph::DataDependenceGraph(ASTManager *manager, ASTResource *resource, CallGraph *call_graph,ForwardDominanceTree *forwarddominancetree){
+    this->manager = manager;
+    this->resource = resource;
+    this->call_graph = call_graph;
+    this->forward_dominance_tree = forwarddominancetree;
+}
+
+void DataDependenceGraph::ConstructDDGForest(){
+    for(int i=0;i<this->forward_dominance_tree->blockcfg_forest.size();i++){
+        blockcfg = this->forward_dominance_tree->blockcfg_forest[i];
+        ConstructDDG();
+        vector<BlockInfo>().swap(blockcfg);
+    }
+}
+
+void DataDependenceGraph::ConstructDDG(){
+    this->blocknum = blockcfg.size();
+    this->allstmtnum = 0;
+    for(int i=0;i<this->blocknum;i++){
+        this->allstmtnum = this->allstmtnum + blockcfg[i].blockstatement.size();
+    }
+    CompleteStmtCFG();
+}
+
+void DataDependenceGraph::CompleteStmtCFG(){
+    int stmtid = 0;
+    for(int i=0;i<blocknum;i++){
+        for(int j=0;j<blockcfg[i].blockstatement.size();j++){
+            StmtBitVector stmtbitvector;
+            stmtbitvector.stmtid = stmtid;
+            stmtid++;
+            stmtbitvector.edge.blockid = i;
+            stmtbitvector.edge.statementid = j;
+            stmtbitvector.statement = blockcfg[i].blockstatement[j].statement;
+            stmtbitvector.edge_pred = blockcfg[i].blockstatement[j].pred;
+            stmtbitvector.edge_succ = blockcfg[i].blockstatement[j].succ;
+            for(int k=0;k<stmtbitvector.edge_pred.size();k++){
+                int add = SwitchEdgeToStmtid(stmtbitvector.edge_pred[k]);
+                stmtbitvector.pred.push_back(add);
+            }
+            for(int k=0;k<stmtbitvector.edge_succ.size();k++){
+                int add = SwitchEdgeToStmtid(stmtbitvector.edge_succ[k]);
+                stmtbitvector.succ.push_back(add);
+            }
+            stmtbitvector.isvisit = false;
+            for(int k=0;k<allstmtnum;k++){
+                stmtbitvector.Invector.push_back(0);
+                stmtbitvector.Outvector.push_back(0);
+                stmtbitvector.Genvector.push_back(0);
+                stmtbitvector.Killvector.push_back(0);
+            }
+            stmtcfg.push_back(stmtbitvector);
+        }
+    }
+    assert(stmtid == allstmtnum);
+}
+
+int DataDependenceGraph::SwitchEdgeToStmtid(Edge edge){
+    int res = 0;
+    for(int i=0;i<edge.blockid;i++){
+        res = res + blockcfg[i].blockstatement.size();
+    }
+    res = res + edge.statementid;
+    return res;
+}
+
+void DataDependenceGraph::AnalyzeStmt(){
+    for(int i=0;i<allstmtnum;i++){
+        clang::Stmt* statement = stmtcfg[i].statement;
+        if(statement == nullptr){
+            stmtcfg[i].isusefulstmt = false;
+        }
+        else{
+            if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass){
+                stmtcfg[i].isusefulstmt = true;
+                clang::DeclStmt* declstmt = static_cast<clang::DeclStmt*>(statement);
+                if(declstmt->isSingleDecl()){
+                    clang::Decl* oneDecl = declstmt->getSingleDecl();
+                    GetStmtLvalue(statement);   
+                    if(oneDecl->getKind() == clang::Decl::Kind::Var){
+                        clang::VarDecl* vardecl = static_cast<clang::VarDecl*>(oneDecl);
+                    }
+                }
+                else{
+                    std::cout << "multiple def\n";
+                }
+            }// def
+            else if(statement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass){
+                clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
+                if(binaryIter->isAssignmentOp()){
+                    stmtcfg[i].isusefulstmt = true;           
+                }// x = 1
+                else if(binaryIter->isCompoundAssignmentOp()){
+                    stmtcfg[i].isusefulstmt = true;  
+                }// ?
+                else{
+                    stmtcfg[i].isusefulstmt = false;
+                }
+            }
+                        else if(statement->getStmtClass() == clang::Stmt::StmtClass::CompoundAssignOperatorClass){
+                            StatementInfo statementPair;
+                            statementPair.statementno = statementNum;
+                            statementNum++;
+                            statementPair.stmt = statement;
+                            statementPair.isdummy = false;
+                            blockInfo.usefulBlockStatement.push_back(statementPair);
+                        }// x += 1
+                        else if(statement->getStmtClass() == clang::Stmt::StmtClass::UnaryOperatorClass){
+                            clang::UnaryOperator* unaryIter = static_cast<clang::UnaryOperator*>(statement);
+                            if(unaryIter->isIncrementDecrementOp()){
+                                StatementInfo statementPair;
+                                statementPair.statementno = statementNum;
+                                statementNum++;
+                                statementPair.stmt = statement;
+                                statementPair.isdummy = false;
+                                blockInfo.usefulBlockStatement.push_back(statementPair);
+                            }
+                            else if(unaryIter->isArithmeticOp()){
+                                StatementInfo statementPair;
+                                statementPair.statementno = uselessStatementNum;
+                                uselessStatementNum++;
+                                statementPair.stmt = statement;
+                                statementPair.isdummy = false;
+                                uselessBlockInfo.usefulBlockStatement.push_back(statementPair);
+                            }
+                        }//x ++ or x-- or ++x or --x
+                        else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXOperatorCallExprClass){
+                            clang::CXXOperatorCallExpr* cxxopIter = static_cast<clang::CXXOperatorCallExpr*>(statement);
+                            auto iter = cxxopIter->child_begin();
+                            if((*iter) != NULL){
+                                clang::ImplicitCastExpr* impliIter = static_cast<clang::ImplicitCastExpr*>((*iter));
+                                assert(impliIter->getSubExpr()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
+                                clang::DeclRefExpr* declIter = static_cast<clang::DeclRefExpr*>(impliIter->getSubExpr());
+                                if(declIter->getNameInfo().getAsString() == "operator="){
+                                    StatementInfo statementPair;
+                                    statementPair.statementno = statementNum;
+                                    statementNum++;
+                                    statementPair.stmt = statement;
+                                    statementPair.isdummy = false;
+                                    blockInfo.usefulBlockStatement.push_back(statementPair);
+                                }
+                            }
+                            
+                        }
+        }
+    }
+}
+
+string DataDependenceGraph::GetStmtLvalue(clang::Stmt* statement){
+
 }

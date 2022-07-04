@@ -93,10 +93,10 @@ int main(int argc, const char *argv[]) {
   }
   control_flow_graph.drawCfg();
   fdt.ConstructFDTFromCfg();
-  //ControlDependenceGraph cdg(&manager, &resource, &call_graph,&fdt);
-  //cdg.ConstructCDG();
-  //cdg.dumpCDG();
-  //cdg.dumpStmtCDG();
+  ControlDependenceGraph cdg(&manager, &resource, &call_graph,&fdt);
+  cdg.ConstructCDG();
+  cdg.dumpCDG();
+  cdg.dumpStmtCDG();
   endCTime = clock();
   unsigned sec = unsigned((endCTime - startCTime) / CLOCKS_PER_SEC);
   unsigned min = sec / 60;

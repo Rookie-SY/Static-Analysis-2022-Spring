@@ -52,6 +52,7 @@ struct BlockInfo{
 
 
 class ControlDependenceGraph;
+class DataDependenceGraph;
 
 class ForwardDominanceTree{
 private:
@@ -81,10 +82,10 @@ public:
     void writeDotFile(string funcname);
     void writeNodeDot(std::ostream& out,int blockid,vector<int> succ);
     friend class ControlDependenceGraph;
+    friend class DataDependenceGraph;
 };
 
 class ControlDependenceGraph{
-friend int CalculateStmtNo(Edge edge);
 private:
     struct CDGNode{
         int blockid;
@@ -115,5 +116,43 @@ public:
     void dumpStmtCDG();
 };
 
+struct StmtBitVector{
+    Edge edge;
+    int stmtid;
+    clang::Stmt* statement;
+    bool isusefulstmt;
+    string variable;
+    vector<string> rvalue;
+    vector<int> Invector;
+    vector<int> Outvector;
+    vector<int> Genvector;
+    vector<int> Killvector;
+    vector<int> pred;// pred based on stmt_cfg
+    vector<int> succ;// succ based on cfg_graph
+    vector<Edge> edge_pred;// pred based on cfg_graph
+    vector<Edge> edge_succ;// succ based on cfg_graph
+    bool isvisit;
+};
+
+class DataDependenceGraph{
+private:
+    int allstmtnum;
+    int blocknum;
+    vector<BlockInfo> blockcfg;
+    vector<StmtBitVector> stmtcfg;
+private:
+    ASTResource *resource;
+    ASTManager *manager;
+    CallGraph *call_graph;
+    ForwardDominanceTree *forward_dominance_tree;
+public:
+    DataDependenceGraph(ASTManager *manager, ASTResource *resource, CallGraph *call_graph,ForwardDominanceTree *forwarddominancetree);
+    void ConstructDDGForest();
+    void ConstructDDG();
+    void CompleteStmtCFG();
+    void AnalyzeStmt();
+    int SwitchEdgeToStmtid(Edge edge);
+    string GetStmtLvalue(clang::Stmt* statement);
+};
 
 #endif
