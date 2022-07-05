@@ -38,12 +38,11 @@ public:
   void check();
   void print_stmt_kind(Stmt* statement, int spaceCount);
   void get_cfg_stmt(unique_ptr<CFG>& cfg);
-
 private:
   void getEntryFunc();
   void readConfig();
   ASTFunction *entryFunc;
-
+  std::vector<ASTFunction *> allFunctions;
   int request_fun;
   int maxPathInFun;
 };

@@ -1,14 +1,17 @@
-#include<stdlib.h>
-
-struct myStruct
-{
-    int a;
-    float b;
-    char c;
-};
-
+#include <stdio.h>
+int add(){
+    return 1+1;
+}
 int main()
 {
-    myStruct temp = {1, 0.5, 'a'};
-
+    int array[10][5];
+    int a,x,y = 85;
+    int z = x;
+    add();
+    x = 1;
+    if(y > x)
+        x = y;
+    else
+        x = a;
+    return 0;
 }

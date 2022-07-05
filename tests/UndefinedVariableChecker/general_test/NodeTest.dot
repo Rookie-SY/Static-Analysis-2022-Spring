@@ -1,0 +1,5 @@
+Callee of main  . 
+ add  int  int  
+Callee of add  int  int  . 
+ foo  struct Tree  int  float  
+Callee of foo  struct Tree  int  float  . 
