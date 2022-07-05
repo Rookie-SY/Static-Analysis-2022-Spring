@@ -32,13 +32,16 @@ private:
   std::vector<ASTFunction *> children;
 };
 
+class ControlFlowGraph;
+class ForwardDominanceTree;
+
 class CallGraph {
 public:
   CallGraph(ASTManager &manager, const ASTResource &resource);
   ~CallGraph();
 
   const std::vector<ASTFunction *> &getTopLevelFunctions() const;
-
+  const std::vector<ASTFunction *> &getAllFunctions() const;
   ASTFunction *getFunction(FunctionDecl *FD) const;
 
   const std::vector<ASTFunction *> &getParents(ASTFunction *F) const;
@@ -55,10 +58,13 @@ public:
      @param out  输出流
   */
   void writeNodeDot(std::ostream& out, CallGraphNode* node);
-
+  friend class ControlFlowGraph;
+  friend class ForwardDominanceTree;
+  friend class ProgramDependencyGraph;
 protected:
   std::unordered_map<std::string, CallGraphNode *> nodes;
   std::vector<ASTFunction *> topLevelFunctions;
+  std::vector<ASTFunction *> allFunctions;
   CallGraphNode *getNode(ASTFunction *f);
 };
 

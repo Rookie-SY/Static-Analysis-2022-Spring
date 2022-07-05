@@ -14,12 +14,15 @@
 #include "framework/CallGraph.h"
 #include "framework/Config.h"
 #include "framework/Logger.h"
+#include "framework/ControlFlowGraph.h"
+#include "framework/ProgramDependencyGraph.h"
 
 using namespace clang;
 using namespace llvm;
 using namespace clang::tooling;
 
 int main(int argc, const char *argv[]) {
+  
   ofstream process_file("time.txt");
   if (!process_file.is_open()) {
     cerr << "can't open time.txt\n";
@@ -38,17 +41,18 @@ int main(int argc, const char *argv[]) {
   ASTResource resource;
   ASTManager manager(ASTs, resource, configure);
   CallGraph call_graph(manager, resource);
+  ControlFlowGraph control_flow_graph(&manager, &resource, &call_graph);
+  ForwardDominanceTree fdt(&manager, &resource, &call_graph);
 
   auto enable = configure.getOptionBlock("CheckerEnable");
-
-  Logger::configure(configure);
-
-  if (enable.find("TemplateChecker")->second == "true") {
-    process_file << "Starting TemplateChecker check" << endl;
+  
+  Logger::configure_UndefinedVariable(configure);
+  if (enable.find("UndefinedVariableChecker")->second == "true") {
+    process_file << "Starting UndefinedVariableChecker check" << endl;
     clock_t start, end;
     start = clock();
 
-    TemplateChecker checker(&resource, &manager, &call_graph, &configure);
+    UndefinedVariableChecker checker(&resource, &manager, &call_graph, &configure);
     checker.check();
 
     end = clock();
@@ -56,7 +60,7 @@ int main(int argc, const char *argv[]) {
     unsigned min = sec / 60;
     process_file << "Time: " << min << "min" << sec % 60 << "sec" << endl;
     process_file
-        << "End of TemplateChecker "
+        << "End of UndefinedVariableChecker "
            "check\n-----------------------------------------------------------"
         << endl;
   }
@@ -68,6 +72,11 @@ int main(int argc, const char *argv[]) {
 
     call_graph.printCallGraph(std::cout);
     std::fstream out("outTest.dot", ios::out);
+    std::fstream Nodeout("NodeTest.dot",ios::out);
+    if(Nodeout.is_open()){
+      call_graph.printCallGraph(Nodeout);
+    }
+    Nodeout.close();
       if (out.is_open()) {
       call_graph.writeDotFile(out);
     }
@@ -82,7 +91,12 @@ int main(int argc, const char *argv[]) {
            "check\n-----------------------------------------------------------"
         << endl;
   }
-
+  control_flow_graph.drawCfg();
+  fdt.ConstructFDTFromCfg();
+  ControlDependenceGraph cdg(&manager, &resource, &call_graph,&fdt);
+  cdg.ConstructCDG();
+  cdg.dumpCDG();
+  cdg.dumpStmtCDG();
   endCTime = clock();
   unsigned sec = unsigned((endCTime - startCTime) / CLOCKS_PER_SEC);
   unsigned min = sec / 60;
