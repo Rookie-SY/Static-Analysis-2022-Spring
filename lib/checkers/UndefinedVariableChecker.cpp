@@ -150,9 +150,9 @@ void UndefinedVariableChecker::reset(){
     std::unordered_map<string,vector<string>>().swap(locationMap);
 }
 
-void UndefinedVariableChecker::check() {
-    readConfig();
-    getEntryFunc();
+void UndefinedVariableChecker::check(ASTFunction* _entryFunc) {
+    entryFunc = _entryFunc;
+    allFunctions = call_graph->getAllFunctions();
     for(int i=0;i<allFunctions.size();i++){
         InterNode internode;
         internode.isvisit = false;
@@ -483,6 +483,15 @@ void UndefinedVariableChecker::recursive_get_binaryop(clang::Stmt* statement,Use
         clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(statement);
         recursive_get_binaryop(binaryIter->getLHS(),info);
         recursive_get_binaryop(binaryIter->getRHS(),info);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
+        if(info->rvalueKind == 0 || info->rvalueKind == Literal)
+            info->rvalueKind = Ref;
+        clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(statement);
+        Variable variable;
+        variable.variable = declrefexp->getNameInfo().getAsString();
+        variable.loc = declrefexp->getLocation();
+        info->rvalueString.push_back(variable);
     }
     else if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
         clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(statement);
@@ -997,26 +1006,26 @@ void UndefinedVariableChecker::count_definition(unique_ptr<CFG>& cfg){
     }
 }
 
-void UndefinedVariableChecker::readConfig() {
-  std::unordered_map<std::string, std::string> ptrConfig =
-      configure->getOptionBlock("UndefinedVariableChecker");
-  request_fun = stoi(ptrConfig.find("request_fun")->second);
-  maxPathInFun = 10;
-}
+// void UndefinedVariableChecker::readConfig() {
+//   std::unordered_map<std::string, std::string> ptrConfig =
+//       configure->getOptionBlock("MainChecker");
+//   request_fun = stoi(ptrConfig.find("request_fun")->second);
+//   maxPathInFun = 10;
+// }
 
-void UndefinedVariableChecker::getEntryFunc() {
-  std::vector<ASTFunction *> topLevelFuncs = call_graph->getTopLevelFunctions();
-  allFunctions = call_graph->getAllFunctions();
-  for (auto fun : topLevelFuncs) {
-    const FunctionDecl *funDecl = manager->getFunctionDecl(fun);
-    if (funDecl->getQualifiedNameAsString() == "main") {
-      entryFunc = fun;
-      return;
-    }
-  }
-  entryFunc = nullptr;
-  return;
-}
+// void UndefinedVariableChecker::getEntryFunc() {
+//   std::vector<ASTFunction *> topLevelFuncs = call_graph->getTopLevelFunctions();
+//   allFunctions = call_graph->getAllFunctions();
+//   for (auto fun : topLevelFuncs) {
+//     const FunctionDecl *funDecl = manager->getFunctionDecl(fun);
+//     if (funDecl->getQualifiedNameAsString() == "main") {
+//       entryFunc = fun;
+//       return;
+//     }
+//   }
+//   entryFunc = nullptr;
+//   return;
+// }
 
 void UndefinedVariableChecker::blockvector_output(){
     for(int i=0;i<blockNum;i++){
