@@ -1,0 +1,6 @@
+digraph "Control Flow Graph" {
+    label="Control Flow Graph"
+
+    Node0x1 [shape=record,label="{1}"];
+    Node0x1 -> Node0x0
+}

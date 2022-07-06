@@ -1,7 +1,0 @@
-Callee of main  . 
- add2  int  int  
- add1  int  int  
-Callee of add1  int  int  . 
- add2  int  int  
-Callee of add2  int  int  . 
- add2  int  int  

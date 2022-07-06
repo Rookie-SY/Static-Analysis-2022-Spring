@@ -1,0 +1,8 @@
+digraph "Call graph" {
+    label="Call graph"
+
+    Node0x5608595dce90 [shape=record,label="{main  }"];
+    Node0x5608595dcda0 [shape=record,label="{as  }"];
+    Node0x5608595dccc0 [shape=record,label="{test  }"];
+    Node0x5608595dcb50 [shape=record,label="{my_test  int *  }"];
+}
