@@ -19,6 +19,12 @@ void ForwardDominanceTree::ConstructFDTFromCfg(){
                         << funDecl->getQualifiedNameAsString() << std::endl;
         LangOptions LangOpts;
         LangOpts.CPlusPlus = true;
+        int param_num = funDecl->getNumParams();
+        for(int j=0;j<param_num;j++){
+            clang::ParmVarDecl* paramvar = funDecl->getParamDecl(j);
+            string paramname = paramvar->getNameAsString();
+            param.push_back(paramname);
+        }
         std::unique_ptr<CFG>& cfg = manager->getCFG(call_graph->allFunctions[i]);
         completeCfgRelation(cfg);
         ConstructStmtCFG();
@@ -27,12 +33,13 @@ void ForwardDominanceTree::ConstructFDTFromCfg(){
         InitTreeNodeVector();
         ConstructFDT();
         Getidom();
-        dumpFDT();
-        dumpStmtFDT();
+        //dumpFDT();
+        //dumpStmtFDT();
         blockcfg_forest.push_back(blockcfg);
         FDT_forest.push_back(FDT);
         vector<BlockInfo>().swap(blockcfg);
         vector<TreeNode>().swap(FDT);
+        vector<string>().swap(param);
     }
 }
 
@@ -46,6 +53,11 @@ void ForwardDominanceTree::completeCfgRelation(unique_ptr<CFG>& cfg){
         blockelement.blockid = block->getBlockID();
         TreeNode treenode;
         treenode.blockid  = block->getBlockID();
+        /*if(block->getTerminatorStmt() != nullptr){
+        if(IfStmt *if_stmt = dyn_cast<IfStmt>(block->getTerminatorStmt())){
+            std::cout << "******************************\n";
+        }
+        }*/
         if(block->succ_empty() == false){
             for(auto succ_iter = block->succ_begin(); succ_iter != block->succ_end();succ_iter++ ){
                 //succ_iter->getReachableBlock()->dump();
@@ -116,6 +128,8 @@ void ForwardDominanceTree::ConstructStmtCFG(){
                 CFGInfo cfginfo;
                 cfginfo.statementid = 0;
                 cfginfo.statement = NULL;
+                for(int j=0;j<param.size();j++)
+                    cfginfo.param.push_back(param[j]);
                 Edge edge;
                 edge.blockid = blockcfg[i].succ[0];
                 edge.statementid = 0;
@@ -529,6 +543,7 @@ ControlDependenceGraph::ControlDependenceGraph(ASTManager *manager, ASTResource 
 }
 
 void ControlDependenceGraph::ConstructCDG(){
+    allFunctions = call_graph->getAllFunctions();
     for(int i=0;i<forward_dominance_tree->blockcfg_forest.size();i++){
         vector<BlockInfo> tempcfg = forward_dominance_tree->blockcfg_forest[i];
         vector<TreeNode> tempfdt = forward_dominance_tree->FDT_forest[i];
@@ -548,6 +563,8 @@ void ControlDependenceGraph::ConstructCDG(){
         }
         FillPred();
         //CompleteCFGEdge();
+        SM = &manager->getFunctionDecl(allFunctions[i])->getASTContext().getSourceManager();
+        GetStmtSourceCode(CDG.size());
         CDG_forest.push_back(CDG);
         vector<CDGNode>().swap(CDG);
     }
@@ -756,6 +773,32 @@ void ControlDependenceGraph::dumpStmtCDG(){
      }
 }
 
+void ControlDependenceGraph::GetStmtSourceCode(int blocknum){
+    //SM->getsource
+    //getSourceLocation
+    LangOptions L0;
+    L0.CPlusPlus = 1;
+    //cout << SM->getBufferData(SM->getFileID(CDG[1].blockstatement[0].statement->getBeginLoc())).size() << endl;
+    //CDG[1].blockstatement[0].statement.p
+    //common::printLog();
+    for(int i=0;i<blocknum;i++){
+        for(int j=0;j<CDG[i].blockstatement.size();j++){
+            if(CDG[i].blockstatement[j].statement != nullptr){
+                std::string buffer1;
+                llvm::raw_string_ostream strout1(buffer1);
+                CDG[i].blockstatement[j].statement->printPretty(strout1,nullptr,PrintingPolicy(L0));
+                string noenter = strout1.str();
+                if(noenter[noenter.length()-1] == '\n'){
+                    noenter = noenter.substr(0,noenter.length()-1);
+                }
+                CDG[i].blockstatement[j].sourcecode = noenter;
+               // string statementinfo = CDG[i].blockstatement[j].statement->getSourceRange().printToString(*SM);
+                //std::cout << statementinfo << endl;
+            }
+        }
+    }
+}
+
 DataDependenceGraph::DataDependenceGraph(ASTManager *manager, ASTResource *resource, CallGraph *call_graph,ForwardDominanceTree *forwarddominancetree){
     this->manager = manager;
     this->resource = resource;
@@ -768,19 +811,39 @@ void DataDependenceGraph::ConstructDDGForest(){
         blockcfg = this->forward_dominance_tree->blockcfg_forest[i];
         ConstructDDG();
         vector<BlockInfo>().swap(blockcfg);
+        stmtcfg_forest.push_back(stmtcfg);
+        vector<StmtBitVector>().swap(stmtcfg);
     }
 }
 
 void DataDependenceGraph::ConstructDDG(){
     this->blocknum = blockcfg.size();
     this->allstmtnum = 0;
+    this->bitvectorlength = 0;
     for(int i=0;i<this->blocknum;i++){
         this->allstmtnum = this->allstmtnum + blockcfg[i].blockstatement.size();
+    }
+    for(int i=0;i<this->blocknum;i++){
+        if(i == this->blocknum - 1){
+            if(this->blockcfg[i].blockstatement[0].param.size() == 0)
+                this->bitvectorlength = this->bitvectorlength + blockcfg[i].blockstatement.size();
+            else{
+                 this->bitvectorlength = this->bitvectorlength + this->blockcfg[i].blockstatement[0].param.size();
+            }
+        }
+        else{
+            this->bitvectorlength = this->bitvectorlength + blockcfg[i].blockstatement.size();
+        }
     }
     CompleteStmtCFG();
     AnalyzeStmt();
     CalculateGenKill();
+    //dumpKillVector();
     DataDependenceCheck();
+    
+    //dumpOutVector();
+    AddDataDependence();
+    dumpStmtDDG();
 }
 
 void DataDependenceGraph::CompleteStmtCFG(){
@@ -792,6 +855,7 @@ void DataDependenceGraph::CompleteStmtCFG(){
             stmtid++;
             stmtbitvector.edge.blockid = i;
             stmtbitvector.edge.statementid = j;
+            stmtbitvector.param = blockcfg[i].blockstatement[j].param;
             stmtbitvector.statement = blockcfg[i].blockstatement[j].statement;
             stmtbitvector.edge_pred = blockcfg[i].blockstatement[j].pred;
             stmtbitvector.edge_succ = blockcfg[i].blockstatement[j].succ;
@@ -804,7 +868,7 @@ void DataDependenceGraph::CompleteStmtCFG(){
                 stmtbitvector.succ.push_back(add);
             }
             stmtbitvector.isvisit = false;
-            for(int k=0;k<allstmtnum;k++){
+            for(int k=0;k<bitvectorlength;k++){
                 stmtbitvector.Invector.push_back(0);
                 stmtbitvector.Outvector.push_back(0);
                 stmtbitvector.Genvector.push_back(0);
@@ -828,9 +892,12 @@ int DataDependenceGraph::SwitchEdgeToStmtid(Edge edge){
 void DataDependenceGraph::AnalyzeStmt(){
     for(int i=0;i<allstmtnum;i++){
         clang::Stmt* statement = stmtcfg[i].statement;
-        if(statement == nullptr){
+        if(statement == nullptr && stmtcfg[i].param.size() == 0){
             stmtcfg[i].isusefulstmt = false;
         }
+        else if(statement == nullptr && stmtcfg[i].param.size() != 0){
+            stmtcfg[i].isusefulstmt = true;
+        }//entry
         else{
             if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass){
                 stmtcfg[i].isusefulstmt = true;
@@ -838,6 +905,7 @@ void DataDependenceGraph::AnalyzeStmt(){
                 if(declstmt->isSingleDecl()){
                     clang::Decl* oneDecl = declstmt->getSingleDecl();
                     stmtcfg[i].variable = GetStmtLvalue(statement);   
+                    //std::cout << "good " << i << " " << stmtcfg[i].variable << endl;
                     GetStmtRvalue(statement,&stmtcfg[i].rvalue);
                     if(oneDecl->getKind() == clang::Decl::Kind::Var){
                         clang::VarDecl* vardecl = static_cast<clang::VarDecl*>(oneDecl);
@@ -1191,6 +1259,10 @@ void DataDependenceGraph::RecursiveGetOperator(clang::Stmt* statement,vector<str
         clang::MemberExpr* structIter = static_cast<clang::MemberExpr*>(statement);
         RecursiveGetOperator(structIter->getBase(),rvalue);
     }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass){
+        clang::CStyleCastExpr* cstyleIter = static_cast<clang::CStyleCastExpr*>(statement);
+        RecursiveGetOperator(cstyleIter->getSubExpr(),rvalue);
+    }
     else{
         std::cout << "missing sth in rvalue\n";
     }
@@ -1225,6 +1297,10 @@ void DataDependenceGraph::GetStmtRvalueU(clang::Stmt* statement,vector<string>* 
         RecursiveGetOperatorU(binaryIter->getLHS(),rvalue);
         RecursiveGetOperatorU(binaryIter->getRHS(),rvalue);
     }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+        clang::ImplicitCastExpr* impliIter = static_cast<clang::ImplicitCastExpr*>(statement);
+        RecursiveGetOperatorU(impliIter->getSubExpr(),rvalue);
+    }   
     else{
         std::cout << "missing sth in useless stmt\n";
     }
@@ -1277,6 +1353,10 @@ void DataDependenceGraph::RecursiveGetOperatorU(clang::Stmt* statement,vector<st
             RecursiveGetOperatorU((*iter),rvalue);
         }
     }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass){
+        clang::CStyleCastExpr* cstyleIter = static_cast<clang::CStyleCastExpr*>(statement);
+        RecursiveGetOperatorU(cstyleIter->getSubExpr(),rvalue);
+    }
     else{
         //assert(statement->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass);
         //actually this means coder uses char,int,double,long,etc, in a boolean expr,so we ignore it
@@ -1287,11 +1367,23 @@ void DataDependenceGraph::RecursiveGetOperatorU(clang::Stmt* statement,vector<st
 void DataDependenceGraph::CalculateGenKill(){
     for(int i=0;i<allstmtnum;i++){
         if(stmtcfg[i].isusefulstmt == true){
-            stmtcfg[i].Genvector[stmtcfg[i].stmtid] = 1;
-            vector<int> Kill = KillVariable(stmtcfg[i].variable);
-            assert(Kill.size() == allstmtnum);
-            for(int j=0;j<Kill.size();j++){
-                stmtcfg[i].Killvector[j] == Kill[j];
+            if(stmtcfg[i].statement != nullptr){
+                stmtcfg[i].Genvector[stmtcfg[i].stmtid] = 1;
+                vector<int> Kill = KillVariable(stmtcfg[i].variable);
+                assert(Kill.size() == bitvectorlength);
+                for(int j=0;j<Kill.size();j++){
+                    stmtcfg[i].Killvector[j] = Kill[j];
+                }
+            }
+            else{
+                for(int j=0;j<stmtcfg[i].param.size();j++){
+                    stmtcfg[i].Genvector[stmtcfg[i].stmtid+j] = 1;
+                    vector<int> Kill = KillVariable(stmtcfg[i].param[j]);
+                    assert(Kill.size() == bitvectorlength);
+                    for(int k=0;k<Kill.size();k++){
+                        stmtcfg[i].Killvector[k] = Kill[k];
+                    }
+                }
             }
         }
     }
@@ -1302,10 +1394,22 @@ vector<int> DataDependenceGraph::KillVariable(string variable){
     vector<int> kill;
     for(int i=0;i<allstmtnum;i++){
         if(stmtcfg[i].isusefulstmt == true){
-            if(variable == stmtcfg[i].variable)
-                kill.push_back(1);
-            else
-                kill.push_back(0);
+            if(stmtcfg[i].param.size() == 0){
+                if(variable == stmtcfg[i].variable){
+                    kill.push_back(1);
+                }
+                else
+                    kill.push_back(0);
+            }
+            else{
+                for(int j=0;j<stmtcfg[i].param.size();j++){
+                    if(variable == stmtcfg[i].param[j]){
+                        kill.push_back(1);
+                    }
+                    else
+                        kill.push_back(0);
+                }
+            }
         }
         else
             kill.push_back(0);
@@ -1324,7 +1428,7 @@ void DataDependenceGraph::DataDependenceCheck(){
         CalculateBlock(allstmtnum-1);
         for(int i=0;i<allstmtnum;i++){
             if(stmtcfg[i].isvisit == false){
-                for(int j=0;j<allstmtnum;j++){
+                for(int j=0;j<bitvectorlength;j++){
                     stmtcfg[i].Invector[j] = 0;
                     stmtcfg[i].Outvector[j] = 0;
                 }
@@ -1361,11 +1465,11 @@ void DataDependenceGraph::CalculateBlock(int num){
     while(!q.empty()){
         StmtBitVector tempblock = q.front();
         vector<int> temp;
-        for(int i=0;i<allstmtnum;i++)
+        for(int i=0;i<bitvectorlength;i++)
             temp.push_back(0);
         if(tempblock.pred.empty() == false){
             for(int i=0;i<tempblock.pred.size();i++){
-                for(int j=0;j<allstmtnum;j++){
+                for(int j=0;j<bitvectorlength;j++){
                     if(stmtcfg[tempblock.pred[i]].Outvector[j] == 1)
                         temp[j] = 1;
                 }
@@ -1373,13 +1477,13 @@ void DataDependenceGraph::CalculateBlock(int num){
             tempblock.Invector = temp;
         }
         vector<int> res;
-        for(int i=0;i<allstmtnum;i++)
+        for(int i=0;i<bitvectorlength;i++)
             res.push_back(tempblock.Invector[i]);
-        for(int i=0;i<allstmtnum;i++){
+        for(int i=0;i<bitvectorlength;i++){
             if(tempblock.Killvector[i] == 1)
                 res[i] = 0;
         }
-        for(int i=0;i<allstmtnum;i++)
+        for(int i=0;i<bitvectorlength;i++)
         {
             if(tempblock.Genvector[i] == 1)
                 res[i] = 1;
@@ -1393,4 +1497,257 @@ void DataDependenceGraph::CalculateBlock(int num){
         }
         q.pop();
     }
+}
+
+void DataDependenceGraph::AddDataDependence(){
+    for(int i=0;i<allstmtnum;i++){
+        for(int j=0;j<stmtcfg[i].rvalue.size();j++){
+            vector<int> preoutvector;
+            for(int t=0;t<bitvectorlength;t++){
+                preoutvector.push_back(0);
+            }
+            for(int t=0;t<stmtcfg[i].pred.size();t++){
+                int pre = stmtcfg[i].pred[t];
+                for(int k=0;k<bitvectorlength;k++){
+                    if(stmtcfg[pre].Outvector[k] == 1)
+                        preoutvector[k] = 1;
+                }
+            }
+            for(int k=0;k<bitvectorlength;k++){
+                if(preoutvector[k] == 1){
+                    if(k < allstmtnum - 1){
+                        if(stmtcfg[k].variable == stmtcfg[i].rvalue[j]){
+                            Edge predge = SwitchStmtidToEdge(stmtcfg[k].stmtid);
+                            stmtcfg[i].data_pred.push_back(predge);
+                            Edge succedge = SwitchStmtidToEdge(stmtcfg[i].stmtid);
+                            stmtcfg[k].data_succ.push_back(succedge);
+                            stmtcfg[k].data_dependence.push_back(stmtcfg[k].variable);
+                        }
+                    }
+                    else{
+                        for(int m = 0;m<stmtcfg[allstmtnum-1].param.size();m++){
+                            if(k-allstmtnum+1 == m && stmtcfg[allstmtnum-1].param[m] == stmtcfg[i].rvalue[j]){
+                                Edge predge = SwitchStmtidToEdge(allstmtnum-1);
+                                stmtcfg[i].data_pred.push_back(predge);
+                                Edge succedge = SwitchStmtidToEdge(stmtcfg[i].stmtid);
+                                stmtcfg[allstmtnum-1].data_succ.push_back(succedge);
+                                stmtcfg[allstmtnum-1].data_dependence.push_back(stmtcfg[allstmtnum-1].param[m]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+Edge DataDependenceGraph::SwitchStmtidToEdge(int stmtid){
+    int res = 0;
+    Edge edge;
+    for(int i=0;i<blocknum;i++){
+        res = res + blockcfg[i].blockstatement.size();
+        if(stmtid < res){
+            edge.blockid = i;
+            break;
+        }
+    }
+    res = 0;
+    for(int i=0;i<edge.blockid;i++)
+        res = res + blockcfg[i].blockstatement.size();
+    edge.statementid = stmtid - res;
+    return edge;
+}
+
+void DataDependenceGraph::dumpStmtDDG(){
+    for(int i=0;i<allstmtnum;i++){
+        std::cout << "Stmtid: " << stmtcfg[i].stmtid << " " << "Block: " << stmtcfg[i].edge.blockid << " Stmt: " << stmtcfg[i].edge.statementid<<endl;
+        std::cout << "   Data Dependence pred: ";
+        if(stmtcfg[i].data_pred.size() == 0){
+            std::cout << "NULL";
+        }
+        else{
+            for(int j=0;j<stmtcfg[i].data_pred.size();j++)
+            {
+                std::cout << "block " << stmtcfg[i].data_pred[j].blockid << " stmt " << stmtcfg[i].data_pred[j].statementid << " ";
+            }
+        }
+        std::cout << endl;
+        std::cout << "   Data Dependence succ: ";
+        if(stmtcfg[i].data_succ.size() == 0){
+            std::cout << "NULL";
+        }
+        else{
+            for(int j=0;j<stmtcfg[i].data_succ.size();j++)
+            {
+                std::cout << "block " << stmtcfg[i].data_succ[j].blockid << " stmt " << stmtcfg[i].data_succ[j].statementid << " ";
+            }
+        }
+        std::cout << endl;
+    }
+}
+
+void DataDependenceGraph::dumpOutVector(){
+    for(int i=0;i<allstmtnum;i++){
+        std::cout << "block " << stmtcfg[i].edge.blockid << " stmt " << stmtcfg[i].edge.statementid << " outvector:";
+        for(int j=0;j<bitvectorlength;j++){
+            std::cout << stmtcfg[i].Outvector[j];
+        }
+        std::cout <<endl;
+    }
+}
+
+void DataDependenceGraph::dumpKillVector(){
+    for(int i=0;i<allstmtnum;i++){
+        std::cout << "block " << stmtcfg[i].edge.blockid << " stmt " << stmtcfg[i].edge.statementid << " killvector:";
+        for(int j=0;j<bitvectorlength;j++){
+            std::cout << stmtcfg[i].Killvector[j];
+        }
+        std::cout <<endl;
+    }
+}
+
+ProgramDependencyGraph::ProgramDependencyGraph(ASTManager *manager, ASTResource *resource, CallGraph *call_graph, ControlDependenceGraph *cdg, DataDependenceGraph *ddg){
+    this->manager = manager;
+    this->resource = resource;
+    this->call_graph = call_graph;
+    this->cdg = cdg;
+    this->ddg = ddg;
+}
+
+void ProgramDependencyGraph::DrawPdgForest(){
+    blocknum = 0;
+    for(int i=0;i<this->cdg->CDG_forest.size();i++){
+        FunctionDecl *funDecl = manager->getFunctionDecl(this->cdg->allFunctions[i]);
+        string funcname = funDecl->getQualifiedNameAsString();
+        this->CDG = this->cdg->CDG_forest[i];
+        blocknum = this->CDG.size();
+        this->stmtcfg = this->ddg->stmtcfg_forest[i];
+        WriteDotFile(funcname);
+        vector<CDGNode>().swap(CDG);
+        vector<StmtBitVector>().swap(stmtcfg);
+    }
+}
+
+void ProgramDependencyGraph::WriteDotFile(string funcname){
+    string command = "mkdir -p pdg";
+    system(command.c_str());
+    string prefix = "pdg/";
+    string suffix = ".dot";
+    string filename =  prefix + funcname + suffix;
+    std::fstream out(filename, ios::out);
+    std::string head = "digraph \"Program Dependency Graph\" {";
+    std::string end = "}";
+    std::string label = "    label=\"Program Dependency Graph\"";
+    if (out.is_open()) {
+        out << head << std::endl;
+        out << label << std::endl << std::endl;
+    }
+    string nodeid = "0xffffffff";
+    out << "    Node" << nodeid << " [shape=record,label=\"{Entry}\"];" << endl;
+    for(int i=0;i<this->CDG.size();i++){
+        for(int j=0;j<this->CDG[i].blockstatement.size();j++){
+            WriteCDGNode(out,i,this->CDG[i].blockstatement[j],nodeid);
+        }
+    }
+    for(int i=0;i<this->stmtcfg.size();i++){
+        WriteDDGNode(out,stmtcfg[i]);
+    }
+    /*auto it = blockcfg.begin();
+    for (; it != blockcfg.end(); it++) {
+        if((*it).succ.size() != 0){
+            //std::cout <<(*it).succ[0] << endl;
+            WriteNodeDot(out, (*it).blockid,(*it).succ);
+        }
+    }*/
+    out << end << std::endl;
+    out.close();
+}
+
+void ProgramDependencyGraph::WriteCDGNode(std::ostream& out,int blockid,CFGInfo cdgnode,string startnode){
+    Edge edge;
+    edge.blockid = blockid;
+    edge.statementid = cdgnode.statementid;
+    //std::cout << "blockid = " << edge.blockid << " stmtid " << edge.statementid << endl; 
+    int stmtid = this->SwitchEdgeToStmtid(edge);
+    //std::cout << "good\n";
+    string nodeid = "0x";
+    nodeid = nodeid + to_string(stmtid);
+    if(cdgnode.statement == nullptr && cdgnode.param.size() != 0){
+        out << "    Node" << nodeid << " [shape=record,label=\"{";
+        for(int i=0;i<cdgnode.param.size();i++){
+            out << "Param " << cdgnode.param[i] << " ";
+        }
+        out << "}\"];" << endl;
+    }
+    else if(cdgnode.statement == nullptr && cdgnode.param.size() == 0){
+
+    }
+    else{
+        string sourcecode = cdgnode.sourcecode;
+        for(int i=0;i<sourcecode.length();i++){
+            if(sourcecode[i] == '<' || sourcecode[i] == '>'){
+                sourcecode.insert(i,"\\");
+                i++;
+            }
+        }
+        out << "    Node" << nodeid << " [shape=record,label=\"{";
+        out << sourcecode << "}\"];" << endl;
+    }
+    //std::cout <<"hello\n";
+    //std::cout << cdgnode.succ.size() << endl;
+    for(int i=0;i<cdgnode.succ.size();i++){
+        string prefix = "0x";
+        //char succid = '0' + succ[i];
+        //std::cout <<"hello1\n";
+        int succ_stmtid = this->SwitchEdgeToStmtid(cdgnode.succ[i]);
+        if(CDG[cdgnode.succ[i].blockid].blockstatement[cdgnode.succ[i].statementid].statement != nullptr){
+        //std::cout <<"hello2\n";
+            prefix = prefix + to_string(succ_stmtid);
+            out << "    Node" << nodeid << " -> " << "Node" << prefix;
+            out << "[color = red]" << endl;
+        }
+    }
+    if(cdgnode.pred.size() == 0 && cdgnode.statement != nullptr){
+        out << "    Node" << startnode << " -> " << "Node" << nodeid;
+        out << "[style = dotted]" << endl;
+    }
+}
+
+void ProgramDependencyGraph::WriteDDGNode(std::ostream& out,StmtBitVector ddgnode){
+    string nodeid = "0x";
+    nodeid = nodeid + to_string(ddgnode.stmtid);
+    for(int i=0;i<ddgnode.data_succ.size();i++){
+        string prefix = "0x";
+        //char succid = '0' + succ[i];
+        int succ_stmtid = this->SwitchEdgeToStmtid(ddgnode.data_succ[i]);
+        prefix = prefix + to_string(succ_stmtid);
+        out << "    Node" << nodeid << " -> " << "Node" << prefix;
+        out << "[color = blue,label = \"" << ddgnode.data_dependence[i] << "\"]" << endl;
+    }
+}
+
+int ProgramDependencyGraph::SwitchEdgeToStmtid(Edge edge){
+    int res = 0;
+    for(int i=0;i<edge.blockid;i++){
+        res = res + this->CDG[i].blockstatement.size();
+    }
+    res = res + edge.statementid;
+    return res;
+}
+
+Edge ProgramDependencyGraph::SwitchStmtidToEdge(int stmtid){
+    int res = 0;
+    Edge edge;
+    for(int i=0;i<blocknum;i++){
+        res = res + CDG[i].blockstatement.size();
+        if(stmtid < res){
+            edge.blockid = i;
+            break;
+        }
+    }
+    res = 0;
+    for(int i=0;i<edge.blockid;i++)
+        res = res + CDG[i].blockstatement.size();
+    edge.statementid = stmtid - res;
+    return edge;
 }
