@@ -29,6 +29,7 @@ struct CFGInfo{
     vector<Edge> pred;
     vector<Edge> succ;
     vector<BlockStmt> postdom_stmt;
+    vector<string> param;
 };
 
 struct TreeNode{
@@ -50,9 +51,17 @@ struct BlockInfo{
     vector<CFGInfo> blockstatement;
 };
 
+struct CDGNode{
+    int blockid;
+    vector<int> controldependent;
+    vector<int> pred;
+    vector<int> succ;
+    vector<CFGInfo> blockstatement;
+};
 
 class ControlDependenceGraph;
 class DataDependenceGraph;
+class ProgramDependencyGraph;
 
 class ForwardDominanceTree{
 private:
@@ -63,6 +72,7 @@ private:
     vector<vector<BlockInfo>> blockcfg_forest;
     vector<vector<TreeNode>> FDT_forest;
     clang::SourceManager *SM;
+    vector<string> param;
 public:
     ASTResource *resource;
     ASTManager *manager;
@@ -79,24 +89,17 @@ public:
     void dumpFDT();
     void dumpStmtFDT();
     void dumpStmtCFG();
-    void writeDotFile(string funcname);
-    void writeNodeDot(std::ostream& out,int blockid,vector<int> succ);
+    
     friend class ControlDependenceGraph;
     friend class DataDependenceGraph;
 };
 
 class ControlDependenceGraph{
 private:
-    struct CDGNode{
-        int blockid;
-        vector<int> controldependent;
-        vector<int> pred;
-        vector<int> succ;
-        vector<CFGInfo> blockstatement;
-    };
     vector<BlockStmt> Postdom;
     vector<CDGNode> CDG;
     vector<vector<CDGNode>> CDG_forest;
+    std::vector<ASTFunction *> allFunctions;
 private:
     ASTResource *resource;
     ASTManager *manager;
@@ -114,6 +117,8 @@ public:
     int CalculateStmtNo(Edge edge,int treenum);
     void dumpCDG();
     void dumpStmtCDG();
+    void GetStmtSourceCode(int blocknum);
+    friend class ProgramDependencyGraph;
 };
 
 struct StmtBitVector{
@@ -131,6 +136,10 @@ struct StmtBitVector{
     vector<int> succ;// succ based on cfg_graph
     vector<Edge> edge_pred;// pred based on cfg_graph
     vector<Edge> edge_succ;// succ based on cfg_graph
+    vector<Edge> data_pred;
+    vector<Edge> data_succ;
+    vector<string> data_dependence;
+    vector<string> param;
     bool isvisit;
 };
 
@@ -138,8 +147,10 @@ class DataDependenceGraph{
 private:
     int allstmtnum;
     int blocknum;
+    int bitvectorlength;
     vector<BlockInfo> blockcfg;
     vector<StmtBitVector> stmtcfg;
+    vector<vector<StmtBitVector>> stmtcfg_forest;
 private:
     ASTResource *resource;
     ASTManager *manager;
@@ -152,6 +163,8 @@ public:
     void CompleteStmtCFG();
     void AnalyzeStmt();
     int SwitchEdgeToStmtid(Edge edge);
+    Edge SwitchStmtidToEdge(int stmtid);
+
     string GetStmtLvalue(clang::Stmt* statement);
     void GetStmtRvalue(clang::Stmt* statement,vector<string>* rvalue);
     void RecursiveGetOperator(clang::Stmt* statement,vector<string>* rvalue);
@@ -166,6 +179,34 @@ public:
 
     void DataDependenceCheck();
     void CalculateBlock(int num);
+
+    void AddDataDependence();
+    void dumpStmtDDG();
+    void dumpOutVector();
+    void dumpKillVector();
+    friend class ProgramDependencyGraph;
+};
+
+class ProgramDependencyGraph{
+private:
+    ASTResource *resource;
+    ASTManager *manager;
+    CallGraph *call_graph;
+private:
+    ControlDependenceGraph *cdg;
+    DataDependenceGraph *ddg;
+    vector<CDGNode> CDG;
+    vector<StmtBitVector> stmtcfg;
+    int blocknum;
+public:
+    ProgramDependencyGraph(ASTManager *manager, ASTResource *resource, CallGraph *call_graph, ControlDependenceGraph *cdg, DataDependenceGraph *ddg);
+    void DrawPdgForest();
+    void WriteDotFile(string funcname);
+    void WriteCDGNode(std::ostream& out,int blockid,CFGInfo cdgnode,string startnode);
+    void WriteDDGNode(std::ostream& out,StmtBitVector ddgnode);
+
+    int SwitchEdgeToStmtid(Edge edge);
+    Edge SwitchStmtidToEdge(int stmtid);
 };
 
 #endif

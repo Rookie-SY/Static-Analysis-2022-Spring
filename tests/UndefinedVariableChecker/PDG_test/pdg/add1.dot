@@ -1,0 +1,13 @@
+digraph "Program Dependency Graph" {
+    label="Program Dependency Graph"
+
+    Node0xffffffff [shape=record,label="{Entry}"];
+    Node0x1 [shape=record,label="{int c;}"];
+    Node0xffffffff -> Node0x1[style = dotted]
+    Node0x2 [shape=record,label="{int d;}"];
+    Node0xffffffff -> Node0x2[style = dotted]
+    Node0x3 [shape=record,label="{return c + d;}"];
+    Node0xffffffff -> Node0x3[style = dotted]
+    Node0x1 -> Node0x3[color = blue,label = "c"]
+    Node0x2 -> Node0x3[color = blue,label = "d"]
+}

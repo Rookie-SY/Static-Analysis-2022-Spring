@@ -64,10 +64,10 @@ void ControlFlowGraph::writeDotFile(string funcname){
     }
     auto it = blockcfg.begin();
     for (; it != blockcfg.end(); it++) {
-        if((*it).succ.size() != 0){
+        //if((*it).succ.size() != 0){
             //std::cout <<(*it).succ[0] << endl;
             writeNodeDot(out, (*it).blockid,(*it).succ);
-        }
+        //}
     }
     out << end << std::endl;
     out.close();
@@ -78,7 +78,7 @@ void ControlFlowGraph::writeNodeDot(std::ostream& out,int blockid,vector<int> su
     string nodeid = "0x";
     nodeid = nodeid + to_string(blockid);
     out << "    Node" << nodeid << " [shape=record,label=\"{";
-    out << blockid << "}\"];" << endl;
+    out << "Block "<< blockid << "}\"];" << endl;
     for(int i=0;i<succ.size();i++){
         string prefix = "0x";
         //char succid = '0' + succ[i];

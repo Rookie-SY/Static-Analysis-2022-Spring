@@ -95,8 +95,12 @@ int main(int argc, const char *argv[]) {
   fdt.ConstructFDTFromCfg();
   ControlDependenceGraph cdg(&manager, &resource, &call_graph,&fdt);
   cdg.ConstructCDG();
-  cdg.dumpCDG();
+  //cdg.dumpCDG();
   cdg.dumpStmtCDG();
+  DataDependenceGraph ddg(&manager, &resource, &call_graph,&fdt);
+  ddg.ConstructDDGForest();
+  ProgramDependencyGraph pdg(&manager, &resource, &call_graph,&cdg, &ddg);
+  pdg.DrawPdgForest();
   endCTime = clock();
   unsigned sec = unsigned((endCTime - startCTime) / CLOCKS_PER_SEC);
   unsigned min = sec / 60;
