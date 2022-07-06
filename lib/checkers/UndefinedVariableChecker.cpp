@@ -100,7 +100,7 @@ void UndefinedVariableChecker::get_cfg_stmt(unique_ptr<CFG>& cfg)
                 llvm::Optional<CFGStmt> stmt = element.getAs<CFGStmt>();
                 if(stmt.hasValue() == true){
                     Stmt* statement = const_cast<Stmt* >(stmt.getValue().getStmt());
-                    //print_stmt_kind(statement,0);
+                    print_stmt_kind(statement,0);
                     
                 }
                 
@@ -605,6 +605,10 @@ void UndefinedVariableChecker::recursive_get_binaryop(clang::Stmt* statement,Use
         variable.loc = structIter->getBeginLoc();
         info->rvalueString.push_back(variable);*/
         recursive_get_binaryop(structIter->getBase(),info);
+    }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass){
+        clang::CStyleCastExpr* cstyleIter = static_cast<clang::CStyleCastExpr*>(statement);
+        recursive_get_binaryop(cstyleIter->getSubExpr(),info);
     }
 }
 
@@ -1475,6 +1479,10 @@ void UndefinedVariableChecker::recursive_find_usevariable(clang::Stmt* statement
             recursive_find_usevariable((*iter),info);
         }
     }
+    else if(statement->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass){
+        clang::CStyleCastExpr* cstyleIter = static_cast<clang::CStyleCastExpr*>(statement);
+        recursive_find_usevariable(cstyleIter->getSubExpr(),info);
+    }
     else{
         //assert(statement->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass);
         //actually this means coder uses char,int,double,long,etc, in a boolean expr,so we ignore it
@@ -1512,6 +1520,10 @@ void UndefinedVariableChecker::get_useless_statement_variable(){
                 clang::BinaryOperator* binaryIter = static_cast<clang::BinaryOperator*>(useless_block_statement[i].usefulBlockStatement[j].stmt);
                 recursive_find_usevariable(binaryIter->getLHS(),&useless_block_statement[i].usefulBlockStatement[j]);
                 recursive_find_usevariable(binaryIter->getRHS(),&useless_block_statement[i].usefulBlockStatement[j]);
+            }
+            else if(useless_block_statement[i].usefulBlockStatement[j].stmt->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
+                clang::ImplicitCastExpr* impliIter = static_cast<clang::ImplicitCastExpr*>(useless_block_statement[i].usefulBlockStatement[j].stmt);
+                recursive_find_usevariable(impliIter->getSubExpr(),&useless_block_statement[i].usefulBlockStatement[j]);
             }
         }
     }
