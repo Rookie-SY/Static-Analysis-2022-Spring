@@ -30,3 +30,9 @@ from . ui_functions import *
 # APP FUNCTIONS
 from . app_functions import *
 
+# PARSE WITH JOERN
+from .parseASTwithJoern import *
+
+# PARSE MODEL
+from .parseModelCode import *
+

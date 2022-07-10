@@ -682,7 +682,7 @@ Button */
               </font>
              </property>
              <property name="text">
-              <string>PyDracula</string>
+              <string>Birds</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -712,7 +712,7 @@ Button */
               </font>
              </property>
              <property name="text">
-              <string>Modern GUI / Flat Style</string>
+              <string>Easy to find bugs</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -869,7 +869,7 @@ Button */
                    <string notr="true">background-image: url(:/icons/images/icons/cil-code.png);</string>
                   </property>
                   <property name="text">
-                   <string>Home</string>
+                   <string>code</string>
                   </property>
                  </widget>
                 </item>
@@ -905,12 +905,12 @@ Button */
                    <string notr="true">background-image: url(:/icons/images/icons/cil-image1.png);</string>
                   </property>
                   <property name="text">
-                   <string>New</string>
+                   <string>tree</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btn_widgets">
+                 <widget class="QPushButton" name="btn_model">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -941,82 +941,10 @@ Button */
                    <enum>Qt::LeftToRight</enum>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">background-image: url(:/icons/images/icons/cil-image1.png);</string>
+                   <string notr="true">background-image: url(:/icons/images/icons/cil-magnifying-glass.png);</string>
                   </property>
                   <property name="text">
-                   <string>Widgets</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="btn_save">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>45</height>
-                   </size>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Segoe UI</family>
-                    <pointsize>10</pointsize>
-                    <italic>false</italic>
-                    <bold>false</bold>
-                   </font>
-                  </property>
-                  <property name="cursor">
-                   <cursorShape>PointingHandCursor</cursorShape>
-                  </property>
-                  <property name="layoutDirection">
-                   <enum>Qt::LeftToRight</enum>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">background-image: url(:/icons/images/icons/cil-save.png)</string>
-                  </property>
-                  <property name="text">
-                   <string>Save</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="btn_exit">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>45</height>
-                   </size>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Segoe UI</family>
-                    <pointsize>10</pointsize>
-                    <italic>false</italic>
-                    <bold>false</bold>
-                   </font>
-                  </property>
-                  <property name="cursor">
-                   <cursorShape>PointingHandCursor</cursorShape>
-                  </property>
-                  <property name="layoutDirection">
-                   <enum>Qt::LeftToRight</enum>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">background-image: url(:/icons/images/icons/cil-x.png);</string>
-                  </property>
-                  <property name="text">
-                   <string>Exit</string>
+                   <string>model</string>
                   </property>
                  </widget>
                 </item>
@@ -2564,6 +2492,159 @@ hr { height: 1px; border-width: 0; }
                           </item>
                          </layout>
                         </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="model_page">
+                      <layout class="QVBoxLayout" name="verticalLayout_20">
+                       <item>
+                        <layout class="QHBoxLayout" name="mode_page_horizontal" stretch="2,1">
+                         <item>
+                          <widget class="QComboBox" name="model_nodes">
+                           <property name="font">
+                            <font>
+                             <family>Segoe UI</family>
+                             <pointsize>10</pointsize>
+                             <italic>false</italic>
+                             <bold>false</bold>
+                            </font>
+                           </property>
+                           <property name="autoFillBackground">
+                            <bool>false</bool>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox{
+	background-color: #3A5B52;
+	border-radius: 6px;
+	border: 2px solid #3A5B52;
+
+    color: #f8f8f2;
+}
+QComboBox:hover{
+	border: 2px solid #7FB393;
+}
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 25px; 
+	border-left-width: 3px;
+	border-left-color: #7FB393;
+	border-left-style: solid;
+	border-top-right-radius: 3px;
+	border-bottom-right-radius: 3px;	
+	background-image: url(:/icons/images/icons/cil-arrow-bottom.png);
+	background-position: center;
+	background-repeat: no-reperat;
+ }
+QComboBox QAbstractItemView {
+	color: #7FB393;	
+	background-color: #3A5B52;
+	padding: 10px;
+    height: 50px;
+	selection-background-color: #7FB393;
+}
+
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: #7FB393;
+}</string>
+                           </property>
+                           <property name="iconSize">
+                            <size>
+                             <width>16</width>
+                             <height>16</height>
+                            </size>
+                           </property>
+                           <property name="frame">
+                            <bool>true</bool>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>model_nodes</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QComboBox" name="models">
+                           <property name="font">
+                            <font>
+                             <family>Segoe UI</family>
+                             <pointsize>10</pointsize>
+                             <italic>false</italic>
+                             <bold>false</bold>
+                            </font>
+                           </property>
+                           <property name="autoFillBackground">
+                            <bool>false</bool>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox{
+	background-color: #3A5B52;
+	border-radius: 6px;
+	border: 2px solid #3A5B52;
+
+    color: #f8f8f2;
+}
+QComboBox:hover{
+	border: 2px solid #7FB393;
+}
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 25px; 
+	border-left-width: 3px;
+	border-left-color: #7FB393;
+	border-left-style: solid;
+	border-top-right-radius: 3px;
+	border-bottom-right-radius: 3px;	
+	background-image: url(:/icons/images/icons/cil-arrow-bottom.png);
+	background-position: center;
+	background-repeat: no-reperat;
+ }
+QComboBox QAbstractItemView {
+	color: #7FB393;	
+	background-color: #3A5B52;
+	padding: 10px;
+    height: 50px;
+	selection-background-color: #7FB393;
+}
+
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: #7FB393;
+}</string>
+                           </property>
+                           <property name="iconSize">
+                            <size>
+                             <width>16</width>
+                             <height>16</height>
+                            </size>
+                           </property>
+                           <property name="frame">
+                            <bool>true</bool>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>lenet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>squeezenet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>convnet</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item>
+                        <widget class="QGraphicsView" name="model_picView"/>
                        </item>
                       </layout>
                      </widget>

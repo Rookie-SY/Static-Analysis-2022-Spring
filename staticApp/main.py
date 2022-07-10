@@ -1,23 +1,46 @@
-import sys
 import os
+import sys
+import shutil
 import platform
+import subprocess
 
 # IMPORT / GUI AND MODULES AND WIDGETS
 # ///////////////////////////////////////////////////////////////
 from PySide6 import QtCore
+from PySide6.QtWidgets import QMessageBox
 
 from modules import *
 from widgets import *
+# from modules import raw_model_struct
+# from modules import get_node_graph
 from pygments import highlight
 from pygments.lexers import CppLexer, CLexer
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
+from threading import Thread
 
 os.environ["QT_FONT_DPI"] = "128"  # FIX Problem for High DPI and Scale above 100%
 
 # SET AS GLOBAL WIDGETS
 # ///////////////////////////////////////////////////////////////
 widgets = None
+
+class MyThread(Thread):
+    def __init__(self, func, args):
+        '''
+        :param func: 可调用的对象
+        :param args: 可调用对象的参数
+        '''
+        Thread.__init__(self)
+        self.func = func
+        self.args = args
+        self.result = None
+
+    def run(self):
+        self.result = self.func(*self.args)
+
+    def get_result(self):
+        return self.result
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -75,8 +98,11 @@ class MainWindow(QMainWindow):
         # EXTRA RIGHT BOX
         def openCloseRightBox():
             UIFunctions.toggleRightBox(self, False)
+
         # widgets.settingsTopBtn.clicked.connect(openCloseRightBox)
 
+        QImageReader.setAllocationLimit(256)
+        self.model_name_list = ["lenet", "squeezenet", "googlenet", "convnet"]
         # SHOW APP
         # ///////////////////////////////////////////////////////////////
         self.show()
@@ -130,13 +156,23 @@ class MainWindow(QMainWindow):
 
         # SET PicPage
         # ///////////////////////////////////////////////////////////////
-        widgets.picKind.currentTextChanged[str].connect(self.change_pic_when_pic_combo_selected)
+        # widgets.picKind.currentTextChanged[str].connect(self.change_pic_when_pic_combo_selected)
+        widgets.picKind.activated.connect(self.change_pic_when_pic_combo_refresh)
         self.ui.picPageView = NewGraphView(self.picfileName, self.ui.picPageView)
 
         # SET ModelPage
         # ///////////////////////////////////////////////////////////////
-        widgets.model_nodes.currentTextChanged[str].connect(self.change_pic_when_model_combo_selected)
+        widgets.models.clear()
+        widgets.models.addItems(self.model_name_list)
+
+        raw_nodes_list = raw_model_struct()
+        widgets.model_nodes.clear()
+        widgets.model_nodes.addItems(raw_nodes_list)
+
+        widgets.models.currentTextChanged[str].connect(self.change_pic_when_model_combo_selected)
+        widgets.model_nodes.currentTextChanged[str].connect(self.change_pic_when_model_nodes_combo_selected)
         self.ui.model_picView = NewGraphView(self.picfileName, self.ui.model_picView)
+        self.ui.model_picView.setImage("./pic/models/lenet/net_pic.png")
 
     # ///////////////////////////////////////////////////////////////
     # set code text when code file selected
@@ -154,32 +190,55 @@ class MainWindow(QMainWindow):
                                      full=True,
                                      cssfile="./css/myStyle.css",
                                      wrapcode=True
-                                 ))
-                # with open("./testFile/testcodeHtml.html","w+",encoding='utf-8') as codeHtml:
-                # codeHtml.write(html)
+                                 ),
+                                 outfile=None)
                 widgets.codeText.setHtml(html)
             picview_kind = self.ui.picKind.currentText()
             print(picview_kind + " in [readFileToCodeBox]")
-            self.change_pic_when_combo_selected(picview_kind)
+
+            new_thread = Thread(target=joern_parse_main_func, args=(self.codefileName, "./tmpFile/tmpCodeForJoern"))
+            new_thread.start()
+            # joern_parse_main_func(source_code_path=self.codefileName,
+            #                       out_dir="./tmpFile/tmpCodeForJoern")
+            new_thread2 = Thread(target=self.change_pic_when_pic_combo_current_file_changed, args=(picview_kind,))
+            new_thread2.start()
+            # self.change_pic_when_pic_combo_selected(picview_kind)
+        else:
+            QMessageBox.warning(self, '格式错误', '选择的文件后缀必须为\n ["c", "cpp", "c++", "h", "hpp"]',
+                                QMessageBox.Ok, QMessageBox.Ok)
 
     # ///////////////////////////////////////////////////////////////
     # set img when pic combobox text selected
     # ///////////////////////////////////////////////////////////////
-    def change_pic_when_pic_combo_selected(self, item_name):
-        if item_name == "AST":
-            print("ast selected")
-            self.ui.picPageView.setImage("./default/defaultpic_ast.png")
-        elif item_name == "CFG":
-            print("cfg selected")
-            self.ui.picPageView.setImage("./default/defaultpic_cfg.png")
-        elif item_name == "CDG":
-            print("cdg selected")
-            self.ui.picPageView.setImage("./default/defaultpic_cdg.png")
-        elif item_name == "PDG":
-            print("pdg selected")
-            self.ui.picPageView.setImage("./default/defaultpic_pdg.png")
-        else:
-            print("some wrong item_name")
+    def change_pic_when_pic_combo_refresh(self, item_index):
+        item_name = self.ui.picKind.itemText(item_index)
+        item_name = item_name.lower()
+
+        png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
+        self.ui.picPageView.setImage(png_path)
+        print(f"{item_name} pic has refreshed! in pic View!")
+
+    def change_pic_when_pic_combo_current_file_changed(self, item_name):
+        item_name = item_name.lower()
+        if item_name == "ast":
+            try:
+                shutil.copy("./tmpFile/tmpCodeForJoern/parse/dot/ast/0-ast.dot",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+        elif item_name == "cdg":
+            try:
+                shutil.copy("./tmpFile/tmpCodeForJoern/parse/dot/cdg/1-cdg.dot",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+
+        shellstr = f"dot -Grankdir=LR -Tpng -o ./tmpFile/codeFilePic/{item_name}/code_{item_name}.png ./tmpFile/codeFilePic/{item_name}/code_dot.dot "
+        subprocess.call(shellstr, shell=True)
+
+        png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
+        self.ui.picPageView.setImage(png_path)
+        print(f"{item_name} pic has made! in [change_pic_when_pic_combo_current_file_changed]!")
 
     # ///////////////////////////////////////////////////////////////
     # set img when pic combobox text selected
@@ -187,21 +246,18 @@ class MainWindow(QMainWindow):
 
     def change_pic_when_model_combo_selected(self, item_name):
         # TODO:
+        # change model_name
+        raw_nodes_list = raw_model_struct(item_name)
+        self.ui.model_nodes.clear()
+        self.ui.model_nodes.addItems(raw_nodes_list)
+        self.ui.model_picView.setImage(f"./pic/models/{item_name}/net_pic.png")
+
+    def change_pic_when_model_nodes_combo_selected(self, item_name):
+        # TODO:
         # change filename
-        if item_name == "AST":
-            print("ast selected")
-            self.ui.model_picView.setImage("./default/defaultpic_ast.png")
-        elif item_name == "CFG":
-            print("cfg selected")
-            self.ui.model_picView.setImage("./default/defaultpic_cfg.png")
-        elif item_name == "CDG":
-            print("cdg selected")
-            self.ui.model_picView.setImage("./default/defaultpic_cdg.png")
-        elif item_name == "PDG":
-            print("pdg selected")
-            self.ui.model_picView.setImage("./default/defaultpic_pdg.png")
-        else:
-            print("some wrong item_name")
+        if item_name:
+            get_node_graph(self.ui.models.currentText(), item_name)
+            self.ui.model_picView.setImage(f"./tmpFile/tmpPic.png")
 
     def wheelEvent(self, e: QWheelEvent):
         if self.pic_or_model == "pic":
@@ -240,6 +296,7 @@ class MainWindow(QMainWindow):
         # SHOW NEW PAGE
         if btnName == "btn_picShow":
             self.pic_or_model = "pic"
+            self.change_pic_when_pic_combo_refresh(self.ui.picKind.currentIndex())
             widgets.stackedWidget.setCurrentWidget(widgets.pic_page)  # SET PAGE
             UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU

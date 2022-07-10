@@ -87,6 +87,8 @@ def make_dot(var, params=None, show_attrs=False, show_saved=False, max_attr_char
     dot = Digraph(node_attr=node_attr, graph_attr=dict(size="12,12"))
     seen = set()
 
+    nodeId = {}
+
     def size_to_str(size):
         return '(' + (', ').join(['%d' % v for v in size]) + ')'
 
@@ -126,7 +128,15 @@ def make_dot(var, params=None, show_attrs=False, show_saved=False, max_attr_char
             dot.edge(str(id(var)), str(id(fn)))
 
         # add the node for this grad_fn
-        dot.node(str(id(fn)), str(id(fn)) + " " + get_fn_name(fn, show_attrs, max_attr_chars))
+        fn_name = get_fn_name(fn, show_attrs, max_attr_chars)
+        if fn_name in nodeId:
+            fn_id = nodeId[fn_name]
+            fn_id = fn_id + 1
+            nodeId[fn_name] = fn_id
+        else:
+            nodeId[fn_name] = 1
+            fn_id = 1
+        dot.node(str(id(fn)), str(fn_id) + " " + fn_name)
 
         # recurse
         if hasattr(fn, 'next_functions'):
@@ -143,7 +153,7 @@ def make_dot(var, params=None, show_attrs=False, show_saved=False, max_attr_char
                 dot.edge(str(id(t)), str(id(fn)))
                 dot.node(str(id(t)), get_var_name(t), fillcolor='orange')
 
-    def add_base_tensor(var, color='darkolivegreen1'):
+    def add_base_tensor(var, color='darkolivegreen'):
         if var in seen:
             return
         seen.add(var)

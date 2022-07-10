@@ -8,9 +8,6 @@ def getpath_from_node(dot_filepath, node_label):
     Args:
         dot_filepath: 源dot路径
         node_label: 想要查看的可到达节点的label
-
-    Returns:
-        展示提取的子图
     """
 
     # 将源dot文件转成json格式方便后续操作
@@ -73,6 +70,8 @@ def getpath_from_node(dot_filepath, node_label):
     graph_param = new_graph_head + graph_param + node_param
 
     for objitem in my_new_dot['objects']:
+        if objitem['label'] == node_label:
+            objitem['fillcolor'] = 'darkolivegreen'
         if "fillcolor" in objitem.keys():
             new_node = f"\t{objitem['name']} [label=\"{objitem['label']}\" fillcolor={objitem['fillcolor']}]\n"
             name_dict[objitem['_gvid']] = objitem['name']
@@ -92,8 +91,5 @@ def getpath_from_node(dot_filepath, node_label):
 
     # print(graph_param)
 
-    with open("tmpFileForDot.dot", "w", encoding="utf-8") as f:
+    with open("./tmpFile/tmpFileForDot.dot", "w", encoding="utf-8") as f:
         f.write(graph_param)
-
-
-getpath_from_node("./data/NetDot", "2699565535392 ConvolutionBackward0")

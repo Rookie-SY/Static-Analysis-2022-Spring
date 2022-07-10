@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'mainTDUrij.ui'
+## Form generated from reading UI file 'mainhFmfZf.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.3.1
 ##
@@ -13,6 +13,7 @@ from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 
 from . resources_rc import *
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -1321,6 +1322,115 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.row_3)
 
         self.stackedWidget.addWidget(self.widgets)
+        self.model_page = QWidget()
+        self.model_page.setObjectName(u"model_page")
+        self.verticalLayout_20 = QVBoxLayout(self.model_page)
+        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
+        self.mode_page_horizontal = QHBoxLayout()
+        self.mode_page_horizontal.setObjectName(u"mode_page_horizontal")
+        self.model_nodes = QComboBox(self.model_page)
+        self.model_nodes.addItem("")
+        self.model_nodes.setObjectName(u"model_nodes")
+        self.model_nodes.setFont(font)
+        self.model_nodes.setAutoFillBackground(False)
+        self.model_nodes.setStyleSheet(u"QComboBox{\n"
+"	background-color: #3A5B52;\n"
+"	border-radius: 6px;\n"
+"	border: 2px solid #3A5B52;\n"
+"\n"
+"    color: #f8f8f2;\n"
+"}\n"
+"QComboBox:hover{\n"
+"	border: 2px solid #7FB393;\n"
+"}\n"
+"QComboBox::drop-down {\n"
+"	subcontrol-origin: padding;\n"
+"	subcontrol-position: top right;\n"
+"	width: 25px; \n"
+"	border-left-width: 3px;\n"
+"	border-left-color: #7FB393;\n"
+"	border-left-style: solid;\n"
+"	border-top-right-radius: 3px;\n"
+"	border-bottom-right-radius: 3px;	\n"
+"	background-image: url(:/icons/images/icons/cil-arrow-bottom.png);\n"
+"	background-position: center;\n"
+"	background-repeat: no-reperat;\n"
+" }\n"
+"QComboBox QAbstractItemView {\n"
+"	color: #7FB393;	\n"
+"	background-color: #3A5B52;\n"
+"	padding: 10px;\n"
+"    height: 50px;\n"
+"	selection-background-color: #7FB393;\n"
+"}\n"
+"\n"
+"\n"
+"QComboBox QAbstractItemView::item:hover {\n"
+"    background-color: #7FB393;\n"
+"}")
+        self.model_nodes.setIconSize(QSize(16, 16))
+        self.model_nodes.setFrame(True)
+
+        self.mode_page_horizontal.addWidget(self.model_nodes)
+
+        self.models = QComboBox(self.model_page)
+        self.models.addItem("")
+        self.models.addItem("")
+        self.models.addItem("")
+        self.models.setObjectName(u"models")
+        self.models.setFont(font)
+        self.models.setAutoFillBackground(False)
+        self.models.setStyleSheet(u"QComboBox{\n"
+"	background-color: #3A5B52;\n"
+"	border-radius: 6px;\n"
+"	border: 2px solid #3A5B52;\n"
+"\n"
+"    color: #f8f8f2;\n"
+"}\n"
+"QComboBox:hover{\n"
+"	border: 2px solid #7FB393;\n"
+"}\n"
+"QComboBox::drop-down {\n"
+"	subcontrol-origin: padding;\n"
+"	subcontrol-position: top right;\n"
+"	width: 25px; \n"
+"	border-left-width: 3px;\n"
+"	border-left-color: #7FB393;\n"
+"	border-left-style: solid;\n"
+"	border-top-right-radius: 3px;\n"
+"	border-bottom-right-radius: 3px;	\n"
+"	background-image: url(:/icons/images/icons/cil-arrow-bottom.png);\n"
+"	background-position: center;\n"
+"	background-repeat: no-reperat;\n"
+" }\n"
+"QComboBox QAbstractItemView {\n"
+"	color: #7FB393;	\n"
+"	background-color: #3A5B52;\n"
+"	padding: 10px;\n"
+"    height: 50px;\n"
+"	selection-background-color: #7FB393;\n"
+"}\n"
+"\n"
+"\n"
+"QComboBox QAbstractItemView::item:hover {\n"
+"    background-color: #7FB393;\n"
+"}")
+        self.models.setIconSize(QSize(16, 16))
+        self.models.setFrame(True)
+
+        self.mode_page_horizontal.addWidget(self.models)
+
+        self.mode_page_horizontal.setStretch(0, 2)
+        self.mode_page_horizontal.setStretch(1, 1)
+
+        self.verticalLayout_20.addLayout(self.mode_page_horizontal)
+
+        self.model_picView = QGraphicsView(self.model_page)
+        self.model_picView.setObjectName(u"model_picView")
+
+        self.verticalLayout_20.addWidget(self.model_picView)
+
+        self.stackedWidget.addWidget(self.model_page)
         self.pic_page = QWidget()
         self.pic_page.setObjectName(u"pic_page")
         self.verticalLayout_11 = QVBoxLayout(self.pic_page)
@@ -1379,61 +1489,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_11.addWidget(self.picPageView)
 
         self.stackedWidget.addWidget(self.pic_page)
-        self.model_page = QWidget()
-        self.model_page.setObjectName(u"model_page")
-        self.verticalLayout_20 = QVBoxLayout(self.model_page)
-        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
-        self.model_nodes = QComboBox(self.model_page)
-        self.model_nodes.addItem("")
-        self.model_nodes.setObjectName(u"model_nodes")
-        self.model_nodes.setFont(font)
-        self.model_nodes.setAutoFillBackground(False)
-        self.model_nodes.setStyleSheet(u"QComboBox{\n"
-"	background-color: #3A5B52;\n"
-"	border-radius: 6px;\n"
-"	border: 2px solid #3A5B52;\n"
-"\n"
-"    color: #f8f8f2;\n"
-"}\n"
-"QComboBox:hover{\n"
-"	border: 2px solid #7FB393;\n"
-"}\n"
-"QComboBox::drop-down {\n"
-"	subcontrol-origin: padding;\n"
-"	subcontrol-position: top right;\n"
-"	width: 25px; \n"
-"	border-left-width: 3px;\n"
-"	border-left-color: #7FB393;\n"
-"	border-left-style: solid;\n"
-"	border-top-right-radius: 3px;\n"
-"	border-bottom-right-radius: 3px;	\n"
-"	background-image: url(:/icons/images/icons/cil-arrow-bottom.png);\n"
-"	background-position: center;\n"
-"	background-repeat: no-reperat;\n"
-" }\n"
-"QComboBox QAbstractItemView {\n"
-"	color: #7FB393;	\n"
-"	background-color: #3A5B52;\n"
-"	padding: 10px;\n"
-"    height: 50px;\n"
-"	selection-background-color: #7FB393;\n"
-"}\n"
-"\n"
-"\n"
-"QComboBox QAbstractItemView::item:hover {\n"
-"    background-color: #7FB393;\n"
-"}")
-        self.model_nodes.setIconSize(QSize(16, 16))
-        self.model_nodes.setFrame(True)
-
-        self.verticalLayout_20.addWidget(self.model_nodes)
-
-        self.model_picView = QGraphicsView(self.model_page)
-        self.model_picView.setObjectName(u"model_picView")
-
-        self.verticalLayout_20.addWidget(self.model_picView)
-
-        self.stackedWidget.addWidget(self.model_page)
 
         self.verticalLayout_15.addWidget(self.stackedWidget)
 
@@ -1575,7 +1630,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1583,8 +1638,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.titleLeftApp.setText(QCoreApplication.translate("MainWindow", u"NJU_Birds", None))
-        self.titleLeftDescription.setText(QCoreApplication.translate("MainWindow", u"Birds / Find Bugs", None))
+        self.titleLeftApp.setText(QCoreApplication.translate("MainWindow", u"Birds", None))
+        self.titleLeftDescription.setText(QCoreApplication.translate("MainWindow", u"Easy to find bugs", None))
         self.toggleButton.setText(QCoreApplication.translate("MainWindow", u"Hide", None))
         self.btn_home.setText(QCoreApplication.translate("MainWindow", u"code", None))
         self.btn_picShow.setText(QCoreApplication.translate("MainWindow", u"tree", None))
@@ -1693,12 +1748,16 @@ class Ui_MainWindow(object):
         ___qtablewidgetitem23.setText(QCoreApplication.translate("MainWindow", u"Line", None));
         self.tableWidget.setSortingEnabled(__sortingEnabled)
 
+        self.model_nodes.setItemText(0, QCoreApplication.translate("MainWindow", u"model_nodes", None))
+
+        self.models.setItemText(0, QCoreApplication.translate("MainWindow", u"lenet", None))
+        self.models.setItemText(1, QCoreApplication.translate("MainWindow", u"squeezenet", None))
+        self.models.setItemText(2, QCoreApplication.translate("MainWindow", u"convnet", None))
+
         self.picKind.setItemText(0, QCoreApplication.translate("MainWindow", u"AST", None))
         self.picKind.setItemText(1, QCoreApplication.translate("MainWindow", u"CFG", None))
         self.picKind.setItemText(2, QCoreApplication.translate("MainWindow", u"CDG", None))
         self.picKind.setItemText(3, QCoreApplication.translate("MainWindow", u"PDG", None))
-
-        self.model_nodes.setItemText(0, QCoreApplication.translate("MainWindow", u"model_nodes_here", None))
 
         self.btn_message.setText(QCoreApplication.translate("MainWindow", u"Message", None))
         self.btn_print.setText(QCoreApplication.translate("MainWindow", u"Print", None))
