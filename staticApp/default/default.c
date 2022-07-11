@@ -1,6 +1,9 @@
 #include<iostream>
 
 int main(){
-    cout<< "Hello world!" << std::endl;
+    int a = 0;
+    char b[] = "NJU Birds";
+    cout << b;
+    cout << "Hello world!" << std::endl;
     return 0;
 }

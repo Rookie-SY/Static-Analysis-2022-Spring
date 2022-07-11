@@ -3,6 +3,7 @@ import sys
 import shutil
 import platform
 import subprocess
+import logging
 
 # IMPORT / GUI AND MODULES AND WIDGETS
 # ///////////////////////////////////////////////////////////////
@@ -25,12 +26,13 @@ os.environ["QT_FONT_DPI"] = "128"  # FIX Problem for High DPI and Scale above 10
 # ///////////////////////////////////////////////////////////////
 widgets = None
 
+
 class MyThread(Thread):
     def __init__(self, func, args):
-        '''
+        """
         :param func: 可调用的对象
         :param args: 可调用对象的参数
-        '''
+        """
         Thread.__init__(self)
         self.func = func
         self.args = args
@@ -42,8 +44,12 @@ class MyThread(Thread):
     def get_result(self):
         return self.result
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
+        """
+        init mainWindow
+        """
         QMainWindow.__init__(self)
 
         # SET AS GLOBAL WIDGETS
@@ -66,7 +72,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(title)
         widgets.titleRightInfo.setText(description)
         self.picfileName = "./default/welcome_default.png"
+        self.errorfilename = "./default/default.txt"
         self.codefileName = "./default/default.c"
+
+        self.pic_or_model = "pic"
 
         # TOGGLE MENU
         # ///////////////////////////////////////////////////////////////
@@ -90,6 +99,9 @@ class MainWindow(QMainWindow):
 
         # EXTRA LEFT BOX
         def openCloseLeftBox():
+            """
+            open close left box when hide button hit
+            """
             UIFunctions.toggleLeftBox(self, True)
 
         widgets.toggleLeftBox.clicked.connect(openCloseLeftBox)
@@ -97,6 +109,11 @@ class MainWindow(QMainWindow):
 
         # EXTRA RIGHT BOX
         def openCloseRightBox():
+            """
+            open close right box when hide button hit
+
+            warning: Right Hide button is discarded
+            """
             UIFunctions.toggleRightBox(self, False)
 
         # widgets.settingsTopBtn.clicked.connect(openCloseRightBox)
@@ -110,7 +127,7 @@ class MainWindow(QMainWindow):
         # SET CUSTOM THEME
         # ///////////////////////////////////////////////////////////////
         useCustomTheme = True
-        themeFile = "themes/py_dracula_light.qss"
+        themeFile = "themes/nju_birds_green.qss"
 
         # SET THEME AND HACKS
         if useCustomTheme:
@@ -140,8 +157,10 @@ class MainWindow(QMainWindow):
         widgets.codePageFileTreeView.doubleClicked.connect(self.readFileToCodeBox)
         widgets.btn_home.setStyleSheet(UIFunctions.selectMenu(widgets.btn_home.styleSheet()))
 
-        with open(self.codefileName, "r", encoding='utf-8') as codeFile:
-            code_text = codeFile.read()
+        with open(self.codefileName, "r", encoding='utf-8') as code_file,\
+             open(self.errorfilename, "r",encoding='utf-8') as error_file,\
+             open("./css/errorText.html", "r", encoding='utf-8') as error_html_file:
+            code_text = code_file.read()
             html = highlight(code_text,
                              CLexer(),
                              HtmlFormatter(
@@ -151,13 +170,25 @@ class MainWindow(QMainWindow):
                                  wrapcode=True
                              ))
             widgets.codeText.setHtml(html)
+            error_html_template = error_html_file.read()
+            for error_text in error_file:
+                error_kind = error_text.split(":")[0].lower()
+                if error_kind == "info":
+                    new_line = f'\t<p class="info">{error_text}</p>\n'
+                elif error_kind == "warning":
+                    new_line = f'\t<p class="warning">{error_text}</p>\n'
+                elif error_kind == "error":
+                    new_line = f'\t<p class="error">{error_text}</p>\n'
+                error_html_template = error_html_template + new_line
+            error_html_template = error_html_template + "</body>\n</html>"
+            widgets.errorText.setHtml(error_html_template)
 
-        self.pic_or_model = "pic"
+
 
         # SET PicPage
         # ///////////////////////////////////////////////////////////////
-        # widgets.picKind.currentTextChanged[str].connect(self.change_pic_when_pic_combo_selected)
         widgets.picKind.activated.connect(self.change_pic_when_pic_combo_refresh)
+        widgets.picKind.currentTextChanged.connect(self.change_pic_when_pic_combo_current_file_changed)
         self.ui.picPageView = NewGraphView(self.picfileName, self.ui.picPageView)
 
         # SET ModelPage
@@ -178,6 +209,9 @@ class MainWindow(QMainWindow):
     # set code text when code file selected
     # ///////////////////////////////////////////////////////////////
     def readFileToCodeBox(self, Qmodelidx):
+        """
+        Read in the code file and highlight the code according to Qmodelidx
+        """
         if self.model.filePath(Qmodelidx).endswith(self.endswith):
             self.codefileName = self.model.filePath(Qmodelidx)
             print(self.codefileName)
@@ -196,13 +230,8 @@ class MainWindow(QMainWindow):
             picview_kind = self.ui.picKind.currentText()
             print(picview_kind + " in [readFileToCodeBox]")
 
-            new_thread = Thread(target=joern_parse_main_func, args=(self.codefileName, "./tmpFile/tmpCodeForJoern"))
+            new_thread = Thread(target=joern_parse_main_func, args=(self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText()))
             new_thread.start()
-            # joern_parse_main_func(source_code_path=self.codefileName,
-            #                       out_dir="./tmpFile/tmpCodeForJoern")
-            new_thread2 = Thread(target=self.change_pic_when_pic_combo_current_file_changed, args=(picview_kind,))
-            new_thread2.start()
-            # self.change_pic_when_pic_combo_selected(picview_kind)
         else:
             QMessageBox.warning(self, '格式错误', '选择的文件后缀必须为\n ["c", "cpp", "c++", "h", "hpp"]',
                                 QMessageBox.Ok, QMessageBox.Ok)
@@ -211,6 +240,9 @@ class MainWindow(QMainWindow):
     # set img when pic combobox text selected
     # ///////////////////////////////////////////////////////////////
     def change_pic_when_pic_combo_refresh(self, item_index):
+        """
+        pic combo
+        """
         item_name = self.ui.picKind.itemText(item_index)
         item_name = item_name.lower()
 
@@ -219,6 +251,10 @@ class MainWindow(QMainWindow):
         print(f"{item_name} pic has refreshed! in pic View!")
 
     def change_pic_when_pic_combo_current_file_changed(self, item_name):
+        """
+        pic combo changed
+        init code struct pic
+        """
         item_name = item_name.lower()
         if item_name == "ast":
             try:
@@ -245,27 +281,38 @@ class MainWindow(QMainWindow):
     # ///////////////////////////////////////////////////////////////
 
     def change_pic_when_model_combo_selected(self, item_name):
-        # TODO:
-        # change model_name
+        """
+        model combo
+        when model changed
+        """
         raw_nodes_list = raw_model_struct(item_name)
         self.ui.model_nodes.clear()
         self.ui.model_nodes.addItems(raw_nodes_list)
         self.ui.model_picView.setImage(f"./pic/models/{item_name}/net_pic.png")
 
     def change_pic_when_model_nodes_combo_selected(self, item_name):
-        # TODO:
-        # change filename
+        """
+        model_nodes combo
+        when nodes changed
+        """
         if item_name:
             get_node_graph(self.ui.models.currentText(), item_name)
             self.ui.model_picView.setImage(f"./tmpFile/tmpPic.png")
 
     def wheelEvent(self, e: QWheelEvent):
+        """
+        send wheel event to new pic view
+        """
         if self.pic_or_model == "pic":
             self.ui.picPageView.wheelEvent(e)
         elif self.pic_or_model == "model":
             self.ui.model_picView.wheelEvent(e)
 
     def resizeEvent(self, e):
+        """
+        send resize event to pic view
+        """
+        UIFunctions.resize_grips(self)
         if self.pic_or_model == "pic":
             self.ui.picPageView.resizeEvent(e)
         elif self.pic_or_model == "model":
@@ -273,9 +320,11 @@ class MainWindow(QMainWindow):
 
     # ///////////////////////////////////////////////////////////////
     # BUTTONS CLICK
-    # Post here your functions for clicked buttons
     # ///////////////////////////////////////////////////////////////
     def buttonClick(self):
+        """
+        a set func of button clicked
+        """
         # GET BUTTON CLICKED
         btn = self.sender()
         btnName = btn.objectName()
@@ -286,17 +335,17 @@ class MainWindow(QMainWindow):
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
 
-        # SHOW WIDGETS PAGE
+        # SHOW MODEL PAGE
         if btnName == "btn_model":
             self.pic_or_model = "model"
             widgets.stackedWidget.setCurrentWidget(widgets.model_page)
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
 
-        # SHOW NEW PAGE
+        # SHOW PIC SHOW PAGE
         if btnName == "btn_picShow":
             self.pic_or_model = "pic"
-            self.change_pic_when_pic_combo_refresh(self.ui.picKind.currentIndex())
+            self.change_pic_when_pic_combo_current_file_changed(self.ui.picKind.currentText())
             widgets.stackedWidget.setCurrentWidget(widgets.pic_page)  # SET PAGE
             UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
@@ -309,15 +358,18 @@ class MainWindow(QMainWindow):
 
     # RESIZE EVENTS
     # ///////////////////////////////////////////////////////////////
-    def resizeEvent(self, event):
-        # Update Size Grips
-        UIFunctions.resize_grips(self)
+    # def resizeEvent(self, event):
+    #     # Update Size Grips
+    #     UIFunctions.resize_grips(self)
 
     # MOUSE CLICK EVENTS
     # ///////////////////////////////////////////////////////////////
     def mousePressEvent(self, event):
+        """
+        a set method when mouse press
+        """
         # SET DRAG POS WINDOW
-        self.dragPos = event.globalPos()
+        self.dragPos = event.globalPosition().toPoint()
 
         # PRINT MOUSE EVENTS
         if event.buttons() == Qt.LeftButton:
@@ -484,6 +536,28 @@ class NewGraphView(QGraphicsView):
 
         # 还原 anchor
         self.picView.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+
+
+def check_environment():
+    """
+    check environment. If not success in some scene, error raise.
+    """
+    if os.path.isdir("./images/icons") and os.path.isdir("./images/images"):
+        print("images and icons folder exists!")
+    else:
+        logging.error("images and icons folder does not exist!")
+
+    if os.path.isfile("./css/myStyle.css"):
+        print("css file exists")
+    else:
+        logging.error("css file does not exist!")
+
+    if os.path.isfile("./default/default.c") \
+            and os.path.isdir("./default/defaultpic_ast.png") \
+            and os.path.isdir("./default/welcome_default.png"):
+        print("default folder exists!")
+    else:
+        logging.error("default folder does not exist!")
 
 
 if __name__ == "__main__":

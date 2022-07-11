@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 
 JOERNPATH = "/home/cyrus/joern_files/joern/joern-cli/"
@@ -52,16 +53,33 @@ def parse_source_code_to_dot(file_path: str, f: str, root_out_dir: str):
     # subprocess.call(shell_export_pdg, shell=True)
 
 
-def joern_parse_main_func(source_code_path: str = "../default/default.c",
-                          out_dir: str = "../tmpFile/tmpCodeForJoern"):
+def joern_parse_main_func(source_code_path: str = "./default/default.c",
+                          out_dir: str = "./tmpFile/tmpCodeForJoern",
+                          item_name: str = "ast"):
     """
     main_func函数可解析特定C++文件
     Args:
         source_code_path: 需要解析的文件的路径
         out_dir: 输出dot的路径
     """
-
+    item_name = item_name.lower()
     print(f'----starting to process {source_code_path} with joern-----')
     parse_source_code_to_dot(file_path=source_code_path,
                              f=source_code_path,
                              root_out_dir=out_dir)
+
+    if item_name == "ast":
+        try:
+            shutil.copy(f"{out_dir}/parse/dot/ast/0-ast.dot",
+                        f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+        except:
+            pass
+    elif item_name == "cdg":
+        try:
+            shutil.copy(f"{out_dir}/parse/dot/cdg/1-cdg.dot",
+                        f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+        except:
+            pass
+
+    shellstr = f"dot -Grankdir=LR -Tpng -o ./tmpFile/codeFilePic/{item_name}/code_{item_name}.png ./tmpFile/codeFilePic/{item_name}/code_dot.dot "
+    subprocess.call(shellstr, shell=True)
