@@ -47,6 +47,7 @@ Config::getOptionBlock(std::string blockName) {
       std::string, std::unordered_map<std::string, std::string>>::const_iterator
       got = options.find(blockName);
   if (got == options.end()) {
+    std::cout << blockName << std::endl;
     std::cout << "block name not found\n";
     exit(1);
   } else {

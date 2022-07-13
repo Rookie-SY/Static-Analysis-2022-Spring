@@ -2,44 +2,44 @@
 #include<iostream>
 #include<stdlib.h>
 
-int a, b;
-int* pop;
-// bool GetString(char* p, int n)
-// {
-//     return true;
-// }
+// int a, b;
+// int* pop;
+// // bool GetString(char* p, int n)
+// // {
+// //     return true;
+// // }
 
-// void MemoryLeak(int nSize)
+// // void MemoryLeak(int nSize)
+// // {
+// //     char* p= new char[nSize];
+// //     if( !GetString( p, nSize ) )
+// //     {
+// //         printf("Error\n");
+// //         return;   //there is a memory leak point
+// //     }
+// //   //using the string pointed by p;
+// //     delete[] p;
+// // }
+// // //Memory leak demo two
+// // unsigned char* Func(void)
+// // {
+// //     unsigned char *stra;
+// //     stra = (unsigned char *)malloc(10);
+// //     return stra;
+// // }
+// void my_test(int* p)
 // {
-//     char* p= new char[nSize];
-//     if( !GetString( p, nSize ) )
-//     {
-//         printf("Error\n");
-//         return;   //there is a memory leak point
-//     }
-//   //using the string pointed by p;
-//     delete[] p;
-// }
-// //Memory leak demo two
-// unsigned char* Func(void)
-// {
-//     unsigned char *stra;
-//     stra = (unsigned char *)malloc(10);
-//     return stra;
-// }
-void my_test(int* p)
-{
 
-}
-int* test()
-{
-    int* p = new int[5];
-    return p;
-}
-int as()
-{
-    return 4;
-}
+// }
+// int* test()
+// {
+//     int* p = new int[5];
+//     return p;
+// }
+// int as()
+// {
+//     return 4;
+// }
 
 int main()
 {
@@ -50,13 +50,31 @@ int main()
     // double* i = new double;
     // int* j = (int* )malloc(as());
     // my_test((int* )malloc(4 * sizeof(int)));
-    int* p;
-    p = (int* )malloc(16);
-    int* q;
-    q = p++;
-    p--;
-    free(p);
-    free(q);
+    // int* p;
+    // p = (int* )malloc(16);
+    // int* q;
+    // int a, b;
+    // if(a > b)
+    // {
+    //     q = p++;
+    //     p--;
+    //     free(p);
+    // }
+    // else
+    // {
+    //     free(p);
+    // }
+    // int *p_seexp = (int *)malloc(4*sizeof(int));
+    // int i_seexp = 3;
+    // while (i_seexp--) {
+    //     free(p_seexp); // seexp, warning
+    // }
+    int leaknum = 10;
+    int *seexp_p = NULL;
+    while (leaknum--) {
+        seexp_p = (int*)malloc(10*sizeof(int)); // seexp, warning
+    }
+    seexp_p[0] = 520;
     // free(f);
     // int* r = p++;
     // int* q;

@@ -51,7 +51,6 @@ int main(int argc, const char *argv[]) {
     // start = clock();
     MainChecker checker(&resource, &manager, &call_graph, &configure);
     checker.check();
-
     // end = clock();
     // unsigned sec = unsigned((end - start) / CLOCKS_PER_SEC);
     // unsigned min = sec / 60;
@@ -62,17 +61,17 @@ int main(int argc, const char *argv[]) {
     //     << endl;
   }
 
-  if (enable.find("CallGraphChecker")->second == "true") {
-    // process_file << "Starting CallGraphChecker check" << endl;
-    // clock_t start, end;
-    // start = clock();
+  // if (enable.find("CallGraphChecker")->second == "true") {
+  //   // process_file << "Starting CallGraphChecker check" << endl;
+  //   // clock_t start, end;
+  //   // start = clock();
 
-    call_graph.printCallGraph(std::cout);
-    std::fstream out("outTest.dot", ios::out);
-      if (out.is_open()) {
-      call_graph.writeDotFile(out);
-    }
-    out.close();
+  //   call_graph.printCallGraph(std::cout);
+  //   std::fstream out("outTest.dot", ios::out);
+  //     if (out.is_open()) {
+  //     call_graph.writeDotFile(out);
+  //   }
+  //   out.close();
 
     // end = clock();
     // unsigned sec = unsigned((end - start) / CLOCKS_PER_SEC);
@@ -82,7 +81,7 @@ int main(int argc, const char *argv[]) {
     //     << "End of CallGraphChecker "
     //        "check\n-----------------------------------------------------------"
     //     << endl;
-  }
+  // }
   // control_flow_graph.drawCfg();
   // fdt.ConstructFDTFromCfg();
   // ControlDependenceGraph cdg(&manager, &resource, &call_graph,&fdt);
@@ -90,6 +89,10 @@ int main(int argc, const char *argv[]) {
   // cdg.dumpCDG();
   // cdg.dumpStmtCDG();
   // endCTime = clock();
+  // DataDependenceGraph ddg(&manager, &resource, &call_graph,&fdt);
+  // ddg.ConstructDDGForest();
+  // ProgramDependencyGraph pdg(&manager, &resource, &call_graph,&cdg, &ddg);
+  // pdg.DrawPdgForest();
   // unsigned sec = unsigned((endCTime - startCTime) / CLOCKS_PER_SEC);
   // unsigned min = sec / 60;
   // process_file << "-----------------------------------------------------------"

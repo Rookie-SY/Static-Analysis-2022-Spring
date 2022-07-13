@@ -1,0 +1,35 @@
+digraph "Program Dependency Graph" {
+    label="Program Dependency Graph"
+
+    Node0xffffffff [shape=record,label="{Entry}"];
+    Node0x1 [shape=record,label="{return 0;}"];
+    Node0xffffffff -> Node0x1[style = dotted]
+    Node0x2 [shape=record,label="{free(p)}"];
+    Node0x3 [shape=record,label="{q = p++}"];
+    Node0x4 [shape=record,label="{p--}"];
+    Node0x5 [shape=record,label="{free(p)}"];
+    Node0x6 [shape=record,label="{int *p;}"];
+    Node0xffffffff -> Node0x6[style = dotted]
+    Node0x7 [shape=record,label="{malloc(16)}"];
+    Node0xffffffff -> Node0x7[style = dotted]
+    Node0x8 [shape=record,label="{p = (int *)malloc(16)}"];
+    Node0xffffffff -> Node0x8[style = dotted]
+    Node0x9 [shape=record,label="{int *q;}"];
+    Node0xffffffff -> Node0x9[style = dotted]
+    Node0x10 [shape=record,label="{int a;}"];
+    Node0xffffffff -> Node0x10[style = dotted]
+    Node0x11 [shape=record,label="{int b;}"];
+    Node0xffffffff -> Node0x11[style = dotted]
+    Node0x12 [shape=record,label="{a \> b}"];
+    Node0x12 -> Node0x3[color = red]
+    Node0x12 -> Node0x4[color = red]
+    Node0x12 -> Node0x5[color = red]
+    Node0x12 -> Node0x2[color = red]
+    Node0xffffffff -> Node0x12[style = dotted]
+    Node0x4 -> Node0x5[color = blue,label = "p"]
+    Node0x8 -> Node0x2[color = blue,label = "p"]
+    Node0x8 -> Node0x3[color = blue,label = "p"]
+    Node0x8 -> Node0x4[color = blue,label = "p"]
+    Node0x10 -> Node0x12[color = blue,label = "a"]
+    Node0x11 -> Node0x12[color = blue,label = "b"]
+}

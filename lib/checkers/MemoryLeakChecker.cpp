@@ -3,65 +3,104 @@
 void MemoryLeakChecker::check(ASTFunction* _entryFunc)
 {
     entryFunc = _entryFunc;
+    currentEntryFunc = entryFunc;
     allFunctions = call_graph->getAllFunctions();
-    // std::vector<ASTVariable* > vec = resource->getASTVariables();
-
-    // for(unsigned i = 0; i < vec.size(); i++)
-    // {
-    //     if(!vec[i]->isPointerOrReferenceType()){
-    //         clang::VarDecl* varDecl = manager->getVarDecl(vec[i]);
-    //         varDecl->dump();
-    //         cout << "next" << endl;
-    //     }
-    // }
-    if(entryFunc != nullptr)
+    for(auto fun : allFunctions)
     {
-        FunctionDecl* funcDecl = manager->getFunctionDecl(entryFunc);
-        funcDecl->dump();
-        SM = &manager->getFunctionDecl(entryFunc)->getASTContext().getSourceManager();
+        FunctionDecl* funcDecl = manager->getFunctionDecl(fun);
+        if(funcDecl->getNameAsString() == "ascii_escape_unicode" ||
+            funcDecl->getNameAsString() == "profile_int")
+            continue;
+        SM = &manager->getFunctionDecl(fun)->getASTContext().getSourceManager();
         Pointers.SM = SM;
+        // cout << funcDecl->getNameAsString() << endl;
         LangOptions LangOpts;
         LangOpts.CPlusPlus = true;
-        unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
-        cfg->dump(LangOpts, true);      
+        unique_ptr<CFG>& cfg = manager->getCFG(fun);
+        // if(funcDecl->getNameAsString() == "RotatingTree_Get")
+        // {
+        //     funcDecl->dump();
+            // cfg->dump(LangOpts, true);
+        // }
         TraceRecord traceRecord;
         traceRecord.calleeLocation.push(funcDecl->getLocation());
         traceRecord.calleeName.push(funcDecl->getNameAsString());
-
         handle_cfg(cfg, traceRecord, true);
+
+        report_memory_leak();
+        report_double_free();
+
+        vector<ReportPointer>().swap(leakResult);
+        vector<DFreePointer>().swap(DFreeResult);
+        for(unsigned i = 0; i < allLeakPointers.size(); i++)
+            vector<ReportPointer>().swap(allLeakPointers[i]);
+        vector< vector<ReportPointer> >().swap(allLeakPointers);
+        for(unsigned i = 0; i < allDFreePointers.size(); i++)
+            vector<DFreePointer>().swap(allDFreePointers[i]);
+        vector< vector<DFreePointer> >().swap(allDFreePointers);
     }
-    else
-    {
-        cout << "\033[31m" << "No entry function detected, process exit.\n" << "\033[0m";
-        exit(1);
-    }
-    report_memory_leak();
-    report_double_free();
+    // if(entryFunc != nullptr)
+    // {
+    //     FunctionDecl* funcDecl = manager->getFunctionDecl(entryFunc);
+    //     // cout << funcDecl->getLocation().printToString(*SM) << endl;
+    //     // funcDecl->dump();
+    //     SM = &manager->getFunctionDecl(entryFunc)->getASTContext().getSourceManager();
+    //     Pointers.SM = SM;
+    //     LangOptions LangOpts;
+    //     LangOpts.CPlusPlus = true;
+    //     unique_ptr<CFG>& cfg = manager->getCFG(entryFunc);
+    //     // cfg->dump(LangOpts, true);      
+    //     TraceRecord traceRecord;
+    //     traceRecord.calleeLocation.push(funcDecl->getLocation());
+    //     traceRecord.calleeName.push(funcDecl->getNameAsString());
+
+    //     // handle_cfg(cfg, traceRecord, true);
+    // }
+    // else
+    // {
+    //     cout << "\033[31m" << "No entry function detected, process exit.\n" << "\033[0m";
+    //     exit(1);
+    // }
 }
 
-void ProgramPaths::get_paths(vector<int> pathVector, vector<int> specialStmtID, CFGBlock block)
+void ProgramPaths::get_paths(vector<int> pathVector, CFGBlock block)
 {
+    // vector<int>::iterator iter = find(pathVector.begin(), pathVector.end(), block.getBlockID());
+    // if(iter != pathVector.end())
+    //     return;
     const clang::Stmt *blockStmt = block.getTerminatorStmt();
     if (blockStmt != nullptr)
     {
         clang::Stmt::StmtClass stmtClass = blockStmt->getStmtClass();
         if (stmtClass == clang::Stmt::StmtClass::WhileStmtClass || stmtClass == clang::Stmt::StmtClass::DoStmtClass || stmtClass == clang::Stmt::StmtClass::ForStmtClass)
         {
-            vector<int>::iterator specialIter = find(specialStmtID.begin(), specialStmtID.end(), block.getBlockID());
-            if (specialIter == specialStmtID.end())
+            int cnt = count(pathVector.begin(), pathVector.end(), block.getBlockID());
+            if(cnt == 0)
+                pathVector.push_back(block.getBlockID());
+            else if(cnt == 1)
             {
                 pathVector.push_back(block.getBlockID());
-                specialStmtID.push_back(block.getBlockID());
             }
-            else
+            else if(cnt > 1)
+            {
+                clang::CFGBlock::succ_iterator blockIter = block.succ_begin();
+                blockIter++;
+                clang::CFGBlock::AdjacentBlock nextBlock = *blockIter;
+                if(!nextBlock.isReachable())
+                {
+                    blockIter++;
+                    return;
+                }
+                get_paths(pathVector, *nextBlock.getReachableBlock());
                 return;
+            }
         }
         else
             pathVector.push_back(block.getBlockID());
     }
     else
         pathVector.push_back(block.getBlockID());
-
+    // cout << block.getBlockID() << endl;
     if (block.getBlockID() == 0)
         pathContainer.push_back(pathVector);
     else
@@ -75,7 +114,7 @@ void ProgramPaths::get_paths(vector<int> pathVector, vector<int> specialStmtID, 
                 blockIter++;
                 continue;
             }
-            get_paths(pathVector, specialStmtID, *nextBlock.getReachableBlock());
+            get_paths(pathVector, *nextBlock.getReachableBlock());
             blockIter++;
         }
     }
@@ -111,10 +150,16 @@ void MemoryLeakChecker::handle_cfg(unique_ptr<CFG>& CFG, TraceRecord traceRecord
     ProgramPaths allPaths;
     get_cfg_paths(CFG, allPaths);
     handle_cfg_paths(allPaths, traceRecord, isEntryFunc);
+    vector<CFGBlock>().swap(allPaths.blockContainer);
+    for(unsigned i = 0; i < allPaths.pathContainer.size(); i++)
+        vector<int>().swap(allPaths.pathContainer[i]);
+    vector< vector<int> >().swap(allPaths.pathContainer);
 }
 
 void MemoryLeakChecker::get_cfg_paths(unique_ptr<CFG> &CFG, ProgramPaths& allPaths)
 {
+//     if(CFG->getEntry().getBlockID() > 80)
+//         return;
     bool *isBlockVisited = new bool[CFG->getEntry().getBlockID() + 1];
     for (int i = 0; i < CFG->getEntry().getBlockID() + 1; i++)
     {
@@ -122,13 +167,55 @@ void MemoryLeakChecker::get_cfg_paths(unique_ptr<CFG> &CFG, ProgramPaths& allPat
         allPaths.blockContainer.push_back(CFG->getEntry());
     }
     allPaths.travel_block(CFG->getEntry(), isBlockVisited);
+
+    bool hasMalloc = false;
+    for(int i = 0; i < CFG->getEntry().getBlockID(); i++)
+    {
+        CFGBlock currentBlock = allPaths.blockContainer[i];
+        BumpVector<CFGElement>::reverse_iterator elemIter;
+        for(elemIter = currentBlock.begin(); elemIter != currentBlock.end(); elemIter++)
+        {
+            CFGElement element = *elemIter;
+            assert(element.getKind() == clang::CFGElement::Kind::Statement);
+            if (element.getKind() == clang::CFGElement::Kind::Statement)
+            {
+                llvm::Optional<CFGStmt> stmt = element.getAs<CFGStmt>();
+                if (stmt.hasValue() == true)
+                {
+                    Stmt *statement = const_cast<Stmt *>(stmt.getValue().getStmt());
+                    /// if CallExpr(s) exit in DeclStmt or BinaryOperator, need special handle
+                    // cout << statement->getStmtClassName() << endl;
+                    if(statement->getStmtClass() == Stmt::StmtClass::CallExprClass)
+                    {
+                        clang::CallExpr* callExpr = static_cast<clang::CallExpr* >(statement);
+                        Stmt::child_iterator it = callExpr->child_begin();
+                        assert((*it) != nullptr);
+                        if((*it)->getStmtClass() == Stmt::StmtClass::ImplicitCastExprClass)
+                        {
+                            if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
+                            {
+                                clang::DeclRefExpr* declRefExpr = static_cast<clang::DeclRefExpr*>(*(*it)->child_begin());
+                                if(declRefExpr->getFoundDecl()->getNameAsString() == "malloc")
+                                {
+                                    hasMalloc = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if(!hasMalloc)
+        return;
     vector<int> pathVector;
-    vector<int> specialStmtID;
-    allPaths.get_paths(pathVector, specialStmtID, CFG->getEntry());
+    allPaths.get_paths(pathVector, CFG->getEntry());
 }
 
 void MemoryLeakChecker::handle_cfg_paths(ProgramPaths allPaths, TraceRecord traceRecord, bool isEntryFunc)
 {
+    // cout << allPaths.pathContainer.size() << endl;
     for(unsigned int i = 0; i < allPaths.pathContainer.size(); i++)
     {
         handle_single_path(allPaths, allPaths.pathContainer[i], traceRecord);
@@ -143,7 +230,6 @@ void MemoryLeakChecker::handle_single_path(ProgramPaths allPaths, vector<int> pa
     // for(unsigned i = 0; i < path.size() - 1; i++)
     //     std::cout << path[i] << " -> ";
     // std::cout << path[path.size() - 1] << std::endl;
-
     for (unsigned currentID = 0; currentID < path.size(); currentID++)
     {
         CFGBlock currentBlock = allPaths.blockContainer[path[currentID]];
@@ -181,52 +267,33 @@ bool MemoryLeakChecker::special_case(Stmt *statement, BumpVector<CFGElement>::re
         Stmt *nextStatement = const_cast<Stmt *>(nextStmt.getValue().getStmt());
         if (statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass && 
             (nextStatement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass ||
-             nextStatement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass))
+             nextStatement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass ||
+             nextStatement->getStmtClass() == clang::Stmt::StmtClass::ReturnStmtClass))
         {
             string preFuncName, curFuncName;
 
             clang::CallExpr* preCallExpr = static_cast<clang::CallExpr* >(statement);
-            for(clang::Stmt::child_iterator iter = preCallExpr->child_begin(); iter != preCallExpr->child_end(); iter++)
+            Stmt::child_iterator iter = preCallExpr->child_begin();
+            assert((*iter) != nullptr);
+            if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
             {
-                if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                assert((*(*iter)->child_begin()) != nullptr);
+                if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                 {
-                    if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                    {
-                        clang::DeclRefExpr* preDeclRef = static_cast<clang::DeclRefExpr* >(*(*iter)->child_begin());
-                        preFuncName = preDeclRef->getFoundDecl()->getNameAsString();
-                    }
-                    /// the args of functions, may be like: callExpr
-                    ///                                     |_ImplicitCastExpr
-                    ///                                         |_ImplicitCatExpr
-                    ///                                             |_DeclRefExpr
+                    clang::DeclRefExpr* preDeclRef = static_cast<clang::DeclRefExpr* >(*(*iter)->child_begin());
+                    preFuncName = preDeclRef->getFoundDecl()->getNameAsString();
                 }
             }
             
-            for(clang::Stmt::child_iterator iter = nextStatement->child_begin(); iter != nextStatement->child_end(); iter++)
+            for(iter = nextStatement->child_begin(); iter != nextStatement->child_end(); iter++)
             {
                 if((*iter)->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass)
                 {
                     if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::CallExprClass)
                     {
                         clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(*(*iter)->child_begin());
-                        for(clang::Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
-                        {
-                            if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
-                            {
-                                if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                                {
-                                    clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
-                                    curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
-                                }
-                            }
-                        }
-                    }
-                }
-                else if((*iter)->getStmtClass() == clang::Stmt::StmtClass::CallExprClass)
-                {
-                    clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(*iter);
-                    for(clang::Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
-                    {
+                        Stmt::child_iterator it = curCallExpr->child_begin();
+                        assert((*it) != nullptr);
                         if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
                         {
                             if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
@@ -234,6 +301,20 @@ bool MemoryLeakChecker::special_case(Stmt *statement, BumpVector<CFGElement>::re
                                 clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
                                 curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                             }
+                        }
+                    }
+                }
+                else if((*iter)->getStmtClass() == clang::Stmt::StmtClass::CallExprClass)
+                {
+                    clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(*iter);
+                    Stmt::child_iterator it = curCallExpr->child_begin();
+                    assert((*it) != nullptr);
+                    if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                    {
+                        if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
+                        {
+                            clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
+                            curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                         }
                     }
                 }
@@ -251,22 +332,23 @@ bool MemoryLeakChecker::special_case(Stmt *statement, BumpVector<CFGElement>::re
                         if(castExpr != nullptr && ((*castExpr->child_begin())->getStmtClass() == Stmt::StmtClass::CallExprClass))
                         {
                             clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(*(castExpr->child_begin()));
-                            for(clang::Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
+                            Stmt::child_iterator it = curCallExpr->child_begin();
+                            assert((*it) != nullptr);
+                            if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
                             {
-                                if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                                if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                                 {
-                                    if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                                    {
-                                        clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
-                                        curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
-                                    }
+                                    clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
+                                    curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                                 }
                             }
                         }
                     }
                 }
             }
-            if(preFuncName == curFuncName)
+            // if(preFuncName == "_PyArgv_AsWstrList")
+            //     cout << preFuncName << "-" << curFuncName << endl;
+            if(curFuncName != "" && preFuncName == curFuncName)
                 return true;
         }
         else if(statement->getStmtClass() == clang::Stmt::StmtClass::CXXNewExprClass && 
@@ -320,33 +402,32 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
             string preFuncName, curFuncName;
 
             clang::CallExpr* preCallExpr = static_cast<clang::CallExpr* >(statement);
-            for(clang::Stmt::child_iterator iter = preCallExpr->child_begin(); iter != preCallExpr->child_end(); iter++)
+            Stmt::child_iterator iter = preCallExpr->child_begin();
+            assert((*iter) != nullptr);
+            if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
             {
-                if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                assert((*(*iter)->child_begin()) != nullptr);
+                if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                 {
-                   if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                    {
-                        clang::DeclRefExpr* preDeclRef = static_cast<clang::DeclRefExpr* >(*(*iter)->child_begin());
-                        preFuncName = preDeclRef->getFoundDecl()->getNameAsString();
-                    }
+                    clang::DeclRefExpr* preDeclRef = static_cast<clang::DeclRefExpr* >(*(*iter)->child_begin());
+                    preFuncName = preDeclRef->getFoundDecl()->getNameAsString();
                 }
             }
-            for(clang::Stmt::child_iterator iter = nextStatement->child_begin(); iter != nextStatement->child_end(); iter++)
+            for(iter = nextStatement->child_begin(); iter != nextStatement->child_end(); iter++)
             {
                 if((*iter)->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass)
                 {
                     if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::CallExprClass)
                     {
                         clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(*(*iter)->child_begin());
-                        for(clang::Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
+                        Stmt::child_iterator it = curCallExpr->child_begin();
+                        assert((*it) != nullptr);
+                        if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
                         {
-                            if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                            if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                             {
-                                if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                                {
-                                    clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
-                                    curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
-                                }
+                                clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
+                                curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                             }
                         }
                     }
@@ -359,30 +440,28 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                             if(binaryOp->getLHS()->getStmtClass() == Stmt::StmtClass::CallExprClass)
                             {
                                 clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(binaryOp->getLHS());
-                                for(clang::Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
+                                Stmt::child_iterator it = curCallExpr->child_begin();
+                                assert((*it) != nullptr);
+                                if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
                                 {
-                                    if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                                    if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                                     {
-                                        if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                                        {
-                                            clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
-                                            curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
-                                        }
+                                        clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
+                                        curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                                     }
                                 }
                             }
                             else if(binaryOp->getRHS()->getStmtClass() == Stmt::StmtClass::CallExprClass)
                             {
                                 clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(binaryOp->getRHS());
-                                for(clang::Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
+                                Stmt::child_iterator it = curCallExpr->child_begin();
+                                assert((*it) != nullptr);
+                                if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
                                 {
-                                    if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                                    if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                                     {
-                                        if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                                        {
-                                            clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
-                                            curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
-                                        }
+                                        clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
+                                        curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                                     }
                                 }
                             }
@@ -392,15 +471,14 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                 else if((*iter)->getStmtClass() == clang::Stmt::StmtClass::CallExprClass)
                 {
                     clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(*iter);
-                    for(clang::Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
+                    Stmt::child_iterator it = curCallExpr->child_begin();
+                    assert((*it) != nullptr);
+                    if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
                     {
-                        if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                        if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                         {
-                            if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                            {
-                                clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
-                                curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
-                            }
+                            clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
+                            curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                         }
                     }
                 }
@@ -414,15 +492,14 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                             curCallExpr = static_cast<clang::CallExpr* >(binaryOp->getLHS());
                         else
                             curCallExpr = static_cast<clang::CallExpr* >(binaryOp->getRHS());
-                        for(Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
+                        Stmt::child_iterator it = curCallExpr->child_begin();
+                        assert((*it) != nullptr);   
+                        if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
                         {
-                            if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                            if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                             {
-                                if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                                {
-                                    clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
-                                    curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
-                                }
+                                clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
+                                curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                             }
                         }
                     }
@@ -436,259 +513,129 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                         if(castExpr != nullptr && (*castExpr->child_begin())->getStmtClass() == Stmt::StmtClass::CallExprClass)
                         {
                             clang::CallExpr* curCallExpr = static_cast<clang::CallExpr* >(*castExpr->child_begin());
-                            for(Stmt::child_iterator it = curCallExpr->child_begin(); it != curCallExpr->child_end(); it++)
+                            Stmt::child_iterator it = curCallExpr->child_begin();
+                            assert((*it) != nullptr);
+                            if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
                             {
-                                if((*it)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+                                if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
                                 {
-                                    if((*(*it)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                                    {
-                                        clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
-                                        curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
-                                    }
+                                    clang::DeclRefExpr* curDeclRef = static_cast<clang::DeclRefExpr* >(*(*it)->child_begin());
+                                    curFuncName = curDeclRef->getFoundDecl()->getNameAsString();
                                 }
                             }
                         }
                     }
                 }
             }
-            if(preFuncName == curFuncName)
+            // if(preFuncName == "_Py_GetEnv")
+                // cout << "isRight: " << preFuncName << "-" << curFuncName << endl;
+            if(curFuncName != "" && preFuncName == curFuncName)
                 isRightCall = true;
         }
     }
 
     clang::CallExpr* callExprStmt = static_cast<clang::CallExpr* >(statement);
 
-    // clang::Expr* calleeExpr = callExprStmt->getCallee();
-    
-    for(Stmt::child_iterator iter = callExprStmt->child_begin(); iter != callExprStmt->child_end(); iter++)
+    Stmt::child_iterator iter = callExprStmt->child_begin();
+    assert((*iter) != nullptr);
+    if((*iter)->getStmtClass() == Stmt::StmtClass::ImplicitCastExprClass)
     {
-        if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+        assert((*(*iter)->child_begin()) != nullptr);
+        if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
         {
-            assert((*(*iter)->child_begin()) != nullptr);
-            if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
+            clang::DeclRefExpr* declRefExpr = static_cast<clang::DeclRefExpr*>(*(*iter)->child_begin());
+            if(declRefExpr->getFoundDecl()->getNameAsString() == "malloc" && isRightCall)
             {
-                clang::DeclRefExpr* declRefExpr = static_cast<clang::DeclRefExpr*>(*(*iter)->child_begin());
-                if(declRefExpr->getFoundDecl()->getNameAsString() == "malloc" && isRightCall)
+                bool computable = true;
+                int localSize = 0;
+                Stmt* sizeStmt = (*(++iter));
+                if(sizeStmt->getStmtClass() == Stmt::StmtClass::ImplicitCastExprClass ||
+                    sizeStmt->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass  ||
+                    sizeStmt->getStmtClass() == Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
+                    computable = handle_malloc_size(sizeStmt, localSize);
+                else 
+                    computable = false;
+
+                /// ignore the second CallExpr
+                Stmt *nextStatement = const_cast<Stmt *>(nextStmt.getValue().getStmt());
+                if(nextStatement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass)
                 {
-                    bool computable = true;
-                    int localSize = 0;
-                    Stmt* sizeStmt = (*(++iter));
-                    if(sizeStmt->getStmtClass() == Stmt::StmtClass::ImplicitCastExprClass ||
-                        sizeStmt->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass  ||
-                        sizeStmt->getStmtClass() == Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
-                        computable = handle_malloc_size(sizeStmt, localSize);
-                    else 
-                        computable = false;
+                    clang::DeclStmt* declStmt = static_cast<clang::DeclStmt* >(nextStatement);
+                    clang::DeclGroupRef groupDecl = declStmt->getDeclGroup();
+                    clang::DeclGroupRef::iterator DGIter = groupDecl.begin();
 
-                    /// ignore the second CallExpr
-                    Stmt *nextStatement = const_cast<Stmt *>(nextStmt.getValue().getStmt());
-                    if(nextStatement->getStmtClass() == clang::Stmt::StmtClass::DeclStmtClass)
+                    for( ; DGIter != groupDecl.end(); DGIter++)
                     {
-                        clang::DeclStmt* declStmt = static_cast<clang::DeclStmt* >(nextStatement);
-                        clang::DeclGroupRef groupDecl = declStmt->getDeclGroup();
-                        clang::DeclGroupRef::iterator DGIter = groupDecl.begin();
-
-                        for( ; DGIter != groupDecl.end(); DGIter++)
+                        if((*DGIter)->getKind() == clang::Decl::Kind::Var)
                         {
-                            if((*DGIter)->getKind() == clang::Decl::Kind::Var)
-                            {
-                                clang::VarDecl* varDecl = static_cast<clang::VarDecl *>(*DGIter);
-                                Pointers.new_pointer(varDecl->getNameAsString(), varDecl->getLocation(), traceRecord, 
-                                    varDecl->getType().getAsString(), false, computable, localSize);
-                            }
-                        }
-                    }
-                    else if(nextStatement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass)
-                    {
-                        clang::BinaryOperator* binaryOpStmt = static_cast<clang::BinaryOperator* >(nextStatement);
-                        if(binaryOpStmt->isAssignmentOp())
-                        {
-                            assert(binaryOpStmt->getLHS()->getType().getTypePtrOrNull()->isAnyPointerType());
-                            assert(binaryOpStmt->getLHS()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
-                            
-                            clang::DeclRefExpr* leftDeclRef = static_cast<clang::DeclRefExpr* >(binaryOpStmt->getLHS());
-                            
-                            Pointers.special_new_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), 
-                                declRefExpr->getLocation(), traceRecord, false, leftDeclRef->getType().getAsString(), computable, localSize);
+                            clang::VarDecl* varDecl = static_cast<clang::VarDecl *>(*DGIter);
+                            Pointers.new_pointer(varDecl->getNameAsString(), varDecl->getLocation(), traceRecord, 
+                                varDecl->getType().getAsString(), false, computable, localSize);
                         }
                     }
                 }
-                else if(declRefExpr->getFoundDecl()->getNameAsString() == "free")
+                else if(nextStatement->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass)
                 {
-                    clang::Stmt* tmpStmt = static_cast<clang::Stmt* >(callExprStmt->getArg(0));
-
-                    while(tmpStmt->getStmtClass() != clang::Stmt::StmtClass::DeclRefExprClass)
+                    clang::BinaryOperator* binaryOpStmt = static_cast<clang::BinaryOperator* >(nextStatement);
+                    if(binaryOpStmt->isAssignmentOp())
                     {
-                        auto children = tmpStmt->children().begin();
-                        tmpStmt = *children;
+                        assert(binaryOpStmt->getLHS()->getType().getTypePtrOrNull()->isAnyPointerType());
+                        assert(binaryOpStmt->getLHS()->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass);
+                        
+                        clang::DeclRefExpr* leftDeclRef = static_cast<clang::DeclRefExpr* >(binaryOpStmt->getLHS());
+                        
+                        Pointers.special_new_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), 
+                            declRefExpr->getLocation(), traceRecord, false, leftDeclRef->getType().getAsString(), computable, localSize);
                     }
-                    clang::DeclRefExpr* deletePointer = static_cast<clang::DeclRefExpr* >(tmpStmt); 
-                    // cout << deletePointer->getFoundDecl()->getLocation().printToString(*SM) << endl;
-                    Pointers.free_pointer(deletePointer->getFoundDecl()->getNameAsString(), deletePointer->getFoundDecl()->getLocation(), declRefExpr->getExprLoc());
                 }
-                else
+            }
+            else if(declRefExpr->getFoundDecl()->getNameAsString() == "free")
+            {
+                clang::Stmt* tmpStmt = static_cast<clang::Stmt* >(callExprStmt->getArg(0));
+
+                while(tmpStmt->getStmtClass() != clang::Stmt::StmtClass::DeclRefExprClass)
+                {
+                    auto children = tmpStmt->children().begin();
+                    tmpStmt = *children;
+                }
+                clang::DeclRefExpr* deletePointer = static_cast<clang::DeclRefExpr* >(tmpStmt); 
+                // cout << deletePointer->getFoundDecl()->getLocation().printToString(*SM) << endl;
+                Pointers.free_pointer(deletePointer->getFoundDecl()->getNameAsString(), deletePointer->getFoundDecl()->getLocation(), declRefExpr->getExprLoc());
+            }
+            else
+            {
+                return;
+                if(declRefExpr->getType().getTypePtrOrNull()->isFunctionType())
                 {
                     string funcName = declRefExpr->getFoundDecl()->getNameAsString();
-                    for(auto fun : allFunctions)
+                
+                    ASTFunction* fun = get_callee_func(funcName);
+                    if(fun == nullptr)
                     {
-                        const FunctionDecl* funcDecl = manager->getFunctionDecl(fun);
-
-                        if(funcDecl->getNameAsString() == funcName)
+                        cout << declRefExpr->getLocation().printToString(*SM) << endl;
+                        return;
+                    }
+                    FunctionDecl* funcDecl = manager->getFunctionDecl(fun);
+                    ASTFunction* tmpEntryFunc = currentEntryFunc;
+                    handle_callee(callExprStmt, fun, funcDecl, traceRecord);
+                    currentEntryFunc = tmpEntryFunc;
+                    SM = &manager->getFunctionDecl(currentEntryFunc)->getASTContext().getSourceManager();
+                    Pointers.SM = SM;
+                    if(isRightCall)
+                    {
+                        Stmt *nextStatement = const_cast<Stmt *>(nextStmt.getValue().getStmt());
+                        if(nextStatement->getStmtClass() == Stmt::StmtClass::DeclStmtClass)
                         {
-                            handle_callee(callExprStmt, fun, funcDecl, traceRecord);
-                            
-                            if(isRightCall)
+                            clang::DeclStmt* declStmt = static_cast<clang::DeclStmt* >(nextStatement);
+                            clang::DeclGroupRef groupDecl = declStmt->getDeclGroup();
+                            clang::DeclGroupRef::iterator DGIter = groupDecl.begin();
+                            for( ; DGIter != groupDecl.end(); DGIter++)
                             {
-                                Stmt *nextStatement = const_cast<Stmt *>(nextStmt.getValue().getStmt());
-                                if(nextStatement->getStmtClass() == Stmt::StmtClass::DeclStmtClass)
+                                if((*DGIter)->getKind() == clang::Decl::Kind::Var)
                                 {
-                                    clang::DeclStmt* declStmt = static_cast<clang::DeclStmt* >(nextStatement);
-                                    clang::DeclGroupRef groupDecl = declStmt->getDeclGroup();
-                                    clang::DeclGroupRef::iterator DGIter = groupDecl.begin();
-                                    for( ; DGIter != groupDecl.end(); DGIter++)
-                                    {
-                                        if((*DGIter)->getKind() == clang::Decl::Kind::Var)
-                                        {
-                                            clang::VarDecl* varDecl = static_cast<clang::VarDecl *>(*DGIter);
-                                            assert(funcDecl->getReturnType().getTypePtrOrNull()->isAnyPointerType());
-                                            assert(funcDecl->hasBody());
-
-                                            Stmt* funcBody = funcDecl->getBody();
-                                            clang::Stmt::child_iterator iter = funcBody->child_begin();
-                                            for( ; iter != funcBody->child_end(); iter++)
-                                                if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ReturnStmtClass)
-                                                    break;
-                                            clang::ReturnStmt* retStmt = static_cast<clang::ReturnStmt* >(*iter);
-                                            clang::DeclRefExpr* declRefExpr = static_cast<clang::DeclRefExpr* >(*(*(*iter)->child_begin())->child_begin());
-                                            
-                                            if((*declStmt->child_begin())->getStmtClass() == Stmt::StmtClass::CallExprClass)
-                                            {
-                                                Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                    varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
-                                            }
-                                            else if((*declStmt->child_begin())->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass)
-                                            {
-                                                clang::BinaryOperator* binaryOp = static_cast<clang::BinaryOperator* >(*declStmt->child_begin());
-                                                if(binaryOp->getLHS()->getStmtClass() == Stmt::StmtClass::CallExprClass || binaryOp->getRHS()->getStmtClass() == Stmt::StmtClass::CallExprClass)
-                                                    handle_binary_callee_in_declStmt(varDecl, declRefExpr, binaryOp);
-                                                else if(binaryOp->getLHS()->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass || binaryOp->getRHS()->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
-                                                {
-                                                    Expr* subLeft = binaryOp->getLHS();
-                                                    Expr* subRight = binaryOp->getRHS();
-                                                    if(subLeft->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
-                                                    {
-                                                        clang::ImplicitCastExpr* subCastExpr = static_cast<clang::ImplicitCastExpr* >(*(*subLeft->child_begin())->child_begin());
-                                                        Expr* tmp = subCastExpr->getSubExpr();
-                                                        if(tmp->getStmtClass() == Stmt::StmtClass::DeclRefExprClass)
-                                                        {
-                                                            int base = 0;
-                                                            bool op = false;
-                                                            if(string(binaryOp->getOpcodeStr()) == "+")
-                                                                op = true;
-                                                            else if(string(binaryOp->getOpcodeStr()) == "-")
-                                                                op = false;
-                                                            else{
-                                                                cout << string(binaryOp->getOpcodeStr()) << "should not appear as pointer operator.\n";
-                                                                return;
-                                                            } 
-                                                            if(subRight->getStmtClass() == Stmt::StmtClass::IntegerLiteralClass)
-                                                            {
-                                                                clang::IntegerLiteral* integer = static_cast<clang::IntegerLiteral* >(subRight);
-                                                                base = integer->getValue().getZExtValue();
-                                                                Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                                    varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
-                                                                Pointers.handle_one_pointer(varDecl->getNameAsString(), varDecl->getLocation(), base, op);
-                                                            }
-                                                            else if(subRight->getStmtClass() == Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
-                                                            {
-                                                                clang::UnaryExprOrTypeTraitExpr* unaryOp = static_cast<clang::UnaryExprOrTypeTraitExpr* >(subRight);
-                                                                base = Pointers.get_unit_length(unaryOp->getArgumentType().getAsString());
-
-                                                                if(base == 0){
-                                                                    Pointers.handle_computable(varDecl->getNameAsString(), varDecl->getLocation());
-                                                                    return;
-                                                                }
-                                                                Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                                    varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
-                                                                Pointers.handle_one_pointer(varDecl->getNameAsString(), varDecl->getLocation(), base, op);
-                                                            }
-                                                            else
-                                                            {
-                                                                Pointers.handle_computable(varDecl->getNameAsString(), varDecl->getLocation());
-                                                                return;
-                                                            }
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        clang::ImplicitCastExpr* subCastExpr = static_cast<clang::ImplicitCastExpr* >(*(*subRight->child_begin())->child_begin());
-                                                        Expr* tmp = subCastExpr->getSubExpr();
-                                                        if(tmp->getStmtClass() == Stmt::StmtClass::DeclRefExprClass)
-                                                        {
-                                                            int base = 0;
-                                                            bool op = false;
-                                                            if(string(binaryOp->getOpcodeStr()) == "+")
-                                                                op = true;
-                                                            else if(string(binaryOp->getOpcodeStr()) == "-")
-                                                                op = false;
-                                                            else{
-                                                                cout << string(binaryOp->getOpcodeStr()) << "should not appear as pointer operator.\n";
-                                                                return;
-                                                            } 
-                                                            if(subLeft->getStmtClass() == Stmt::StmtClass::IntegerLiteralClass)
-                                                            {
-                                                                clang::IntegerLiteral* integer = static_cast<clang::IntegerLiteral* >(subLeft);
-                                                                base = integer->getValue().getZExtValue();
-                                                                Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                                    varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
-                                                                Pointers.handle_one_pointer(varDecl->getNameAsString(), varDecl->getLocation(), base, op);
-                                                            }
-                                                            else if(subLeft->getStmtClass() == Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
-                                                            {
-                                                                clang::UnaryExprOrTypeTraitExpr* unaryOp = static_cast<clang::UnaryExprOrTypeTraitExpr* >(subLeft);
-                                                                base = Pointers.get_unit_length(unaryOp->getArgumentType().getAsString());
-
-                                                                if(base == 0){
-                                                                    Pointers.handle_computable(varDecl->getNameAsString(), varDecl->getLocation());
-                                                                return;
-                                                                }
-                                                                Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                                    varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
-                                                                Pointers.handle_one_pointer(varDecl->getNameAsString(), varDecl->getLocation(), base, op);
-                                                            }
-                                                            else
-                                                            {
-                                                                Pointers.handle_computable(varDecl->getNameAsString(), varDecl->getLocation());
-                                                                return;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            else if((*declStmt->child_begin())->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
-                                            {
-                                                if((*(*declStmt->child_begin())->child_begin())->getStmtClass() == Stmt::StmtClass::CallExprClass)
-                                                {
-                                                    Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                        varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
-                                                }
-                                                else if((*(*declStmt->child_begin())->child_begin())->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass)
-                                                {
-                                                    clang::ParenExpr* paren = static_cast<clang::ParenExpr* >(*(*declStmt->child_begin())->child_begin());
-                                                    if((*paren->child_begin())->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass)
-                                                    {
-                                                        clang::BinaryOperator* binaryOp = static_cast<clang::BinaryOperator* >(*paren->child_begin());
-                                                        handle_binary_callee_in_declStmt(varDecl, declRefExpr, binaryOp);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                else if(nextStatement->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass)
-                                {
-                                    clang::BinaryOperator* binaryOpStmt = static_cast<clang::BinaryOperator* >(nextStatement);
-                                    assert(funcDecl->getReturnType().getTypePtrOrNull()->isAnyPointerType());
+                                    clang::VarDecl* varDecl = static_cast<clang::VarDecl *>(*DGIter);
+                                    if(!funcDecl->getReturnType().getTypePtrOrNull()->isAnyPointerType())
+                                        return;
                                     assert(funcDecl->hasBody());
 
                                     Stmt* funcBody = funcDecl->getBody();
@@ -696,27 +643,27 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                                     for( ; iter != funcBody->child_end(); iter++)
                                         if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ReturnStmtClass)
                                             break;
+                                    if((*iter)->getStmtClass() != Stmt::StmtClass::ReturnStmtClass)
+                                        return;
                                     clang::ReturnStmt* retStmt = static_cast<clang::ReturnStmt* >(*iter);
+                                    if((*(*(*iter)->child_begin())->child_begin())->getStmtClass() != Stmt::StmtClass::DeclRefExprClass)
+                                        return;
                                     clang::DeclRefExpr* declRefExpr = static_cast<clang::DeclRefExpr* >(*(*(*iter)->child_begin())->child_begin());
-
-                                    Expr* leftExpr = binaryOpStmt->getLHS();
-                                    Expr* rightExpr = binaryOpStmt->getRHS();
-                                    assert(leftExpr->getType().getTypePtrOrNull()->isAnyPointerType());
-                                    clang::DeclRefExpr* leftDeclRef = static_cast<clang::DeclRefExpr*>(leftExpr);
-                                    if(rightExpr->getStmtClass() == clang::Stmt::StmtClass::CallExprClass)
+                                    
+                                    if((*declStmt->child_begin())->getStmtClass() == Stmt::StmtClass::CallExprClass)
                                     {
-                                        Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(),
-                                            leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString()); 
+                                        Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                            varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
                                     }
-                                    else if(rightExpr->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass)
+                                    else if((*declStmt->child_begin())->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass)
                                     {
-                                        clang::BinaryOperator* subBinary = static_cast<clang::BinaryOperator* >(rightExpr);
-                                        if(subBinary->getLHS()->getStmtClass() == Stmt::StmtClass::CallExprClass || subBinary->getRHS()->getStmtClass() == Stmt::StmtClass::CallExprClass)
-                                            handle_binary_callee_in_binaryOp(leftDeclRef, declRefExpr, subBinary);
-                                        else if(subBinary->getLHS()->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass || subBinary->getRHS()->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
+                                        clang::BinaryOperator* binaryOp = static_cast<clang::BinaryOperator* >(*declStmt->child_begin());
+                                        if(binaryOp->getLHS()->getStmtClass() == Stmt::StmtClass::CallExprClass || binaryOp->getRHS()->getStmtClass() == Stmt::StmtClass::CallExprClass)
+                                            handle_binary_callee_in_declStmt(varDecl, declRefExpr, binaryOp);
+                                        else if(binaryOp->getLHS()->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass || binaryOp->getRHS()->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
                                         {
-                                            Expr* subLeft = subBinary->getLHS();
-                                            Expr* subRight = subBinary->getRHS();
+                                            Expr* subLeft = binaryOp->getLHS();
+                                            Expr* subRight = binaryOp->getRHS();
                                             if(subLeft->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
                                             {
                                                 clang::ImplicitCastExpr* subCastExpr = static_cast<clang::ImplicitCastExpr* >(*(*subLeft->child_begin())->child_begin());
@@ -725,21 +672,21 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                                                 {
                                                     int base = 0;
                                                     bool op = false;
-                                                    if(string(subBinary->getOpcodeStr()) == "+")
+                                                    if(string(binaryOp->getOpcodeStr()) == "+")
                                                         op = true;
-                                                    else if(string(subBinary->getOpcodeStr()) == "-")
+                                                    else if(string(binaryOp->getOpcodeStr()) == "-")
                                                         op = false;
                                                     else{
-                                                        cout << string(subBinary->getOpcodeStr()) << "should not appear as pointer operator.\n";
+                                                        cout << string(binaryOp->getOpcodeStr()) << "should not appear as pointer operator.\n";
                                                         return;
                                                     } 
                                                     if(subRight->getStmtClass() == Stmt::StmtClass::IntegerLiteralClass)
                                                     {
                                                         clang::IntegerLiteral* integer = static_cast<clang::IntegerLiteral* >(subRight);
                                                         base = integer->getValue().getZExtValue();
-                                                        Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                            leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
-                                                        Pointers.handle_one_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), base, op);
+                                                        Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                            varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
+                                                        Pointers.handle_one_pointer(varDecl->getNameAsString(), varDecl->getLocation(), base, op);
                                                     }
                                                     else if(subRight->getStmtClass() == Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
                                                     {
@@ -747,18 +694,16 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                                                         base = Pointers.get_unit_length(unaryOp->getArgumentType().getAsString());
 
                                                         if(base == 0){
-                                                            Pointers.handle_computable(leftDeclRef->getFoundDecl()->getNameAsString(), 
-                                                                leftDeclRef->getFoundDecl()->getLocation());
-                                                        return;
+                                                            Pointers.handle_computable(varDecl->getNameAsString(), varDecl->getLocation());
+                                                            return;
                                                         }
-                                                        Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                            leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
-                                                        Pointers.handle_one_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), base, op);
+                                                        Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                            varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
+                                                        Pointers.handle_one_pointer(varDecl->getNameAsString(), varDecl->getLocation(), base, op);
                                                     }
                                                     else
                                                     {
-                                                        Pointers.handle_computable(leftDeclRef->getFoundDecl()->getNameAsString(), 
-                                                                                        leftDeclRef->getFoundDecl()->getLocation());
+                                                        Pointers.handle_computable(varDecl->getNameAsString(), varDecl->getLocation());
                                                         return;
                                                     }
                                                 }
@@ -771,21 +716,21 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                                                 {
                                                     int base = 0;
                                                     bool op = false;
-                                                    if(string(subBinary->getOpcodeStr()) == "+")
+                                                    if(string(binaryOp->getOpcodeStr()) == "+")
                                                         op = true;
-                                                    else if(string(subBinary->getOpcodeStr()) == "-")
+                                                    else if(string(binaryOp->getOpcodeStr()) == "-")
                                                         op = false;
                                                     else{
-                                                        cout << string(subBinary->getOpcodeStr()) << "should not appear as pointer operator.\n";
+                                                        cout << string(binaryOp->getOpcodeStr()) << "should not appear as pointer operator.\n";
                                                         return;
                                                     } 
                                                     if(subLeft->getStmtClass() == Stmt::StmtClass::IntegerLiteralClass)
                                                     {
                                                         clang::IntegerLiteral* integer = static_cast<clang::IntegerLiteral* >(subLeft);
                                                         base = integer->getValue().getZExtValue();
-                                                        Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                            leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
-                                                        Pointers.handle_one_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), base, op);
+                                                        Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                            varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
+                                                        Pointers.handle_one_pointer(varDecl->getNameAsString(), varDecl->getLocation(), base, op);
                                                     }
                                                     else if(subLeft->getStmtClass() == Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
                                                     {
@@ -793,49 +738,218 @@ void MemoryLeakChecker::handle_callExpr(Stmt* statement, BumpVector<CFGElement>:
                                                         base = Pointers.get_unit_length(unaryOp->getArgumentType().getAsString());
 
                                                         if(base == 0){
-                                                            Pointers.handle_computable(leftDeclRef->getFoundDecl()->getNameAsString(), 
-                                                                leftDeclRef->getFoundDecl()->getLocation());
+                                                            Pointers.handle_computable(varDecl->getNameAsString(), varDecl->getLocation());
                                                         return;
                                                         }
-                                                        Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                            leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
-                                                        Pointers.handle_one_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), base, op);
+                                                        Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                            varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
+                                                        Pointers.handle_one_pointer(varDecl->getNameAsString(), varDecl->getLocation(), base, op);
                                                     }
                                                     else
                                                     {
-                                                        Pointers.handle_computable(leftDeclRef->getFoundDecl()->getNameAsString(), 
-                                                                                        leftDeclRef->getFoundDecl()->getLocation());
+                                                        Pointers.handle_computable(varDecl->getNameAsString(), varDecl->getLocation());
                                                         return;
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                    else if(rightExpr->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass)
+                                    else if((*declStmt->child_begin())->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
                                     {
-                                        if((*rightExpr->child_begin())->getStmtClass() == Stmt::StmtClass::CallExprClass)
+                                        if((*(*declStmt->child_begin())->child_begin())->getStmtClass() == Stmt::StmtClass::CallExprClass)
                                         {
-                                            Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
-                                                leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
+                                            Pointers.modify_pointer(varDecl->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                varDecl->getLocation(), declRefExpr->getFoundDecl()->getLocation(), varDecl->getType().getAsString());
                                         }
-                                        else if((*rightExpr->child_begin())->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass)
+                                        else if((*(*declStmt->child_begin())->child_begin())->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass)
                                         {
-                                            clang::ParenExpr* paren = static_cast<clang::ParenExpr* >(*rightExpr->child_begin());
+                                            clang::ParenExpr* paren = static_cast<clang::ParenExpr* >(*(*declStmt->child_begin())->child_begin());
                                             if((*paren->child_begin())->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass)
                                             {
                                                 clang::BinaryOperator* binaryOp = static_cast<clang::BinaryOperator* >(*paren->child_begin());
-                                                handle_binary_callee_in_binaryOp(leftDeclRef, declRefExpr, binaryOp);
+                                                handle_binary_callee_in_declStmt(varDecl, declRefExpr, binaryOp);
                                             }
                                         }
                                     }
                                 }
                             }
                         }
+                        else if(nextStatement->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass)
+                        {
+                            clang::BinaryOperator* binaryOpStmt = static_cast<clang::BinaryOperator* >(nextStatement);
+                            if(!funcDecl->getReturnType().getTypePtrOrNull()->isAnyPointerType())
+                                return;
+                            assert(funcDecl->hasBody());
+
+                            Stmt* funcBody = funcDecl->getBody();
+                            clang::Stmt::child_iterator iter = funcBody->child_begin();
+                            for( ; iter != funcBody->child_end(); iter++)
+                                if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ReturnStmtClass)
+                                    break;
+                            if((*iter)->getStmtClass() != Stmt::StmtClass::ReturnStmtClass)
+                                return;
+                            clang::ReturnStmt* retStmt = static_cast<clang::ReturnStmt* >(*iter);
+                            if((*(*(*iter)->child_begin())->child_begin())->getStmtClass() != Stmt::StmtClass::DeclRefExprClass)
+                                return;
+                            clang::DeclRefExpr* declRefExpr = static_cast<clang::DeclRefExpr* >(*(*(*iter)->child_begin())->child_begin());
+
+                            Expr* leftExpr = binaryOpStmt->getLHS();
+                            Expr* rightExpr = binaryOpStmt->getRHS();
+                            assert(leftExpr->getType().getTypePtrOrNull()->isAnyPointerType());
+                            clang::DeclRefExpr* leftDeclRef = static_cast<clang::DeclRefExpr*>(leftExpr);
+                            if(rightExpr->getStmtClass() == clang::Stmt::StmtClass::CallExprClass)
+                            {
+                                Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(),
+                                    leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString()); 
+                            }
+                            else if(rightExpr->getStmtClass() == clang::Stmt::StmtClass::BinaryOperatorClass)
+                            {
+                                clang::BinaryOperator* subBinary = static_cast<clang::BinaryOperator* >(rightExpr);
+                                if(subBinary->getLHS()->getStmtClass() == Stmt::StmtClass::CallExprClass || subBinary->getRHS()->getStmtClass() == Stmt::StmtClass::CallExprClass)
+                                    handle_binary_callee_in_binaryOp(leftDeclRef, declRefExpr, subBinary);
+                                else if(subBinary->getLHS()->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass || subBinary->getRHS()->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
+                                {
+                                    Expr* subLeft = subBinary->getLHS();
+                                    Expr* subRight = subBinary->getRHS();
+                                    if(subLeft->getStmtClass() == Stmt::StmtClass::CStyleCastExprClass)
+                                    {
+                                        clang::ImplicitCastExpr* subCastExpr = static_cast<clang::ImplicitCastExpr* >(*(*subLeft->child_begin())->child_begin());
+                                        Expr* tmp = subCastExpr->getSubExpr();
+                                        if(tmp->getStmtClass() == Stmt::StmtClass::DeclRefExprClass)
+                                        {
+                                            int base = 0;
+                                            bool op = false;
+                                            if(string(subBinary->getOpcodeStr()) == "+")
+                                                op = true;
+                                            else if(string(subBinary->getOpcodeStr()) == "-")
+                                                op = false;
+                                            else{
+                                                cout << string(subBinary->getOpcodeStr()) << "should not appear as pointer operator.\n";
+                                                return;
+                                            } 
+                                            if(subRight->getStmtClass() == Stmt::StmtClass::IntegerLiteralClass)
+                                            {
+                                                clang::IntegerLiteral* integer = static_cast<clang::IntegerLiteral* >(subRight);
+                                                base = integer->getValue().getZExtValue();
+                                                Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                    leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
+                                                Pointers.handle_one_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), base, op);
+                                            }
+                                            else if(subRight->getStmtClass() == Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
+                                            {
+                                                clang::UnaryExprOrTypeTraitExpr* unaryOp = static_cast<clang::UnaryExprOrTypeTraitExpr* >(subRight);
+                                                base = Pointers.get_unit_length(unaryOp->getArgumentType().getAsString());
+
+                                                if(base == 0){
+                                                    Pointers.handle_computable(leftDeclRef->getFoundDecl()->getNameAsString(), 
+                                                        leftDeclRef->getFoundDecl()->getLocation());
+                                                return;
+                                                }
+                                                Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                    leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
+                                                Pointers.handle_one_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), base, op);
+                                            }
+                                            else
+                                            {
+                                                Pointers.handle_computable(leftDeclRef->getFoundDecl()->getNameAsString(), 
+                                                                                leftDeclRef->getFoundDecl()->getLocation());
+                                                return;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        clang::ImplicitCastExpr* subCastExpr = static_cast<clang::ImplicitCastExpr* >(*(*subRight->child_begin())->child_begin());
+                                        Expr* tmp = subCastExpr->getSubExpr();
+                                        if(tmp->getStmtClass() == Stmt::StmtClass::DeclRefExprClass)
+                                        {
+                                            int base = 0;
+                                            bool op = false;
+                                            if(string(subBinary->getOpcodeStr()) == "+")
+                                                op = true;
+                                            else if(string(subBinary->getOpcodeStr()) == "-")
+                                                op = false;
+                                            else{
+                                                cout << string(subBinary->getOpcodeStr()) << "should not appear as pointer operator.\n";
+                                                return;
+                                            } 
+                                            if(subLeft->getStmtClass() == Stmt::StmtClass::IntegerLiteralClass)
+                                            {
+                                                clang::IntegerLiteral* integer = static_cast<clang::IntegerLiteral* >(subLeft);
+                                                base = integer->getValue().getZExtValue();
+                                                Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                    leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
+                                                Pointers.handle_one_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), base, op);
+                                            }
+                                            else if(subLeft->getStmtClass() == Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
+                                            {
+                                                clang::UnaryExprOrTypeTraitExpr* unaryOp = static_cast<clang::UnaryExprOrTypeTraitExpr* >(subLeft);
+                                                base = Pointers.get_unit_length(unaryOp->getArgumentType().getAsString());
+
+                                                if(base == 0){
+                                                    Pointers.handle_computable(leftDeclRef->getFoundDecl()->getNameAsString(), 
+                                                        leftDeclRef->getFoundDecl()->getLocation());
+                                                return;
+                                                }
+                                                Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                                    leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
+                                                Pointers.handle_one_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), base, op);
+                                            }
+                                            else
+                                            {
+                                                Pointers.handle_computable(leftDeclRef->getFoundDecl()->getNameAsString(), 
+                                                                                leftDeclRef->getFoundDecl()->getLocation());
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if(rightExpr->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass)
+                            {
+                                if((*rightExpr->child_begin())->getStmtClass() == Stmt::StmtClass::CallExprClass)
+                                {
+                                    Pointers.modify_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), declRefExpr->getFoundDecl()->getNameAsString(), 
+                                        leftDeclRef->getFoundDecl()->getLocation(), declRefExpr->getFoundDecl()->getLocation(), leftDeclRef->getType().getAsString());
+                                }
+                                else if((*rightExpr->child_begin())->getStmtClass() == clang::Stmt::StmtClass::ParenExprClass)
+                                {
+                                    clang::ParenExpr* paren = static_cast<clang::ParenExpr* >(*rightExpr->child_begin());
+                                    if((*paren->child_begin())->getStmtClass() == Stmt::StmtClass::BinaryOperatorClass)
+                                    {
+                                        clang::BinaryOperator* binaryOp = static_cast<clang::BinaryOperator* >(*paren->child_begin());
+                                        handle_binary_callee_in_binaryOp(leftDeclRef, declRefExpr, binaryOp);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+                
             }
         }
     }
+}
+
+ASTFunction* MemoryLeakChecker::get_callee_func(string funcName)
+{
+    vector<ASTFunction *> childVec = call_graph->getChildren(currentEntryFunc);
+    // cout << endl << funcName << endl;
+    for(auto fun : childVec)
+    {
+        FunctionDecl* funDecl = manager->getFunctionDecl(fun);
+        string tmpName = funDecl->getQualifiedNameAsString();
+        if(funcName == "_Py_INCREF")
+            cout << tmpName << endl;
+        // cout << "1" << tmpName << endl;
+        if(tmpName == funcName)
+        {
+            // cout << funcName << endl;
+            return fun;
+        }
+    }
+    cout << "Not found: " << funcName << endl;
+    return nullptr;
 }
 
 bool MemoryLeakChecker::handle_malloc_size(Stmt* sizeStmt, int& size)
@@ -883,7 +997,6 @@ bool MemoryLeakChecker::handle_malloc_size(Stmt* sizeStmt, int& size)
     {
         clang::UnaryExprOrTypeTraitExpr* unaryExpr = static_cast<clang::UnaryExprOrTypeTraitExpr* >(sizeStmt);
         size = Pointers.get_unit_length(unaryExpr->getArgumentType().getAsString());
-        // cout << size << endl;
         return true;
     }
     return false;
@@ -919,6 +1032,8 @@ bool MemoryLeakChecker::handle_new_size(CXXNewExpr* newExpr, int& size)
 
 void MemoryLeakChecker::handle_callee(CallExpr* callExprStmt, ASTFunction* fun, const FunctionDecl* funcDecl, TraceRecord traceRecord)
 {
+    // if(funcDecl->getNameAsString() == "PyMem_RawMalloc")
+    //     cout << "yes\n";
     unsigned paramCount = funcDecl->getNumParams();
     unsigned argNum = callExprStmt->getNumArgs();
 
@@ -978,11 +1093,16 @@ void MemoryLeakChecker::handle_callee(CallExpr* callExprStmt, ASTFunction* fun, 
             }
         }   
     }
-    // funcDecl->dump();
-    Pointers.handle_non_callee_pointer();
+    // if(funcDecl->getNameAsString() == "unicode_decode_utf8")
+    //     funcDecl->dump();
+    // cout << funcDecl->getNameAsString() << endl;
+    // Pointers.handle_non_callee_pointer();
+    currentEntryFunc = fun;
     unique_ptr<CFG>& cfg = manager->getCFG(fun);
+    SM = &manager->getFunctionDecl(fun)->getASTContext().getSourceManager();
+    Pointers.SM = SM;
     handle_cfg(cfg, traceRecord, false);
-    Pointers.handle_after_callee();
+    // Pointers.handle_after_callee();
 }
 
 void MemoryLeakChecker::handle_return_pointer(FunctionDecl* calleeFunc, const ParmVarDecl* param)
@@ -1005,7 +1125,6 @@ void MemoryLeakChecker::handle_return_pointer(FunctionDecl* calleeFunc, const Pa
 void MemoryLeakChecker::handle_binaryOperator(Stmt* statement, TraceRecord traceRecord)
 {
     clang::BinaryOperator* binaryOpStmt = static_cast<clang::BinaryOperator* >(statement);
-
     if(binaryOpStmt->isAssignmentOp())
     {
         Expr* leftExpr = binaryOpStmt->getLHS();
@@ -1014,32 +1133,34 @@ void MemoryLeakChecker::handle_binaryOperator(Stmt* statement, TraceRecord trace
         {
             Stmt::child_iterator iter = rightExpr->child_begin();
 
+            if(leftExpr->getStmtClass() != Stmt::StmtClass::DeclRefExprClass)
+                return;
             clang::DeclRefExpr* leftDeclRef = static_cast<clang::DeclRefExpr*>(leftExpr);
 
-            if(rightExpr->getStmtClass() == Stmt::StmtClass::CallExprClass)
-            {
-                clang::CallExpr* callExprStmt = static_cast<clang::CallExpr* >(rightExpr);
-                clang::Expr* calleeExpr = callExprStmt->getCallee();
-                clang::Stmt::child_iterator it = calleeExpr->child_begin();
-                for( ; it != calleeExpr->child_end(); it++)
-                {
-                    if((*it)->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
-                    {
-                        clang::DeclRefExpr* rightDeclRef = static_cast<clang::DeclRefExpr* >(*it);
-                        string funcName = rightDeclRef->getFoundDecl()->getNameAsString();
-                        for(auto fun : allFunctions)
-                        {
-                            const FunctionDecl* funcDecl = manager->getFunctionDecl(fun);
+            // if(rightExpr->getStmtClass() == Stmt::StmtClass::CallExprClass)
+            // {
+            //     clang::CallExpr* callExprStmt = static_cast<clang::CallExpr* >(rightExpr);
+            //     clang::Expr* calleeExpr = callExprStmt->getCallee();
+            //     clang::Stmt::child_iterator it = calleeExpr->child_begin();
+            //     for( ; it != calleeExpr->child_end(); it++)
+            //     {
+            //         if((*it)->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass)
+            //         {
+            //             clang::DeclRefExpr* rightDeclRef = static_cast<clang::DeclRefExpr* >(*it);
+            //             string funcName = rightDeclRef->getFoundDecl()->getNameAsString();
+            //             for(auto fun : allFunctions)
+            //             {
+            //                 const FunctionDecl* funcDecl = manager->getFunctionDecl(fun);
 
-                            if(funcDecl->getNameAsString() == funcName)
-                            {
-                                handle_callee(callExprStmt, fun, funcDecl, traceRecord);
-                            }
-                        }
-                    }
-                }
-            }
-            else if(rightExpr->getStmtClass() == Stmt::StmtClass::ImplicitCastExprClass)
+            //                 if(funcDecl->getNameAsString() == funcName)
+            //                 {
+            //                     handle_callee(callExprStmt, fun, funcDecl, traceRecord);
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            if(rightExpr->getStmtClass() == Stmt::StmtClass::ImplicitCastExprClass)
             {
                 if((*iter)->getStmtClass() == Stmt::StmtClass::DeclRefExprClass)
                 {
@@ -1308,7 +1429,6 @@ void MemoryLeakChecker::handle_newExpr(Stmt* statement, BumpVector<CFGElement>::
             computable = handle_new_size(newExpr, localSize);
             Pointers.special_new_pointer(leftDeclRef->getFoundDecl()->getNameAsString(), leftDeclRef->getFoundDecl()->getLocation(), newExpr->getExprLoc(),
                 traceRecord, newExpr->isArray(), leftDeclRef->getType().getAsString(), computable, localSize);
-            // Pointers.print_set();
         }
     }
 }
@@ -1903,16 +2023,16 @@ int PointerSet::get_memoryID(string name, SourceLocation location, int& pos, int
         }
     }
     // cout << name << endl;
-    if(pointerID <= 0)
-    {
-        if(mode == 1)
-        {
-            cout << "Pointer " << name << " doesn't exit or the memory it directs has been freed or it doesn't direct a memory at line ";
-            cout << location.printToString(*SM).substr(64, 2) << endl;
-        }
-        else
-            cout << "Free the same memory twice.\n";
-    }
+    // if(pointerID <= 0)
+    // {
+    //     if(mode == 1)
+    //     {
+    //         cout << "Pointer " << name << " doesn't exit or the memory it directs has been freed or it doesn't direct a memory at line ";
+    //         cout << location.printToString(*SM).substr(64, 2) << endl;
+    //     }
+    //     else
+    //         cout << "Free the same memory twice.\n";
+    // }
     return pointerID;
 }
 
@@ -1972,7 +2092,7 @@ void PointerSet::new_pointer(string name, SourceLocation _location, TraceRecord 
     newPointer.isComputable = computable;
     newPointer.compute.unitLength = get_unit_length(type);
     newPointer.compute.local.begin = 0;
-    newPointer.compute.local.end = localSize;
+    newPointer.compute.local.end = localSize == 0 ? 100 : localSize;
     newPointer.compute.syn.begin = 0;
     newPointer.compute.syn.end = localSize;
 
@@ -2072,7 +2192,6 @@ void PointerSet::modify_pointer(string leftName, string rightName, SourceLocatio
 {
     int pos = -1;
     int memoryID = get_memoryID(rightName, rightLocation, pos, 1);
-    print_set();
     
     bool isExistPointer = false;
     int pointerID = 0;
@@ -2127,10 +2246,8 @@ void PointerSet::modify_pointer(string leftName, string rightName, SourceLocatio
         newPointer.compute.unitLength = get_unit_length(type);
         newPointer.compute.local = pointerVec[pos].compute.local;
         newPointer.compute.syn = pointerVec[pos].compute.syn;
-
         pointerVec.push_back(newPointer);
     }
-    print_set();
 }
 
 void PointerSet::modify_pointer_after_change(string leftName, string rightName, SourceLocation leftLocation, SourceLocation rightLocation, string type, int base, bool op)
@@ -2251,7 +2368,7 @@ void PointerSet::special_new_pointer(string leftName, SourceLocation leftLocatio
 
     newPointer.isComputable = computable;
     newPointer.compute.local.begin = 0;
-    newPointer.compute.local.end = localSize;
+    newPointer.compute.local.end = localSize == 0 ? 100 : localSize;
     newPointer.compute.syn.begin = 0;
     newPointer.compute.syn.end = localSize;
     newPointer.compute.unitLength = get_unit_length(type);
@@ -2276,12 +2393,15 @@ void PointerSet::handle_one_pointer(string name, SourceLocation location, int ba
     int pos = -1;
     int memoryID = get_memoryID(name, location, pos, 1);
 
-    if(!pointerVec[pos].isComputable)
-        return;
-    if(op)
-        pointerVec[pos].compute.local.begin += pointerVec[pos].compute.unitLength * base;
-    else
-        pointerVec[pos].compute.local.begin -= pointerVec[pos].compute.unitLength * base;
+    if(pos != -1)
+    {
+        if(!pointerVec[pos].isComputable)
+            return;
+        if(op)
+            pointerVec[pos].compute.local.begin += pointerVec[pos].compute.unitLength * base;
+        else
+            pointerVec[pos].compute.local.begin -= pointerVec[pos].compute.unitLength * base;
+    }
 }
 
 void PointerSet::print_set()
@@ -2302,55 +2422,53 @@ void PointerSet::print_set()
  
 }
 
+void MemoryLeakChecker::handle_location_string(string& line, string& loc, SourceLocation location)
+{
+    string tmp = location.printToString(*SM);
+    bool isLoc = true;
+    for(unsigned i = tmp.size() - 1; i >= 0; i--)
+    {
+        if(tmp[i] == ':'){
+            isLoc = false;
+            continue;
+        }
+        if(!(tmp[i] >= '0' && tmp[i] <= '9'))
+            break;
+        if(isLoc)
+            loc += tmp[i];
+        else
+            line += tmp[i];
+    }
+    reverse(line.begin(), line.end());
+    reverse(loc.begin(), loc.end());
+}
+
 void MemoryLeakChecker::report_memory_leak()
 {
     check_leak_same_pointer();
 
     bool isLeaked = !leakResult.empty();
 
-    if(!isLeaked)
-        cout << "\033[32mNo memory leak detected.\n" << "\033[0m";
-    else
+    // if(!isLeaked)
+    //     cout << "\033[32mNo memory leak detected.\n" << "\033[0m";
+    if(isLeaked)
     {
-        cout << "\033[31m" << "Memory leak detected." << "\033[0m" << endl;
+        cout << "Memory leak detected."  << endl;
 
         for(unsigned i = 0; i < leakResult.size(); i++)
         {
-            string tmp = leakResult[i].location.printToString(*SM).substr(64, 5);
+            string tmp = leakResult[i].location.printToString(*SM).substr(leakResult[i].location.printToString(*SM).size() - 5, 5);
             string line, loc;
-            bool isLine = true;
-            for(unsigned j = 0; j < tmp.size(); j++)
-            {
-                if(tmp[j] == ':'){
-                    isLine = false;
-                    continue;
-                }
-                if(isLine)
-                    line += tmp[j];
-                else
-                    loc += tmp[j];
-            }
-            cout << "\033[33m" << leakResult[i].pointerName << "->" << "line: " << line << " loc: " << loc 
-                << " with memory ID: " << leakResult[i].memoryID << "\033[0m" << endl;
-            cout << "\033[34m" << "The source of pointer: ";
+            handle_location_string(line, loc, leakResult[i].location);
+            cout << leakResult[i].pointerName << "->" << "line: " << line << " loc: " << loc 
+                << " with memory ID: " << leakResult[i].memoryID << endl;
+            cout << "The source of pointer: ";
             while(!leakResult[i].record.calleeLocation.empty())
             {
                 assert(leakResult[i].record.calleeLocation.size() == leakResult[i].record.calleeName.size());
-                tmp = leakResult[i].record.calleeLocation.front().printToString(*SM).substr(64, 5);
                 line = "";
                 loc = "";
-                isLine = true;
-                for(unsigned j = 0; j < tmp.size(); j++)
-                {
-                    if(tmp[j] == ':'){
-                        isLine = false;
-                        continue;
-                    }
-                    if(isLine)
-                        line += tmp[j];
-                    else
-                        loc += tmp[j];
-                }
+                handle_location_string(line, loc, leakResult[i].record.calleeLocation.front());
                 cout << "line: " << line << " & loc: " << loc << ", function name: " 
                     << leakResult[i].record.calleeName.front();
                 if(leakResult[i].record.calleeLocation.size() != 1) 
@@ -2358,7 +2476,7 @@ void MemoryLeakChecker::report_memory_leak()
                 leakResult[i].record.calleeLocation.pop();
                 leakResult[i].record.calleeName.pop();
             }
-            cout << "\033[0m" << endl;
+            cout << endl;
         }
     }
 }
@@ -2368,49 +2486,26 @@ void MemoryLeakChecker::report_double_free()
     check_Dfree_same_pointer();
 
     bool isDFreed = !DFreeResult.empty();
-    if(!isDFreed)
-        cout << "\033[32mNo double free detected.\n" << "\033[0m";
-    else
+    // if(!isDFreed)
+    //     cout << "\033[32mNo double free detected.\n" << "\033[0m";
+    if(isDFreed)
     {
-        cout << "\033[31m" << "Double free detected." << "\033[0m" << endl;
+        cout << "Double free detected." << endl;
 
         for(unsigned i = 0; i < DFreeResult.size(); i++)
         {
-            string tmp = DFreeResult[i].location.printToString(*SM).substr(64, 5);
             string line, loc;
-            bool isLine = true;
-            for(unsigned j = 0; j < tmp.size(); j++)
-            {
-                if(tmp[j] == ':'){
-                    isLine = false;
-                    continue;
-                }
-                if(isLine)
-                    line += tmp[j];
-                else
-                    loc += tmp[j];
-            }
-            cout << "\033[33m" << DFreeResult[i].pointerName << "->" << "line: " << line << " loc: " << loc 
-                << " with memory ID: " << DFreeResult[i].memoryID << "\033[0m" << endl;
-            cout << "\033[34m" << "The source of pointer: ";
+            handle_location_string(line, loc, DFreeResult[i].location);
+
+            cout << DFreeResult[i].pointerName << "->" << "line: " << line << " loc: " << loc 
+                << " with memory ID: " << DFreeResult[i].memoryID << endl;
+            cout << "The source of pointer: ";
             while(!DFreeResult[i].record.calleeLocation.empty())
             {
                 assert(DFreeResult[i].record.calleeLocation.size() == DFreeResult[i].record.calleeName.size());
-                tmp = DFreeResult[i].record.calleeLocation.front().printToString(*SM).substr(64, 5);
                 line = "";
                 loc = "";
-                isLine = true;
-                for(unsigned j = 0; j < tmp.size(); j++)
-                {
-                    if(tmp[j] == ':'){
-                        isLine = false;
-                        continue;
-                    }
-                    if(isLine)
-                        line += tmp[j];
-                    else
-                        loc += tmp[j];
-                }
+                handle_location_string(line, loc, DFreeResult[i].record.calleeLocation.front());
                 cout << "line: " << line << " & loc: " << loc << ", function name: " 
                     << DFreeResult[i].record.calleeName.front();
                 if(DFreeResult[i].record.calleeLocation.size() != 1) 
@@ -2418,14 +2513,14 @@ void MemoryLeakChecker::report_double_free()
                 DFreeResult[i].record.calleeLocation.pop();
                 DFreeResult[i].record.calleeName.pop();
             }
-            cout << "\033[0m" << endl;
+            cout << endl;
         }
     }
 }
 
 void MemoryLeakChecker::prepare_next_path(unsigned count)
 {
-    Pointers.print_set();
+    // Pointers.print_set();
     vector<ReportPointer> tmpVec;
     allLeakPointers.push_back(tmpVec);
     for(unsigned i = 0; i < Pointers.pointerVec.size(); i++)

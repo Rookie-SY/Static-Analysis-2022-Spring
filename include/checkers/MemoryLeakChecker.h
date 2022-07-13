@@ -88,7 +88,7 @@ private:
 public:
     ProgramPaths(){
     }
-    void get_paths(vector<int> pathVector, vector<int> specialStmt, CFGBlock block);
+    void get_paths(vector<int> pathVector, CFGBlock block);
     bool travel_block(CFGBlock block, bool* isBlockVisited);
 
 friend class MemoryLeakChecker;
@@ -146,6 +146,7 @@ public:
 private:
     vector<ASTFunction *> allFunctions;
     ASTFunction* entryFunc;
+    ASTFunction* currentEntryFunc;
     PointerSet Pointers;
     vector<vector<ReportPointer> >allLeakPointers;
     vector<vector<DFreePointer> >allDFreePointers;
@@ -161,6 +162,7 @@ private:
     void handle_cfg_paths(ProgramPaths allPaths, TraceRecord traceRecord, bool isEntryFunc);
     void handle_single_path(ProgramPaths allPaths, vector<int> path, TraceRecord traceRecord);
     
+    ASTFunction* get_callee_func(string funcName);
     bool special_case(Stmt* statement, BumpVector<CFGElement>::reverse_iterator elemIter);
     void handle_callExpr(Stmt* statement, BumpVector<CFGElement>::reverse_iterator elemIter, TraceRecord traceRecord);
     bool handle_malloc_size(Stmt* sizeStmt, int& size);
@@ -181,6 +183,7 @@ private:
     void handle_unaryOp_in_declStmt(VarDecl* varDecl, UnaryOperator* unaryOp);
     void handle_unaryOp_in_binaryStmt(DeclRefExpr* leftDeclRef, UnaryOperator* unaryOp);
     
+    void handle_location_string(string& line, string& loc, SourceLocation location);
     ReportPointer convert_pointer(DFreePointer tmp);
     void prepare_next_path(unsigned count);
     void check_leak_same_pointer();

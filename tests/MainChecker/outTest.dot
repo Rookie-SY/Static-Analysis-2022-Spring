@@ -1,8 +1,32 @@
 digraph "Call graph" {
     label="Call graph"
 
-    Node0x5608595dce90 [shape=record,label="{main  }"];
-    Node0x5608595dcda0 [shape=record,label="{as  }"];
-    Node0x5608595dccc0 [shape=record,label="{test  }"];
-    Node0x5608595dcb50 [shape=record,label="{my_test  int *  }"];
+    Node0x55d9075b5f70 [shape=record,label="{growable_comment_array_init  growable_comment_array *  size_t  }"];
+    Node0x55d90763b260 [shape=record,label="{growable_comment_array_add  growable_comment_array *  int  char *  }"];
+    Node0x55d907608c80 [shape=record,label="{growable_comment_array_deallocate  growable_comment_array *  }"];
+    Node0x55d90757a530 [shape=record,label="{PyParser_ParseFileFlagsEx  FILE *  const char *  const char *  grammar *  int  const char *  const char *  perrdetail *  int *  }"];
+    Node0x55d90757a530 -> Node0x55d907651010
+    Node0x55d907608df0 [shape=record,label="{PyParser_ParseString  const char *  grammar *  int  perrdetail *  }"];
+    Node0x55d907608df0 -> Node0x55d907627b50
+    Node0x55d9076295f0 [shape=record,label="{PyParser_ParseStringFlagsFilenameEx  const char *  const char *  grammar *  int  perrdetail *  int *  }"];
+    Node0x55d9076295f0 -> Node0x55d907627bd0
+    Node0x55d90760d460 [shape=record,label="{PyParser_ParseStringFlags  const char *  grammar *  int  perrdetail *  int  }"];
+    Node0x55d90760d460 -> Node0x55d907627b50
+    Node0x55d907700510 [shape=record,label="{parsetok  struct tok_state *  grammar *  int  perrdetail *  int *  }"];
+    Node0x55d907700510 -> Node0x55d9075b5f70
+    Node0x55d907700510 -> Node0x55d90763b260
+    Node0x55d907700510 -> Node0x55d907608c80
+    Node0x55d907627b50 [shape=record,label="{PyParser_ParseStringFlagsFilename  const char *  const char *  grammar *  int  perrdetail *  int  }"];
+    Node0x55d907627b50 -> Node0x55d9076295f0
+    Node0x55d907627bd0 [shape=record,label="{PyParser_ParseStringObject  const char *  PyObject *  grammar *  int  perrdetail *  int *  }"];
+    Node0x55d907627bd0 -> Node0x55d907700510
+    Node0x55d907627bd0 -> Node0x55d9076faff0
+    Node0x55d9076d2f80 [shape=record,label="{PyParser_ParseFile  FILE *  const char *  grammar *  int  const char *  const char *  perrdetail *  }"];
+    Node0x55d9076d2f80 -> Node0x55d9076e46e0
+    Node0x55d9076e46e0 [shape=record,label="{PyParser_ParseFileFlags  FILE *  const char *  const char *  grammar *  int  const char *  const char *  perrdetail *  int  }"];
+    Node0x55d9076e46e0 -> Node0x55d90757a530
+    Node0x55d9076faff0 [shape=record,label="{initerr  perrdetail *  PyObject *  }"];
+    Node0x55d907651010 [shape=record,label="{PyParser_ParseFileObject  FILE *  PyObject *  const char *  grammar *  int  const char *  const char *  perrdetail *  int *  }"];
+    Node0x55d907651010 -> Node0x55d907700510
+    Node0x55d907651010 -> Node0x55d9076faff0
 }
