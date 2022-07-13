@@ -124,7 +124,7 @@ public:
       : BasicChecker(resource, manager, call_graph, configure){};
 
   void reset();
-  void check();
+  void check(ASTFunction* _entryFunc);
   void check_child(Child child);
 
   string get_statement_value(clang::Stmt* statement);

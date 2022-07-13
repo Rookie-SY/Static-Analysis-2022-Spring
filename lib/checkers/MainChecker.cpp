@@ -7,18 +7,7 @@ void MainChecker::check()
     read_config();
     get_entry_func();
     MemoryLeakChecker MLChecker(resource, manager, call_graph, configure);
-    // if(entryFunc == nullptr)
-    // {
-    //     for(auto fun : call_graph->getTopLevelFunctions())
-    //     {
-    //         entryFunc = fun;
-    //         MLChecker.check(entryFunc);
-    //     }
-    // }
-    // else
-        MLChecker.check(entryFunc);
-    // if(entryFunc != nullptr)
-    //     cout << "yes\n";
+    MLChecker.check(entryFunc);
     // UndefinedVariableChecker UVChecker(resource, manager, call_graph, configure);
     // UVChecker.check(entryFunc);
 }
