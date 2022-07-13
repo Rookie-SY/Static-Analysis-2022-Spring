@@ -7,11 +7,11 @@ struct A1{
   }b;
 };
 
-struct B1{
+typedef struct {
   int m;
   float f;
-  B1(int init_m,float init_t):m(init_m),f(init_t){}
-};
+  //B1(int init_m,float init_t):m(init_m),f(init_t){}
+}B1;
 
 int main()
 {
@@ -19,8 +19,8 @@ int main()
     float c;
     int array[10][5];
     struct A1 temp1,temp2,temp4;
-    struct B1 btemp1(1,c);
-    struct B1 btemp2 = {a,2};
+    //struct B1 btemp1(1,c);
+    B1 btemp2 = {.m = a,.f = 2};
     temp4 = temp2;
     temp1.m = 2;
     struct A1 temp3 = temp1;

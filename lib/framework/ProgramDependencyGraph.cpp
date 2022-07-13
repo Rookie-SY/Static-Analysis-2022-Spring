@@ -15,8 +15,8 @@ void ForwardDominanceTree::ConstructFDTFromCfg(){
     for(int i = 0;i<call_graph->allFunctions.size();i++){
         blockNum = 0;
         FunctionDecl *funDecl = manager->getFunctionDecl(call_graph->allFunctions[i]);
-        std::cout << "The function is: "
-                        << funDecl->getQualifiedNameAsString() << std::endl;
+        /*std::cout << "The function is: "
+                       << funDecl->getQualifiedNameAsString() << std::endl;*/
         LangOptions LangOpts;
         LangOpts.CPlusPlus = true;
         int param_num = funDecl->getNumParams();
@@ -28,7 +28,7 @@ void ForwardDominanceTree::ConstructFDTFromCfg(){
         std::unique_ptr<CFG>& cfg = manager->getCFG(call_graph->allFunctions[i]);
         completeCfgRelation(cfg);
         ConstructStmtCFG();
-        dumpStmtCFG();
+        //dumpStmtCFG();
         //writeDotFile(funDecl->getQualifiedNameAsString());
         InitTreeNodeVector();
         ConstructFDT();
@@ -104,7 +104,7 @@ void ForwardDominanceTree::completeCfgRelation(unique_ptr<CFG>& cfg){
         blockcfg.push_back(blockelement);
         FDT.push_back(treenode);
     }
-    std::cout << blockNum << std::endl;
+    //std::cout << blockNum << std::endl;
 }
 
 void ForwardDominanceTree::ConstructStmtCFG(){
@@ -326,7 +326,7 @@ void ForwardDominanceTree::ConstructFDT(){
         }
         count++;
     }
-    std::cout<< "iteration time: " << count <<std::endl;
+    //std::cout<< "iteration time: " << count <<std::endl;
 }
 
 void ForwardDominanceTree::Getidom(){
@@ -462,9 +462,9 @@ void ForwardDominanceTree::Getidom(){
     for(int i=0;i<blockNum;i++){
         for(int j=0;j<FDT[i].blockstatement.size();j++){
             vector<BlockStmt> tempb_stmt = temp;
-            std::cout << "block " << i << " stmt " << j << endl;
+            //std::cout << "block " << i << " stmt " << j << endl;
             for(int k=0;k<FDT[i].postdom.size();k++){
-                std::cout <<"fdt " << FDT[i].postdom[k] << " ";
+                //std::cout <<"fdt " << FDT[i].postdom[k] << " ";
                 for(int t=0;t<tempb_stmt[FDT[i].postdom[k]].stmtnum;t++){
                     tempb_stmt[FDT[i].postdom[k]].fpostdom[t] = 1;
                 }
@@ -472,12 +472,12 @@ void ForwardDominanceTree::Getidom(){
             int cur_stmtid = FDT[i].blockstatement[j].statementid;
             //cout << "\ncur_stmtid = " << cur_stmtid << " " << FDT[i].blockstatement.size()<< endl;
             for(int k=cur_stmtid;k < FDT[i].blockstatement.size();k++){
-                std::cout << "stmtid " << k << " ";
+                //std::cout << "stmtid " << k << " ";
                 tempb_stmt[FDT[i].blockid].fpostdom[k] = 1;
             }
             FDT[i].blockstatement[j].postdom_stmt = tempb_stmt;
             //std::cout << "good\n";
-            std::cout << endl;
+            //std::cout << endl;
         }
     }
     // TODO: construct stmtcfg edge;
@@ -843,7 +843,7 @@ void DataDependenceGraph::ConstructDDG(){
     
     //dumpOutVector();
     AddDataDependence();
-    dumpStmtDDG();
+    //dumpStmtDDG();
 }
 
 void DataDependenceGraph::CompleteStmtCFG(){
@@ -1118,7 +1118,11 @@ void DataDependenceGraph::GetStmtRvalue(clang::Stmt* statement,vector<string>* r
                         //rvalue is literal
                     }
                     else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::InitListExprClass){
-                        //ravlue is literal but array 
+                        clang::InitListExpr* initit = static_cast<clang::InitListExpr*>(initexpr);
+                        int num = initit->getNumInits();
+                        for(int i=0;i<num;i++){
+                            RecursiveGetOperator(initit->getInit(i),rvalue); 
+                        }
                     }
                     else if(initexpr->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass){
                         clang::ImplicitCastExpr* implicitit = static_cast<clang::ImplicitCastExpr*>(initexpr);
@@ -1218,6 +1222,9 @@ void DataDependenceGraph::GetStmtRvalue(clang::Stmt* statement,vector<string>* r
 }
 
 void DataDependenceGraph::RecursiveGetOperator(clang::Stmt* statement,vector<string>* rvalue){
+    if(statement == nullptr){
+        return;
+    }
     if(statement->getStmtClass() == clang::Stmt::StmtClass::DeclRefExprClass){
         clang::DeclRefExpr* declrefexp = static_cast<clang::DeclRefExpr*>(statement);
         string name = declrefexp->getNameInfo().getAsString();
@@ -1269,6 +1276,9 @@ void DataDependenceGraph::RecursiveGetOperator(clang::Stmt* statement,vector<str
 }
 
 void DataDependenceGraph::GetStmtRvalueU(clang::Stmt* statement,vector<string>* rvalue){
+    if(statement == nullptr){
+        return;
+    }
     if(statement->getStmtClass() == clang::Stmt::StmtClass::CallExprClass){
         clang::CallExpr* callIter = static_cast<clang::CallExpr*>(statement);
         int argNum = callIter->getNumArgs();
@@ -1454,7 +1464,7 @@ void DataDependenceGraph::DataDependenceCheck(){
         }
         count++;
     }
-    std::cout<< "iteration time: " << count <<std::endl;
+    //std::cout<< "iteration time: " << count <<std::endl;
 }
 
 void DataDependenceGraph::CalculateBlock(int num){
@@ -1685,7 +1695,7 @@ void ProgramDependencyGraph::WriteCDGNode(std::ostream& out,int blockid,CFGInfo 
     else{
         string sourcecode = cdgnode.sourcecode;
         for(int i=0;i<sourcecode.length();i++){
-            if(sourcecode[i] == '<' || sourcecode[i] == '>'){
+            if(sourcecode[i] == '<' || sourcecode[i] == '>' || sourcecode[i] == '"'){
                 sourcecode.insert(i,"\\");
                 i++;
             }

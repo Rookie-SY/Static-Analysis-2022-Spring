@@ -1,1 +1,185 @@
+Callee of test_run_main  . 
+ config_set_string  PyConfig *  wchar_t **  const wchar_t *  
+ config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  
+ init_from_config_clear  PyConfig *  
+Callee of test_init_run_main  . 
+ init_from_config_clear  PyConfig *  
+ configure_init_main  PyConfig *  
+Callee of configure_init_main  PyConfig *  . 
+ config_set_string  PyConfig *  wchar_t **  const wchar_t *  
+ config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  
+Callee of test_init_setpath_config  . 
+ dump_config  
+ config_set_string  PyConfig *  wchar_t **  const wchar_t *  
+ init_from_config_clear  PyConfig *  
+Callee of test_audit_run_stdin  . 
+ run_audit_run_test  int  wchar_t **  void *  
+Callee of test_audit_run_startup  . 
+ run_audit_run_test  int  wchar_t **  void *  
+Callee of test_audit_run_interactivehook  . 
+ run_audit_run_test  int  wchar_t **  void *  
+Callee of test_init_dont_parse_argv  . 
+ check_init_parse_argv  int  
+Callee of test_init_parse_argv  . 
+ check_init_parse_argv  int  
+Callee of test_init_from_config  . 
+ dump_config  
+ config_set_string  PyConfig *  wchar_t **  const wchar_t *  
+ config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  
+ config_set_wide_string_list  PyConfig *  PyWideStringList *  Py_ssize_t  wchar_t **  
+ init_from_config_clear  PyConfig *  
+Callee of check_init_python_config  int  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+ set_all_global_config_variables  
+Callee of test_init_compat_config  . 
+ check_init_compat_config  int  
+Callee of test_init_warnoptions  . 
+ dump_config  
+ config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+Callee of test_preinit_compat_config  . 
+ check_init_compat_config  int  
+Callee of check_init_parse_argv  int  . 
+ dump_config  
+ config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  
+ init_from_config_clear  PyConfig *  
+Callee of bpo20891_thread  void *  . 
+Callee of test_init_read_set  . 
+ dump_config  
+ config_set_string  PyConfig *  wchar_t **  const wchar_t *  
+ init_from_config_clear  PyConfig *  
+Callee of check_preinit_isolated_config  int  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+ set_all_env_vars  
+ set_all_global_config_variables  
+Callee of run_audit_run_test  int  wchar_t **  void *  . 
+Callee of init_from_config_clear  PyConfig *  . 
+Callee of config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  . 
+Callee of _audit_hook  const char *  PyObject *  void *  . 
+Callee of test_init_initialize_config  . 
+ _testembed_Py_Initialize  
+ dump_config  
+Callee of test_initialize_twice  . 
+ _testembed_Py_Initialize  
 Callee of main  . 
+Callee of test_preinit_dont_parse_argv  . 
+ dump_config  
+ config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+Callee of set_all_env_vars  . 
+ set_most_env_vars  
+Callee of test_audit_run_command  . 
+Callee of test_repeated_init_and_subinterpreters  . 
+ _testembed_Py_Initialize  
+ print_subinterp  
+Callee of check_init_compat_config  int  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+Callee of test_init_sys_add  . 
+ dump_config  
+ config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+Callee of config_set_program_name  PyConfig *  . 
+ config_set_string  PyConfig *  wchar_t **  const wchar_t *  
+Callee of config_set_string  PyConfig *  wchar_t **  const wchar_t *  . 
+Callee of _testembed_Py_Initialize  . 
+Callee of test_pre_initialization_api  . 
+Callee of print_subinterp  . 
+Callee of test_preinit_isolated_config  . 
+ check_preinit_isolated_config  int  
+Callee of test_pre_initialization_sys_options  . 
+ _testembed_Py_Initialize  
+Callee of test_bpo20891  . 
+ _testembed_Py_Initialize  
+Callee of set_most_env_vars  . 
+Callee of main  int  char *[]  . 
+Callee of set_all_env_vars_dev_mode  . 
+Callee of test_init_main  . 
+ init_from_config_clear  PyConfig *  
+ configure_init_main  PyConfig *  
+Callee of test_open_code_hook  . 
+ _testembed_Py_Initialize  
+Callee of test_audit_subinterpreter  . 
+ _testembed_Py_Initialize  
+Callee of _audit_subinterpreter_hook  const char *  PyObject *  void *  . 
+Callee of test_init_global_config  . 
+ dump_config  
+Callee of test_init_setpythonhome  . 
+ dump_config  
+Callee of test_initialize_pymain  . 
+ _testembed_Py_Initialize  
+Callee of test_init_isolated_config  . 
+ check_preinit_isolated_config  int  
+Callee of test_init_compat_env  . 
+ _testembed_Py_Initialize  
+ dump_config  
+ set_all_env_vars  
+Callee of test_init_python_config  . 
+ check_init_python_config  int  
+Callee of test_init_python_env  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+ set_all_env_vars  
+Callee of test_init_env_dev_mode  . 
+ _testembed_Py_Initialize  
+ dump_config  
+ set_all_env_vars_dev_mode  
+Callee of dump_config  . 
+Callee of test_init_env_dev_mode_alloc  . 
+ _testembed_Py_Initialize  
+ dump_config  
+ set_all_env_vars_dev_mode  
+Callee of test_init_isolated_flag  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+ set_all_env_vars  
+Callee of test_preinit_isolated2  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+ set_all_env_vars  
+Callee of test_preinit_python_config  . 
+ check_init_python_config  int  
+Callee of config_set_wide_string_list  PyConfig *  PyWideStringList *  Py_ssize_t  wchar_t **  . 
+Callee of test_forced_io_encoding  . 
+ check_stdio_details  const char *  const char *  
+Callee of test_init_dont_configure_locale  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+Callee of test_init_dev_mode  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+Callee of test_init_setpath  . 
+ dump_config  
+Callee of test_audit_run_file  . 
+Callee of check_stdio_details  const char *  const char *  . 
+ _testembed_Py_Initialize  
+Callee of test_preinit_isolated1  . 
+ dump_config  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+ set_all_env_vars  
+Callee of _open_code_hook  PyObject *  void *  . 
+Callee of _test_audit  Py_ssize_t  . 
+ _testembed_Py_Initialize  
+Callee of set_all_global_config_variables  . 
+Callee of test_audit  . 
+ _test_audit  Py_ssize_t  
+Callee of test_preinit_parse_argv  . 
+ dump_config  
+ config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  
+ config_set_program_name  PyConfig *  
+ init_from_config_clear  PyConfig *  
+Callee of _audit_hook_run  const char *  PyObject *  void *  . 

@@ -94,6 +94,7 @@ private:
     string funcname;
     bool isvisit;
   };
+  bool need_to_print_file;
   int request_fun;
   int maxPathInFun;
   int definitionNum;
@@ -154,4 +155,7 @@ public:
   bool get_arg_name(clang::Stmt* statement,string name);
   void dump_func(std::vector<Child> childlist);
   void is_other_function(clang::FunctionDecl* func);
+
+  void report_file(string filename);
+  void init_param(int paramnum);
 };
