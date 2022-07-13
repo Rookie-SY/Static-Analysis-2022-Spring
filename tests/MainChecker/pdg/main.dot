@@ -2,34 +2,129 @@ digraph "Program Dependency Graph" {
     label="Program Dependency Graph"
 
     Node0xffffffff [shape=record,label="{Entry}"];
-    Node0x1 [shape=record,label="{return 0;}"];
+    Node0x1 [shape=record,label="{add(a1, b1)}"];
     Node0xffffffff -> Node0x1[style = dotted]
-    Node0x2 [shape=record,label="{free(p)}"];
-    Node0x3 [shape=record,label="{q = p++}"];
-    Node0x4 [shape=record,label="{p--}"];
-    Node0x5 [shape=record,label="{free(p)}"];
-    Node0x6 [shape=record,label="{int *p;}"];
-    Node0xffffffff -> Node0x6[style = dotted]
-    Node0x7 [shape=record,label="{malloc(16)}"];
-    Node0xffffffff -> Node0x7[style = dotted]
-    Node0x8 [shape=record,label="{p = (int *)malloc(16)}"];
-    Node0xffffffff -> Node0x8[style = dotted]
-    Node0x9 [shape=record,label="{int *q;}"];
-    Node0xffffffff -> Node0x9[style = dotted]
-    Node0x10 [shape=record,label="{int a;}"];
-    Node0xffffffff -> Node0x10[style = dotted]
-    Node0x11 [shape=record,label="{int b;}"];
-    Node0xffffffff -> Node0x11[style = dotted]
-    Node0x12 [shape=record,label="{a \> b}"];
-    Node0x12 -> Node0x3[color = red]
-    Node0x12 -> Node0x4[color = red]
-    Node0x12 -> Node0x5[color = red]
-    Node0x12 -> Node0x2[color = red]
-    Node0xffffffff -> Node0x12[style = dotted]
-    Node0x4 -> Node0x5[color = blue,label = "p"]
-    Node0x8 -> Node0x2[color = blue,label = "p"]
-    Node0x8 -> Node0x3[color = blue,label = "p"]
-    Node0x8 -> Node0x4[color = blue,label = "p"]
-    Node0x10 -> Node0x12[color = blue,label = "a"]
-    Node0x11 -> Node0x12[color = blue,label = "b"]
+    Node0x2 [shape=record,label="{add(10, add(a1, b1).num)}"];
+    Node0xffffffff -> Node0x2[style = dotted]
+    Node0x3 [shape=record,label="{return 0;}"];
+    Node0xffffffff -> Node0x3[style = dotted]
+    Node0x6 [shape=record,label="{treelist2[c1].m = b1}"];
+    Node0x7 [shape=record,label="{treelist2[a1].num \> c2}"];
+    Node0x7 -> Node0x6[color = red]
+    Node0x7 -> Node0x7[color = red]
+    Node0x8 [shape=record,label="{b2 == a2}"];
+    Node0x8 -> Node0x7[color = red]
+    Node0x9 [shape=record,label="{cout \<\< a2}"];
+    Node0x10 [shape=record,label="{cout \<\< a2 \<\< endl}"];
+    Node0x11 [shape=record,label="{b2 \> -a2}"];
+    Node0x11 -> Node0x9[color = red]
+    Node0x11 -> Node0x10[color = red]
+    Node0x11 -> Node0x8[color = red]
+    Node0x12 [shape=record,label="{printf(\"%d\n\", a3)}"];
+    Node0x13 [shape=record,label="{array[a3] = 0}"];
+    Node0x14 [shape=record,label="{a3 \> 'a'}"];
+    Node0x14 -> Node0x12[color = red]
+    Node0x14 -> Node0x13[color = red]
+    Node0x14 -> Node0x11[color = red]
+    Node0x15 [shape=record,label="{!(b1 \> a1 + c3)}"];
+    Node0x15 -> Node0x14[color = red]
+    Node0x15 -> Node0x15[color = red]
+    Node0x16 [shape=record,label="{i++}"];
+    Node0x17 [shape=record,label="{treelist1[i].num = array[i]}"];
+    Node0x18 [shape=record,label="{i \< 10}"];
+    Node0x18 -> Node0x16[color = red]
+    Node0x18 -> Node0x17[color = red]
+    Node0x18 -> Node0x18[color = red]
+    Node0x19 [shape=record,label="{int a1;}"];
+    Node0xffffffff -> Node0x19[style = dotted]
+    Node0x20 [shape=record,label="{int b1;}"];
+    Node0xffffffff -> Node0x20[style = dotted]
+    Node0x21 [shape=record,label="{int c1;}"];
+    Node0xffffffff -> Node0x21[style = dotted]
+    Node0x22 [shape=record,label="{float a2;}"];
+    Node0xffffffff -> Node0x22[style = dotted]
+    Node0x23 [shape=record,label="{float b2;}"];
+    Node0xffffffff -> Node0x23[style = dotted]
+    Node0x24 [shape=record,label="{float c2 = 0.5;}"];
+    Node0xffffffff -> Node0x24[style = dotted]
+    Node0x25 [shape=record,label="{char a3;}"];
+    Node0xffffffff -> Node0x25[style = dotted]
+    Node0x26 [shape=record,label="{char b3;}"];
+    Node0xffffffff -> Node0x26[style = dotted]
+    Node0x27 [shape=record,label="{char c3 = 'c';}"];
+    Node0xffffffff -> Node0x27[style = dotted]
+    Node0x28 [shape=record,label="{a1 = a3}"];
+    Node0xffffffff -> Node0x28[style = dotted]
+    Node0x29 [shape=record,label="{b2 = (b1 + c1) * (-a1)}"];
+    Node0xffffffff -> Node0x29[style = dotted]
+    Node0x30 [shape=record,label="{}"];
+    Node0xffffffff -> Node0x30[style = dotted]
+    Node0x31 [shape=record,label="{Tree tree1;}"];
+    Node0xffffffff -> Node0x31[style = dotted]
+    Node0x32 [shape=record,label="{}"];
+    Node0xffffffff -> Node0x32[style = dotted]
+    Node0x33 [shape=record,label="{Tree tree2;}"];
+    Node0xffffffff -> Node0x33[style = dotted]
+    Node0x34 [shape=record,label="{}"];
+    Node0xffffffff -> Node0x34[style = dotted]
+    Node0x35 [shape=record,label="{Tree tree4;}"];
+    Node0xffffffff -> Node0x35[style = dotted]
+    Node0x36 [shape=record,label="{tree1}"];
+    Node0xffffffff -> Node0x36[style = dotted]
+    Node0x37 [shape=record,label="{Tree tree3 = tree1;}"];
+    Node0xffffffff -> Node0x37[style = dotted]
+    Node0x38 [shape=record,label="{tree4 = tree1}"];
+    Node0xffffffff -> Node0x38[style = dotted]
+    Node0x39 [shape=record,label="{tree1.num = a1}"];
+    Node0xffffffff -> Node0x39[style = dotted]
+    Node0x40 [shape=record,label="{tree2.m = tree3.m + c2}"];
+    Node0xffffffff -> Node0x40[style = dotted]
+    Node0x41 [shape=record,label="{}"];
+    Node0xffffffff -> Node0x41[style = dotted]
+    Node0x42 [shape=record,label="{Tree treelist1[20];}"];
+    Node0xffffffff -> Node0x42[style = dotted]
+    Node0x43 [shape=record,label="{}"];
+    Node0xffffffff -> Node0x43[style = dotted]
+    Node0x44 [shape=record,label="{Tree treelist2[15];}"];
+    Node0xffffffff -> Node0x44[style = dotted]
+    Node0x45 [shape=record,label="{float array[10];}"];
+    Node0xffffffff -> Node0x45[style = dotted]
+    Node0x46 [shape=record,label="{int i = 0;}"];
+    Node0xffffffff -> Node0x46[style = dotted]
+    Node0x6 -> Node0x7[color = blue,label = "treelist2"]
+    Node0x16 -> Node0x16[color = blue,label = "i"]
+    Node0x16 -> Node0x17[color = blue,label = "i"]
+    Node0x16 -> Node0x17[color = blue,label = "i"]
+    Node0x16 -> Node0x18[color = blue,label = "i"]
+    Node0x20 -> Node0x1[color = blue,label = "b1"]
+    Node0x20 -> Node0x6[color = blue,label = "b1"]
+    Node0x20 -> Node0x15[color = blue,label = "b1"]
+    Node0x20 -> Node0x29[color = blue,label = "b1"]
+    Node0x21 -> Node0x6[color = blue,label = "c1"]
+    Node0x21 -> Node0x29[color = blue,label = "c1"]
+    Node0x22 -> Node0x8[color = blue,label = "a2"]
+    Node0x22 -> Node0x11[color = blue,label = "a2"]
+    Node0x24 -> Node0x7[color = blue,label = "c2"]
+    Node0x24 -> Node0x40[color = blue,label = "c2"]
+    Node0x25 -> Node0x12[color = blue,label = "a3"]
+    Node0x25 -> Node0x13[color = blue,label = "a3"]
+    Node0x25 -> Node0x14[color = blue,label = "a3"]
+    Node0x25 -> Node0x28[color = blue,label = "a3"]
+    Node0x27 -> Node0x15[color = blue,label = "c3"]
+    Node0x28 -> Node0x1[color = blue,label = "a1"]
+    Node0x28 -> Node0x7[color = blue,label = "a1"]
+    Node0x28 -> Node0x15[color = blue,label = "a1"]
+    Node0x28 -> Node0x29[color = blue,label = "a1"]
+    Node0x28 -> Node0x39[color = blue,label = "a1"]
+    Node0x29 -> Node0x8[color = blue,label = "b2"]
+    Node0x29 -> Node0x11[color = blue,label = "b2"]
+    Node0x31 -> Node0x37[color = blue,label = "tree1"]
+    Node0x31 -> Node0x38[color = blue,label = "tree1"]
+    Node0x37 -> Node0x40[color = blue,label = "tree3"]
+    Node0x44 -> Node0x7[color = blue,label = "treelist2"]
+    Node0x45 -> Node0x17[color = blue,label = "array"]
+    Node0x46 -> Node0x16[color = blue,label = "i"]
+    Node0x46 -> Node0x17[color = blue,label = "i"]
+    Node0x46 -> Node0x17[color = blue,label = "i"]
+    Node0x46 -> Node0x18[color = blue,label = "i"]
 }

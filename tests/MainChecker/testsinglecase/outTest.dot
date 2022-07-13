@@ -1,0 +1,121 @@
+digraph "Call graph" {
+    label="Call graph"
+
+    Node0x55c44a495750 [shape=record,label="{_PyDebugAllocatorStats  FILE *  const char *  int  size_t  }"];
+    Node0x55c44a495750 -> Node0x55c44a4872c0
+    Node0x55c44a4872c0 [shape=record,label="{printone  FILE *  const char *  size_t  }"];
+    Node0x55c44a3db090 [shape=record,label="{_PyMem_RawWcsdup  const wchar_t *  }"];
+    Node0x55c44a3db090 -> Node0x55c44a246740
+    Node0x55c44a3862e0 [shape=record,label="{_PyObject_ArenaMunmap  void *  void *  size_t  }"];
+    Node0x55c44a39fc30 [shape=record,label="{pymemallocator_eq  PyMemAllocatorEx *  PyMemAllocatorEx *  }"];
+    Node0x55c44a3d5490 [shape=record,label="{PyMem_Realloc  void *  size_t  }"];
+    Node0x55c44a4268b0 [shape=record,label="{_PyMem_DebugRawAlloc  int  void *  size_t  }"];
+    Node0x55c44a4268b0 -> Node0x55c44a4241a0
+    Node0x55c44a3cd1a0 [shape=record,label="{PyMem_Malloc  size_t  }"];
+    Node0x55c44a307ef0 [shape=record,label="{_PyMem_RawCalloc  void *  size_t  size_t  }"];
+    Node0x55c44a3371c0 [shape=record,label="{PyObject_Free  void *  }"];
+    Node0x55c44a246740 [shape=record,label="{PyMem_RawMalloc  size_t  }"];
+    Node0x55c44a4329b0 [shape=record,label="{_PyMem_DebugRawCalloc  void *  size_t  size_t  }"];
+    Node0x55c44a4329b0 -> Node0x55c44a4268b0
+    Node0x55c44a246c50 [shape=record,label="{PyMem_RawCalloc  size_t  size_t  }"];
+    Node0x55c44a399010 [shape=record,label="{_PyMem_SetupAllocators  PyMemAllocatorName  }"];
+    Node0x55c44a399010 -> Node0x55c44a321210
+    Node0x55c44a399010 -> Node0x55c44a2af850
+    Node0x55c44a399010 -> Node0x55c44a38a900
+    Node0x55c44a399010 -> Node0x55c44a2f59a0
+    Node0x55c44a337280 [shape=record,label="{_Py_GetAllocatedBlocks  }"];
+    Node0x55c44a32a890 [shape=record,label="{PyObject_SetArenaAllocator  PyObjectArenaAllocator *  }"];
+    Node0x55c44a2e9450 [shape=record,label="{_PyObject_DebugDumpAddress  const void *  }"];
+    Node0x55c44a2e9450 -> Node0x55c44a41eb40
+    Node0x55c44a321210 [shape=record,label="{PyMem_SetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  }"];
+    Node0x55c44a2af850 [shape=record,label="{PyMem_SetupDebugHooks  }"];
+    Node0x55c44a2af850 -> Node0x55c44a3b3690
+    Node0x55c44a3b1350 [shape=record,label="{_PyMem_PymallocEnabled  }"];
+    Node0x55c44a3b1350 -> Node0x55c44a248f10
+    Node0x55c44a2467c0 [shape=record,label="{PyObject_GetArenaAllocator  PyObjectArenaAllocator *  }"];
+    Node0x55c44a3e2e60 [shape=record,label="{_PyMem_RawStrdup  const char *  }"];
+    Node0x55c44a3e2e60 -> Node0x55c44a246740
+    Node0x55c44a1baab0 [shape=record,label="{_PyMem_RawMalloc  void *  size_t  }"];
+    Node0x55c44a45d1d0 [shape=record,label="{_PyMem_DebugRealloc  void *  void *  size_t  }"];
+    Node0x55c44a45d1d0 -> Node0x55c44a438a80
+    Node0x55c44a45d1d0 -> Node0x55c44a3b7830
+    Node0x55c44a3093a0 [shape=record,label="{_PyMem_RawRealloc  void *  void *  size_t  }"];
+    Node0x55c44a404b50 [shape=record,label="{_PyObject_Malloc  void *  size_t  }"];
+    Node0x55c44a404b50 -> Node0x55c44a246740
+    Node0x55c44a404b50 -> Node0x55c44a3fca10
+    Node0x55c44a451e20 [shape=record,label="{_PyMem_DebugMalloc  void *  size_t  }"];
+    Node0x55c44a451e20 -> Node0x55c44a42c3e0
+    Node0x55c44a451e20 -> Node0x55c44a3b7830
+    Node0x55c44a3d2d10 [shape=record,label="{PyMem_Free  void *  }"];
+    Node0x55c44a3ebd10 [shape=record,label="{PyObject_Calloc  size_t  size_t  }"];
+    Node0x55c44a2da100 [shape=record,label="{_PyObject_ArenaMmap  void *  size_t  }"];
+    Node0x55c44a438530 [shape=record,label="{_PyMem_DebugRawFree  void *  void *  }"];
+    Node0x55c44a438530 -> Node0x55c44a2e00b0
+    Node0x55c44a438530 -> Node0x55c44a41eb40
+    Node0x55c44a2d5b40 [shape=record,label="{_PyMem_RawFree  void *  void *  }"];
+    Node0x55c44a41eb40 [shape=record,label="{read_size_t  const void *  }"];
+    Node0x55c44a2f59a0 [shape=record,label="{_PyMem_SetDefaultAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  }"];
+    Node0x55c44a2f59a0 -> Node0x55c44a38a900
+    Node0x55c44a38a900 [shape=record,label="{pymem_set_default_allocator  PyMemAllocatorDomain  int  PyMemAllocatorEx *  }"];
+    Node0x55c44a38a900 -> Node0x55c44a2af930
+    Node0x55c44a38a900 -> Node0x55c44a321210
+    Node0x55c44a38a900 -> Node0x55c44a3b3690
+    Node0x55c44a2af930 [shape=record,label="{PyMem_GetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  }"];
+    Node0x55c44a438a80 [shape=record,label="{_PyMem_DebugRawRealloc  void *  void *  size_t  }"];
+    Node0x55c44a438a80 -> Node0x55c44a2e00b0
+    Node0x55c44a438a80 -> Node0x55c44a41eb40
+    Node0x55c44a438a80 -> Node0x55c44a4241a0
+    Node0x55c44a438a80 -> Node0x55c44a4268b0
+    Node0x55c44a3a3070 [shape=record,label="{_PyMem_GetCurrentAllocatorName  }"];
+    Node0x55c44a3a3070 -> Node0x55c44a39fc30
+    Node0x55c44a3e5290 [shape=record,label="{_PyMem_Strdup  const char *  }"];
+    Node0x55c44a3e5290 -> Node0x55c44a3cd1a0
+    Node0x55c44a3e98e0 [shape=record,label="{PyObject_Malloc  size_t  }"];
+    Node0x55c44a248f10 [shape=record,label="{_PyMem_DebugEnabled  }"];
+    Node0x55c44a345680 [shape=record,label="{PyObject_Realloc  void *  size_t  }"];
+    Node0x55c44a41c500 [shape=record,label="{_PyObject_Realloc  void *  void *  size_t  }"];
+    Node0x55c44a41c500 -> Node0x55c44a3c55d0
+    Node0x55c44a41c500 -> Node0x55c44a404b50
+    Node0x55c44a41c500 -> Node0x55c44a4125a0
+    Node0x55c44a345aa0 [shape=record,label="{new_arena  }"];
+    Node0x55c44a345aa0 -> Node0x55c44a4a8af0
+    Node0x55c44a345aa0 -> Node0x55c44a3c55d0
+    Node0x55c44a3462e0 [shape=record,label="{address_in_range  void *  poolp  }"];
+    Node0x55c44a3b3690 [shape=record,label="{_PyMem_SetupDebugHooksDomain  PyMemAllocatorDomain  }"];
+    Node0x55c44a3b3690 -> Node0x55c44a2af930
+    Node0x55c44a3b3690 -> Node0x55c44a321210
+    Node0x55c44a453440 [shape=record,label="{_PyMem_DebugCalloc  void *  size_t  size_t  }"];
+    Node0x55c44a453440 -> Node0x55c44a4329b0
+    Node0x55c44a453440 -> Node0x55c44a3b7830
+    Node0x55c44a3fca10 [shape=record,label="{pymalloc_alloc  void *  size_t  }"];
+    Node0x55c44a3fca10 -> Node0x55c44a345aa0
+    Node0x55c44a408190 [shape=record,label="{_PyObject_Calloc  void *  size_t  size_t  }"];
+    Node0x55c44a408190 -> Node0x55c44a246c50
+    Node0x55c44a408190 -> Node0x55c44a3fca10
+    Node0x55c44a3c55d0 [shape=record,label="{PyMem_RawRealloc  void *  size_t  }"];
+    Node0x55c44a4125a0 [shape=record,label="{pymalloc_realloc  void *  void **  void *  size_t  }"];
+    Node0x55c44a4125a0 -> Node0x55c44a3462e0
+    Node0x55c44a4125a0 -> Node0x55c44a404b50
+    Node0x55c44a4125a0 -> Node0x55c44a40f170
+    Node0x55c44a4a8af0 [shape=record,label="{_PyObject_DebugMallocStats  FILE *  }"];
+    Node0x55c44a4a8af0 -> Node0x55c44a3b1350
+    Node0x55c44a4a8af0 -> Node0x55c44a4872c0
+    Node0x55c44a40a710 [shape=record,label="{pymalloc_free  void *  void *  }"];
+    Node0x55c44a40a710 -> Node0x55c44a3462e0
+    Node0x55c44a40f170 [shape=record,label="{_PyObject_Free  void *  void *  }"];
+    Node0x55c44a40f170 -> Node0x55c44a3c7c20
+    Node0x55c44a40f170 -> Node0x55c44a40a710
+    Node0x55c44a4241a0 [shape=record,label="{write_size_t  void *  size_t  }"];
+    Node0x55c44a3cd300 [shape=record,label="{PyMem_Calloc  size_t  size_t  }"];
+    Node0x55c44a42c3e0 [shape=record,label="{_PyMem_DebugRawMalloc  void *  size_t  }"];
+    Node0x55c44a42c3e0 -> Node0x55c44a4268b0
+    Node0x55c44a3c7c20 [shape=record,label="{PyMem_RawFree  void *  }"];
+    Node0x55c44a2e00b0 [shape=record,label="{_PyMem_DebugCheckAddress  char  const void *  }"];
+    Node0x55c44a2e00b0 -> Node0x55c44a2e9450
+    Node0x55c44a2e00b0 -> Node0x55c44a41eb40
+    Node0x55c44a3b7830 [shape=record,label="{_PyMem_DebugCheckGIL  }"];
+    Node0x55c44a2f6020 [shape=record,label="{_PyMem_GetAllocatorName  const char *  PyMemAllocatorName *  }"];
+    Node0x55c44a457b20 [shape=record,label="{_PyMem_DebugFree  void *  void *  }"];
+    Node0x55c44a457b20 -> Node0x55c44a438530
+    Node0x55c44a457b20 -> Node0x55c44a3b7830
+}

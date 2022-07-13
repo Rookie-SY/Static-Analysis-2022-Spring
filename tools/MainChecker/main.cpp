@@ -88,11 +88,11 @@ int main(int argc, const char *argv[]) {
   // cdg.ConstructCDG();
   // cdg.dumpCDG();
   // cdg.dumpStmtCDG();
-  // endCTime = clock();
   // DataDependenceGraph ddg(&manager, &resource, &call_graph,&fdt);
   // ddg.ConstructDDGForest();
   // ProgramDependencyGraph pdg(&manager, &resource, &call_graph,&cdg, &ddg);
   // pdg.DrawPdgForest();
+  // endCTime = clock();
   // unsigned sec = unsigned((endCTime - startCTime) / CLOCKS_PER_SEC);
   // unsigned min = sec / 60;
   // process_file << "-----------------------------------------------------------"
