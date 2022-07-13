@@ -1,0 +1,632 @@
+The entry function is: _PyMem_RawMalloc
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+count
+good
+good
+good
+good
+good
+good
+iteration time: 2
+Definition Number: 2
+Block Number: 5
+Variable Name:ctx     Not initialized
+Variable Name:size     Not initialized
+bit vector length:  3
+******************************
+left: size right literal:1
+[31mBlock Number: 0   Out vector: [0m111
+[31mBlock Number: 1   Out vector: [0m111
+[31mBlock Number: 2   Out vector: [0m101
+[31mBlock Number: 3   Out vector: [0m110
+[31mBlock Number: 4   Out vector: [0m110
+[31mWARNING:USE UNINITIALIZED VARIABLE size: Line: 97 Column: 9[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE size: Line: 99 Column: 19[0m
+The entry function is: _PyMem_RawCalloc
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+count
+count
+count
+good
+good
+good
+good
+good
+good
+iteration time: 2
+Definition Number: 3
+Block Number: 6
+Variable Name:ctx     Not initialized
+Variable Name:nelem     Not initialized
+Variable Name:elsize     Not initialized
+bit vector length:  5
+******************************
+left: nelem right literal:1
+left: elsize right literal:1
+[31mBlock Number: 0   Out vector: [0m11111
+[31mBlock Number: 1   Out vector: [0m11111
+[31mBlock Number: 2   Out vector: [0m10011
+[31mBlock Number: 3   Out vector: [0m11100
+[31mBlock Number: 4   Out vector: [0m11100
+[31mBlock Number: 5   Out vector: [0m11100
+[31mWARNING:USE UNINITIALIZED VARIABLE nelem: Line: 109 Column: 9[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE nelem: Line: 113 Column: 19[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE elsize: Line: 109 Column: 23[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE elsize: Line: 113 Column: 26[0m
+The entry function is: _PyMem_RawRealloc
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+count
+good
+good
+good
+good
+good
+good
+iteration time: 2
+Definition Number: 3
+Block Number: 5
+Variable Name:ctx     Not initialized
+Variable Name:ptr     Not initialized
+Variable Name:size     Not initialized
+bit vector length:  4
+******************************
+left: size right literal:1
+[31mBlock Number: 0   Out vector: [0m1111
+[31mBlock Number: 1   Out vector: [0m1111
+[31mBlock Number: 2   Out vector: [0m1101
+[31mBlock Number: 3   Out vector: [0m1110
+[31mBlock Number: 4   Out vector: [0m1110
+[31mWARNING:USE UNINITIALIZED VARIABLE ptr: Line: 121 Column: 20[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE size: Line: 119 Column: 9[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE size: Line: 121 Column: 25[0m
+The entry function is: _PyMem_RawFree
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+good
+good
+good
+good
+good
+good
+iteration time: 1
+Definition Number: 2
+Block Number: 3
+Variable Name:ctx     Not initialized
+Variable Name:ptr     Not initialized
+bit vector length:  2
+******************************
+[31mBlock Number: 0   Out vector: [0m11
+[31mBlock Number: 1   Out vector: [0m11
+[31mBlock Number: 2   Out vector: [0m11
+[31mWARNING:USE UNINITIALIZED VARIABLE ptr: Line: 127 Column: 10[0m
+The entry function is: _PyObject_ArenaMmap
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+count
+count
+count
+count
+good
+good
+good
+good
+good
+good
+iteration time: 2
+Definition Number: 3
+Block Number: 5
+Variable Name:ctx     Not initialized
+Variable Name:size     Not initialized
+Variable Name:ptr     Not initialized
+bit vector length:  4
+******************************
+left: ptr right ref: size 
+[31mBlock Number: 0   Out vector: [0m1101
+[31mBlock Number: 1   Out vector: [0m1101
+[31mBlock Number: 2   Out vector: [0m1101
+[31mBlock Number: 3   Out vector: [0m1101
+[31mBlock Number: 4   Out vector: [0m1110
+[31mWARNING:USE UNINITIALIZED VARIABLE size: Line: 150 Column: 22[0m
+The entry function is: _PyObject_ArenaMunmap
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+good
+good
+good
+good
+good
+good
+iteration time: 1
+Definition Number: 3
+Block Number: 3
+Variable Name:ctx     Not initialized
+Variable Name:ptr     Not initialized
+Variable Name:size     Not initialized
+bit vector length:  3
+******************************
+[31mBlock Number: 0   Out vector: [0m111
+[31mBlock Number: 1   Out vector: [0m111
+[31mBlock Number: 2   Out vector: [0m111
+[31mWARNING:USE UNINITIALIZED VARIABLE ptr: Line: 161 Column: 12[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE size: Line: 161 Column: 17[0m
+The entry function is: pymem_set_default_allocator
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+good
+good
+good
+good
+good
+good
+wrong bfs
+wrong bfs
+wrong bfs
+iteration time: 3
+Definition Number: 4
+Block Number: 12
+Variable Name:domain     Not initialized
+Variable Name:debug     Not initialized
+Variable Name:old_alloc     Not initialized
+Variable Name:new_alloc     Not initialized
+bit vector length:  7
+******************************
+left: new_alloc left: new_alloc left: new_alloc [31mBlock Number: 0   Out vector: [0m1110111
+[31mBlock Number: 1   Out vector: [0m1110111
+[31mBlock Number: 2   Out vector: [0m1110111
+[31mBlock Number: 3   Out vector: [0m1110111
+[31mBlock Number: 4   Out vector: [0m1111000
+[31mBlock Number: 5   Out vector: [0m0000000
+[31mBlock Number: 6   Out vector: [0m1110100
+[31mBlock Number: 7   Out vector: [0m1110010
+[31mBlock Number: 8   Out vector: [0m1110001
+[31mBlock Number: 9   Out vector: [0m1111000
+[31mBlock Number: 10   Out vector: [0m1111000
+[31mBlock Number: 11   Out vector: [0m1111000
+[31mWARNING:USE UNINITIALIZED VARIABLE domain: Line: 229 Column: 28[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE domain: Line: 234 Column: 12[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE domain: Line: 249 Column: 24[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE domain: Line: 251 Column: 38[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE debug: Line: 250 Column: 9[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE old_alloc: Line: 228 Column: 9[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE old_alloc: Line: 229 Column: 36[0m
+The entry function is: _PyMem_SetDefaultAllocator
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+good
+good
+good
+good
+good
+good
+iteration time: 2
+Definition Number: 3
+Block Number: 3
+Variable Name:domain     Not initialized
+Variable Name:old_alloc     Not initialized
+Variable Name:debug     Is initialized 0
+bit vector length:  4
+******************************
+left: debug right literal:0
+[31mBlock Number: 0   Out vector: [0m1101
+[31mBlock Number: 1   Out vector: [0m1101
+[31mBlock Number: 2   Out vector: [0m1110
+[31mWARNING:USE UNINITIALIZED VARIABLE domain: Line: 266 Column: 40[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE old_alloc: Line: 266 Column: 55[0m
+The entry function is: _PyMem_GetAllocatorName
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+good
+good
+good
+good
+good
+good
+iteration time: 1
+Definition Number: 2
+Block Number: 19
+Variable Name:name     Not initialized
+Variable Name:allocator     Not initialized
+bit vector length:  9
+******************************
+left: nothing right ref: PYMEM_ALLOCATOR_MALLOC_DEBUG 
+left: nothing right ref: PYMEM_ALLOCATOR_MALLOC 
+left: nothing right ref: PYMEM_ALLOCATOR_PYMALLOC_DEBUG 
+left: nothing right ref: PYMEM_ALLOCATOR_PYMALLOC 
+left: nothing right ref: PYMEM_ALLOCATOR_DEBUG 
+left: nothing right ref: PYMEM_ALLOCATOR_DEFAULT 
+left: nothing right ref: PYMEM_ALLOCATOR_DEFAULT 
+[31mBlock Number: 0   Out vector: [0m110000000
+[31mBlock Number: 1   Out vector: [0m110000000
+[31mBlock Number: 2   Out vector: [0m110000000
+[31mBlock Number: 3   Out vector: [0m110000000
+[31mBlock Number: 4   Out vector: [0m110000000
+[31mBlock Number: 5   Out vector: [0m110000000
+[31mBlock Number: 6   Out vector: [0m110000000
+[31mBlock Number: 7   Out vector: [0m110000000
+[31mBlock Number: 8   Out vector: [0m110000000
+[31mBlock Number: 9   Out vector: [0m110000000
+[31mBlock Number: 10   Out vector: [0m110000000
+[31mBlock Number: 11   Out vector: [0m110000000
+[31mBlock Number: 12   Out vector: [0m110000000
+[31mBlock Number: 13   Out vector: [0m110000000
+[31mBlock Number: 14   Out vector: [0m110000000
+[31mBlock Number: 15   Out vector: [0m110000000
+[31mBlock Number: 16   Out vector: [0m110000000
+[31mBlock Number: 17   Out vector: [0m110000000
+[31mBlock Number: 18   Out vector: [0m110000000
+[31mWARNING:USE UNINITIALIZED VARIABLE name: Line: 273 Column: 9[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE name: Line: 273 Column: 26[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE name: Line: 278 Column: 21[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE name: Line: 281 Column: 21[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE name: Line: 285 Column: 21[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE name: Line: 288 Column: 21[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE name: Line: 292 Column: 21[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE name: Line: 295 Column: 21[0m
+The entry function is: _PyMem_SetupAllocators
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+good
+good
+good
+-------------******-------------------
+-------------******-------------------
+-------------******-------------------
+good
+good
+good
+wrong bfs
+wrong bfs
+iteration time: 2
+Definition Number: 4
+Block Number: 16
+Variable Name:allocator     Not initialized
+Variable Name:malloc_alloc     Is initialized 6.92458e-310
+Variable Name:malloc_alloc     Is initialized 6.92458e-310
+Variable Name:pymalloc     Is initialized 6.92458e-310
+bit vector length:  7
+******************************
+left: malloc_alloc right ref: _PyMem_RawMalloc _PyMem_RawCalloc _PyMem_RawRealloc _PyMem_RawFree 
+left: malloc_alloc right ref: _PyMem_RawMalloc _PyMem_RawCalloc _PyMem_RawRealloc _PyMem_RawFree 
+left: pymalloc right ref: _PyObject_Malloc _PyObject_Calloc _PyObject_Realloc _PyObject_Free 
+[31mBlock Number: 0   Out vector: [0m1111111
+[31mBlock Number: 1   Out vector: [0m1111111
+[31mBlock Number: 2   Out vector: [0m1111000
+[31mBlock Number: 3   Out vector: [0m0000000
+[31mBlock Number: 4   Out vector: [0m1111000
+[31mBlock Number: 5   Out vector: [0m1001100
+[31mBlock Number: 6   Out vector: [0m1001100
+[31mBlock Number: 7   Out vector: [0m1001100
+[31mBlock Number: 8   Out vector: [0m1111000
+[31mBlock Number: 9   Out vector: [0m1000011
+[31mBlock Number: 10   Out vector: [0m1000011
+[31mBlock Number: 11   Out vector: [0m1000011
+[31mBlock Number: 12   Out vector: [0m1111000
+[31mBlock Number: 13   Out vector: [0m1111000
+[31mBlock Number: 14   Out vector: [0m1111000
+[31mBlock Number: 15   Out vector: [0m1111000
+[31mWARNING:USE UNINITIALIZED VARIABLE allocator: Line: 309 Column: 13[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE allocator: Line: 352 Column: 13[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE allocator: Line: 337 Column: 13[0m
+The entry function is: pymemallocator_eq
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+good
+good
+good
+good
+good
+good
+iteration time: 1
+Definition Number: 2
+Block Number: 3
+Variable Name:a     Not initialized
+Variable Name:b     Not initialized
+bit vector length:  2
+******************************
+[31mBlock Number: 0   Out vector: [0m11
+[31mBlock Number: 1   Out vector: [0m11
+[31mBlock Number: 2   Out vector: [0m11
+[31mWARNING:USE UNINITIALIZED VARIABLE a: Line: 369 Column: 20[0m
+[31mWARNING:USE UNINITIALIZED VARIABLE b: Line: 369 Column: 23[0m
+The entry function is: _PyMem_GetCurrentAllocatorName
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+count
+good
+good
+good
+-------------******-------------------
+-------------******-------------------
+-------------******-------------------
+-------------******-------------------
+-------------******-------------------
+good
+good
+good
+iteration time: 6
+Definition Number: 5
+Block Number: 22
+Variable Name:dbg_raw     Is initialized 6.92458e-310
+Variable Name:dbg_mem     Is initialized 6.92458e-310
+Variable Name:dbg_obj     Is initialized 6.92458e-310
+Variable Name:malloc_alloc     Is initialized 6.92458e-310
+Variable Name:pymalloc     Is initialized 6.92458e-310
+bit vector length:  10
+******************************
+left: dbg_raw right ref: _PyMem_Debug _PyMem_DebugRawMalloc _PyMem_DebugRawCalloc _PyMem_DebugRawRealloc _PyMem_DebugRawFree 
+left: dbg_mem right ref: _PyMem_Debug _PyMem_DebugMalloc _PyMem_DebugCalloc _PyMem_DebugRealloc _PyMem_DebugFree 
+left: dbg_obj right ref: _PyMem_Debug _PyMem_DebugMalloc _PyMem_DebugCalloc _PyMem_DebugRealloc _PyMem_DebugFree 
+left: malloc_alloc right ref: _PyMem_RawMalloc _PyMem_RawCalloc _PyMem_RawRealloc _PyMem_RawFree 
+left: pymalloc right ref: _PyObject_Malloc _PyObject_Calloc _PyObject_Realloc _PyObject_Free 
+[31mBlock Number: 0   Out vector: [0m1110011111
+[31mBlock Number: 1   Out vector: [0m0000011111
+[31mBlock Number: 2   Out vector: [0m0000011111
+[31mBlock Number: 3   Out vector: [0m0000011111
+[31mBlock Number: 4   Out vector: [0m0000011111
+[31mBlock Number: 5   Out vector: [0m0000011111
+[31mBlock Number: 6   Out vector: [0m0000011111
+[31mBlock Number: 7   Out vector: [0m0000011111
+[31mBlock Number: 8   Out vector: [0m0000011111
+[31mBlock Number: 9   Out vector: [0m0000011111
+[31mBlock Number: 10   Out vector: [0m0000011111
+[31mBlock Number: 11   Out vector: [0m0000011111
+[31mBlock Number: 12   Out vector: [0m0000011111
+[31mBlock Number: 13   Out vector: [0m1110000011
+[31mBlock Number: 14   Out vector: [0m1110000011
+[31mBlock Number: 15   Out vector: [0m1110000011
+[31mBlock Number: 16   Out vector: [0m1110000011
+[31mBlock Number: 17   Out vector: [0m1110000011
+[31mBlock Number: 18   Out vector: [0m1110000011
+[31mBlock Number: 19   Out vector: [0m1110000011
+[31mBlock Number: 20   Out vector: [0m1110000011
+[31mBlock Number: 21   Out vector: [0m1111100000
+The entry function is: _PyMem_DebugEnabled
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+good
+good
+good
+good
+good
+good
+iteration time: 1
+Definition Number: 0
+Block Number: 3
+bit vector length:  0
+******************************
+[31mBlock Number: 0   Out vector: [0m
+[31mBlock Number: 1   Out vector: [0m
+[31mBlock Number: 2   Out vector: [0m
+The entry function is: _PyMem_PymallocEnabled
+Here is its dump: 
+Here are related Statements: 
+count6
+count5
+count4
+count3
+count2
+good1
+count1
+count
+count
+count
+good
+good
+good
+good
+good
+good
+iteration time: 1
+Definition Number: 0
+Block Number: 5
+bit vector length:  0
+******************************
+[31mBlock Number: 0   Out vector: [0m
+[31mBlock Number: 1   Out vector: [0m
+[31mBlock Number: 2   Out vector: [0m
+[31mBlock Number: 3   Out vector: [0m
+[31mBlock Number: 4   Out vector: [0m
+The entry function is: _PyMem_SetupDebugHooksDomain
+Here is its dump: 
+Here are related Statements: 

@@ -1,0 +1,26 @@
+CheckerEnable
+{
+	UndefinedVariableChecker = true
+	CallGraphChecker = true
+}
+
+PrintLog
+{
+	level = 0
+	taintChecker = false
+	UndefinedVariableChecker = false
+	arrayBound = false
+	recursiveCall = false
+	divideChecker = false
+	memoryOPChecker = false
+}
+
+Framework
+{
+	queue_size = 100
+}
+
+UndefinedVariableChecker
+{
+	request_fun = 2
+}

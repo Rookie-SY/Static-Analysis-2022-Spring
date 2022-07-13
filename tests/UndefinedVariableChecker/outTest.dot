@@ -1,5 +1,189 @@
 digraph "Call graph" {
     label="Call graph"
 
-    Node0x55a9301f0410 [shape=record,label="{main  }"];
+    Node0x56318575f520 [shape=record,label="{test_run_main  }"];
+    Node0x56318575f520 -> Node0x5631855ceee0
+    Node0x56318575f520 -> Node0x563185671060
+    Node0x56318575f520 -> Node0x563185520990
+    Node0x563185755890 [shape=record,label="{test_init_run_main  }"];
+    Node0x563185755890 -> Node0x563185520990
+    Node0x563185755890 -> Node0x5631855c9110
+    Node0x5631855c9110 [shape=record,label="{configure_init_main  PyConfig *  }"];
+    Node0x5631855c9110 -> Node0x5631855ceee0
+    Node0x5631855c9110 -> Node0x563185671060
+    Node0x56318567e950 [shape=record,label="{test_init_setpath_config  }"];
+    Node0x56318567e950 -> Node0x5631855ce820
+    Node0x56318567e950 -> Node0x5631855ceee0
+    Node0x56318567e950 -> Node0x563185520990
+    Node0x56318568f5b0 [shape=record,label="{test_audit_run_stdin  }"];
+    Node0x56318568f5b0 -> Node0x563185710720
+    Node0x56318568f480 [shape=record,label="{test_audit_run_startup  }"];
+    Node0x56318568f480 -> Node0x563185710720
+    Node0x56318567b390 [shape=record,label="{test_audit_run_interactivehook  }"];
+    Node0x56318567b390 -> Node0x563185710720
+    Node0x5631855fb910 [shape=record,label="{test_init_dont_parse_argv  }"];
+    Node0x5631855fb910 -> Node0x5631854e6ca0
+    Node0x5631855fb810 [shape=record,label="{test_init_parse_argv  }"];
+    Node0x5631855fb810 -> Node0x5631854e6ca0
+    Node0x5631854e6830 [shape=record,label="{test_init_from_config  }"];
+    Node0x5631854e6830 -> Node0x5631855ce820
+    Node0x5631854e6830 -> Node0x5631855ceee0
+    Node0x5631854e6830 -> Node0x563185671060
+    Node0x5631854e6830 -> Node0x5631856779a0
+    Node0x5631854e6830 -> Node0x563185520990
+    Node0x5631856dabb0 [shape=record,label="{check_init_python_config  int  }"];
+    Node0x5631856dabb0 -> Node0x5631855ce820
+    Node0x5631856dabb0 -> Node0x563185675700
+    Node0x5631856dabb0 -> Node0x563185520990
+    Node0x5631856dabb0 -> Node0x56318560eb00
+    Node0x56318568b680 [shape=record,label="{test_init_compat_config  }"];
+    Node0x56318568b680 -> Node0x563185520d40
+    Node0x5631855bfe50 [shape=record,label="{test_init_warnoptions  }"];
+    Node0x5631855bfe50 -> Node0x5631855ce820
+    Node0x5631855bfe50 -> Node0x563185671060
+    Node0x5631855bfe50 -> Node0x563185675700
+    Node0x5631855bfe50 -> Node0x563185520990
+    Node0x563185689330 [shape=record,label="{test_preinit_compat_config  }"];
+    Node0x563185689330 -> Node0x563185520d40
+    Node0x5631854e6ca0 [shape=record,label="{check_init_parse_argv  int  }"];
+    Node0x5631854e6ca0 -> Node0x5631855ce820
+    Node0x5631854e6ca0 -> Node0x563185671060
+    Node0x5631854e6ca0 -> Node0x563185520990
+    Node0x56318565e320 [shape=record,label="{bpo20891_thread  void *  }"];
+    Node0x56318568fb90 [shape=record,label="{test_init_read_set  }"];
+    Node0x56318568fb90 -> Node0x5631855ce820
+    Node0x56318568fb90 -> Node0x5631855ceee0
+    Node0x56318568fb90 -> Node0x563185520990
+    Node0x56318561e1d0 [shape=record,label="{check_preinit_isolated_config  int  }"];
+    Node0x56318561e1d0 -> Node0x5631855ce820
+    Node0x56318561e1d0 -> Node0x563185675700
+    Node0x56318561e1d0 -> Node0x563185520990
+    Node0x56318561e1d0 -> Node0x56318551ecc0
+    Node0x56318561e1d0 -> Node0x56318560eb00
+    Node0x563185710720 [shape=record,label="{run_audit_run_test  int  wchar_t **  void *  }"];
+    Node0x563185520990 [shape=record,label="{init_from_config_clear  PyConfig *  }"];
+    Node0x563185671060 [shape=record,label="{config_set_argv  PyConfig *  Py_ssize_t  wchar_t *const *  }"];
+    Node0x5631856f4900 [shape=record,label="{_audit_hook  const char *  PyObject *  void *  }"];
+    Node0x563185471840 [shape=record,label="{test_init_initialize_config  }"];
+    Node0x563185471840 -> Node0x563185492c70
+    Node0x563185471840 -> Node0x5631855ce820
+    Node0x5631855cd3f0 [shape=record,label="{test_initialize_twice  }"];
+    Node0x5631855cd3f0 -> Node0x563185492c70
+    Node0x56318545c4b0 [shape=record,label="{main  }"];
+    Node0x5631856b7c60 [shape=record,label="{test_preinit_dont_parse_argv  }"];
+    Node0x5631856b7c60 -> Node0x5631855ce820
+    Node0x5631856b7c60 -> Node0x563185671060
+    Node0x5631856b7c60 -> Node0x563185675700
+    Node0x5631856b7c60 -> Node0x563185520990
+    Node0x56318551ecc0 [shape=record,label="{set_all_env_vars  }"];
+    Node0x56318551ecc0 -> Node0x56318551e690
+    Node0x56318570ad00 [shape=record,label="{test_audit_run_command  }"];
+    Node0x563185490970 [shape=record,label="{test_repeated_init_and_subinterpreters  }"];
+    Node0x563185490970 -> Node0x563185492c70
+    Node0x563185490970 -> Node0x563185491230
+    Node0x563185520d40 [shape=record,label="{check_init_compat_config  int  }"];
+    Node0x563185520d40 -> Node0x5631855ce820
+    Node0x563185520d40 -> Node0x563185675700
+    Node0x563185520d40 -> Node0x563185520990
+    Node0x56318567dd50 [shape=record,label="{test_init_sys_add  }"];
+    Node0x56318567dd50 -> Node0x5631855ce820
+    Node0x56318567dd50 -> Node0x563185671060
+    Node0x56318567dd50 -> Node0x563185675700
+    Node0x56318567dd50 -> Node0x563185520990
+    Node0x563185675700 [shape=record,label="{config_set_program_name  PyConfig *  }"];
+    Node0x563185675700 -> Node0x5631855ceee0
+    Node0x5631855ceee0 [shape=record,label="{config_set_string  PyConfig *  wchar_t **  const wchar_t *  }"];
+    Node0x563185492c70 [shape=record,label="{_testembed_Py_Initialize  }"];
+    Node0x5631855b3390 [shape=record,label="{test_pre_initialization_api  }"];
+    Node0x563185491230 [shape=record,label="{print_subinterp  }"];
+    Node0x5631856d8490 [shape=record,label="{test_preinit_isolated_config  }"];
+    Node0x5631856d8490 -> Node0x56318561e1d0
+    Node0x5631855b59e0 [shape=record,label="{test_pre_initialization_sys_options  }"];
+    Node0x5631855b59e0 -> Node0x563185492c70
+    Node0x5631856628d0 [shape=record,label="{test_bpo20891  }"];
+    Node0x5631856628d0 -> Node0x563185492c70
+    Node0x56318551e690 [shape=record,label="{set_most_env_vars  }"];
+    Node0x563185763ad0 [shape=record,label="{main  int  char *[]  }"];
+    Node0x5631856a55a0 [shape=record,label="{set_all_env_vars_dev_mode  }"];
+    Node0x563185759c30 [shape=record,label="{test_init_main  }"];
+    Node0x563185759c30 -> Node0x563185520990
+    Node0x563185759c30 -> Node0x5631855c9110
+    Node0x5631856eee80 [shape=record,label="{test_open_code_hook  }"];
+    Node0x5631856eee80 -> Node0x563185492c70
+    Node0x563185701220 [shape=record,label="{test_audit_subinterpreter  }"];
+    Node0x563185701220 -> Node0x563185492c70
+    Node0x5631856fc6e0 [shape=record,label="{_audit_subinterpreter_hook  const char *  PyObject *  void *  }"];
+    Node0x56318568b780 [shape=record,label="{test_init_global_config  }"];
+    Node0x56318568b780 -> Node0x5631855ce820
+    Node0x5631857354b0 [shape=record,label="{test_init_setpythonhome  }"];
+    Node0x5631857354b0 -> Node0x5631855ce820
+    Node0x5631855cd4f0 [shape=record,label="{test_initialize_pymain  }"];
+    Node0x5631855cd4f0 -> Node0x563185492c70
+    Node0x5631856d8600 [shape=record,label="{test_init_isolated_config  }"];
+    Node0x5631856d8600 -> Node0x56318561e1d0
+    Node0x56318551edc0 [shape=record,label="{test_init_compat_env  }"];
+    Node0x56318551edc0 -> Node0x563185492c70
+    Node0x56318551edc0 -> Node0x5631855ce820
+    Node0x56318551edc0 -> Node0x56318551ecc0
+    Node0x5631856e2a30 [shape=record,label="{test_init_python_config  }"];
+    Node0x5631856e2a30 -> Node0x5631856dabb0
+    Node0x56318569fd70 [shape=record,label="{test_init_python_env  }"];
+    Node0x56318569fd70 -> Node0x5631855ce820
+    Node0x56318569fd70 -> Node0x563185675700
+    Node0x56318569fd70 -> Node0x563185520990
+    Node0x56318569fd70 -> Node0x56318551ecc0
+    Node0x5631856a56a0 [shape=record,label="{test_init_env_dev_mode  }"];
+    Node0x5631856a56a0 -> Node0x563185492c70
+    Node0x5631856a56a0 -> Node0x5631855ce820
+    Node0x5631856a56a0 -> Node0x5631856a55a0
+    Node0x5631855ce820 [shape=record,label="{dump_config  }"];
+    Node0x5631856a7a20 [shape=record,label="{test_init_env_dev_mode_alloc  }"];
+    Node0x5631856a7a20 -> Node0x563185492c70
+    Node0x5631856a7a20 -> Node0x5631855ce820
+    Node0x5631856a7a20 -> Node0x5631856a55a0
+    Node0x5631856ab020 [shape=record,label="{test_init_isolated_flag  }"];
+    Node0x5631856ab020 -> Node0x5631855ce820
+    Node0x5631856ab020 -> Node0x563185675700
+    Node0x5631856ab020 -> Node0x563185520990
+    Node0x5631856ab020 -> Node0x56318551ecc0
+    Node0x5631856b57e0 [shape=record,label="{test_preinit_isolated2  }"];
+    Node0x5631856b57e0 -> Node0x5631855ce820
+    Node0x5631856b57e0 -> Node0x563185675700
+    Node0x5631856b57e0 -> Node0x563185520990
+    Node0x5631856b57e0 -> Node0x56318551ecc0
+    Node0x5631856e06b0 [shape=record,label="{test_preinit_python_config  }"];
+    Node0x5631856e06b0 -> Node0x5631856dabb0
+    Node0x5631856779a0 [shape=record,label="{config_set_wide_string_list  PyConfig *  PyWideStringList *  Py_ssize_t  wchar_t **  }"];
+    Node0x5631855b3310 [shape=record,label="{test_forced_io_encoding  }"];
+    Node0x5631855b3310 -> Node0x5631855e0890
+    Node0x5631856e4db0 [shape=record,label="{test_init_dont_configure_locale  }"];
+    Node0x5631856e4db0 -> Node0x5631855ce820
+    Node0x5631856e4db0 -> Node0x563185675700
+    Node0x5631856e4db0 -> Node0x563185520990
+    Node0x5631856e7440 [shape=record,label="{test_init_dev_mode  }"];
+    Node0x5631856e7440 -> Node0x5631855ce820
+    Node0x5631856e7440 -> Node0x563185675700
+    Node0x5631856e7440 -> Node0x563185520990
+    Node0x56318567e2e0 [shape=record,label="{test_init_setpath  }"];
+    Node0x56318567e2e0 -> Node0x5631855ce820
+    Node0x56318570ae30 [shape=record,label="{test_audit_run_file  }"];
+    Node0x5631855e0890 [shape=record,label="{check_stdio_details  const char *  const char *  }"];
+    Node0x5631855e0890 -> Node0x563185492c70
+    Node0x5631856ab160 [shape=record,label="{test_preinit_isolated1  }"];
+    Node0x5631856ab160 -> Node0x5631855ce820
+    Node0x5631856ab160 -> Node0x563185675700
+    Node0x5631856ab160 -> Node0x563185520990
+    Node0x5631856ab160 -> Node0x56318551ecc0
+    Node0x5631856ea830 [shape=record,label="{_open_code_hook  PyObject *  void *  }"];
+    Node0x5631856f6f40 [shape=record,label="{_test_audit  Py_ssize_t  }"];
+    Node0x5631856f6f40 -> Node0x563185492c70
+    Node0x56318560eb00 [shape=record,label="{set_all_global_config_variables  }"];
+    Node0x5631856f7080 [shape=record,label="{test_audit  }"];
+    Node0x5631856f7080 -> Node0x5631856f6f40
+    Node0x5631856c1e10 [shape=record,label="{test_preinit_parse_argv  }"];
+    Node0x5631856c1e10 -> Node0x5631855ce820
+    Node0x5631856c1e10 -> Node0x563185671060
+    Node0x5631856c1e10 -> Node0x563185675700
+    Node0x5631856c1e10 -> Node0x563185520990
+    Node0x563185701350 [shape=record,label="{_audit_hook_run  const char *  PyObject *  void *  }"];
 }

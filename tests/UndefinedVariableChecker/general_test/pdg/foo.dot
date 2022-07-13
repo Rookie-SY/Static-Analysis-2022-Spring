@@ -1,0 +1,20 @@
+digraph "Program Dependency Graph" {
+    label="Program Dependency Graph"
+
+    Node0xffffffff [shape=record,label="{Entry}"];
+    Node0x1 [shape=record,label="{return node.m + te;}"];
+    Node0x2 [shape=record,label="{node.m = m}"];
+    Node0xffffffff -> Node0x2[style = dotted]
+    Node0x3 [shape=record,label="{node.m += m}"];
+    Node0xffffffff -> Node0x3[style = dotted]
+    Node0x4 [shape=record,label="{te \> 10}"];
+    Node0x4 -> Node0x1[color = red]
+    Node0xffffffff -> Node0x4[style = dotted]
+    Node0x5 [shape=record,label="{Param node Param te Param m }"];
+    Node0x2 -> Node0x3[color = blue,label = "node"]
+    Node0x3 -> Node0x1[color = blue,label = "node"]
+    Node0x5 -> Node0x1[color = blue,label = "te"]
+    Node0x5 -> Node0x2[color = blue,label = "m"]
+    Node0x5 -> Node0x3[color = blue,label = "m"]
+    Node0x5 -> Node0x4[color = blue,label = "te"]
+}

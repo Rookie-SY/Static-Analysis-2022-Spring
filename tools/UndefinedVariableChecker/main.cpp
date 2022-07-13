@@ -54,7 +54,6 @@ int main(int argc, const char *argv[]) {
 
     UndefinedVariableChecker checker(&resource, &manager, &call_graph, &configure);
     checker.check();
-
     end = clock();
     unsigned sec = unsigned((end - start) / CLOCKS_PER_SEC);
     unsigned min = sec / 60;
@@ -70,7 +69,7 @@ int main(int argc, const char *argv[]) {
     clock_t start, end;
     start = clock();
 
-    call_graph.printCallGraph(std::cout);
+    //call_graph.printCallGraph(std::cout);
     std::fstream out("outTest.dot", ios::out);
     std::fstream Nodeout("NodeTest.dot",ios::out);
     if(Nodeout.is_open()){
@@ -96,7 +95,7 @@ int main(int argc, const char *argv[]) {
   ControlDependenceGraph cdg(&manager, &resource, &call_graph,&fdt);
   cdg.ConstructCDG();
   //cdg.dumpCDG();
-  cdg.dumpStmtCDG();
+  //cdg.dumpStmtCDG();
   DataDependenceGraph ddg(&manager, &resource, &call_graph,&fdt);
   ddg.ConstructDDGForest();
   ProgramDependencyGraph pdg(&manager, &resource, &call_graph,&cdg, &ddg);
