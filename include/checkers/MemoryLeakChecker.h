@@ -183,7 +183,7 @@ private:
     void handle_unaryOp_in_declStmt(VarDecl* varDecl, UnaryOperator* unaryOp);
     void handle_unaryOp_in_binaryStmt(DeclRefExpr* leftDeclRef, UnaryOperator* unaryOp);
     
-    void handle_location_string(string& line, string& loc, SourceLocation location);
+    void handle_location_string(string& line, string& loc, string& file, SourceLocation location);
     ReportPointer convert_pointer(DFreePointer tmp);
     void prepare_next_path(unsigned count);
     void check_leak_same_pointer();

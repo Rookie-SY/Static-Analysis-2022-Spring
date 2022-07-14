@@ -8,8 +8,8 @@ void MainChecker::check()
     get_entry_func();
     MemoryLeakChecker MLChecker(resource, manager, call_graph, configure);
     MLChecker.check(entryFunc);
-    // UndefinedVariableChecker UVChecker(resource, manager, call_graph, configure);
-    // UVChecker.check(entryFunc);
+    UndefinedVariableChecker UVChecker(resource, manager, call_graph, configure);
+    UVChecker.check(entryFunc);
 }
 
 void MainChecker::read_config()

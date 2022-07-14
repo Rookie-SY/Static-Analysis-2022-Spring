@@ -75,6 +75,9 @@ int main()
         seexp_p = (int*)malloc(10*sizeof(int)); // seexp, warning
     }
     seexp_p[0] = 520;
+    int x, y;
+    x = x + 1;
+    y = y + x;
     // free(f);
     // int* r = p++;
     // int* q;

@@ -2422,7 +2422,7 @@ void PointerSet::print_set()
  
 }
 
-void MemoryLeakChecker::handle_location_string(string& line, string& loc, SourceLocation location)
+void MemoryLeakChecker::handle_location_string(string& line, string& loc, string& file, SourceLocation location)
 {
     string tmp = location.printToString(*SM);
     bool isLoc = true;
@@ -2439,6 +2439,12 @@ void MemoryLeakChecker::handle_location_string(string& line, string& loc, Source
         else
             line += tmp[i];
     }
+    for(unsigned i = 0; i < tmp.size(); i++)
+    {
+        file += tmp[i];
+        if(tmp[i] == ':')
+            break;
+    }
     reverse(line.begin(), line.end());
     reverse(loc.begin(), loc.end());
 }
@@ -2453,30 +2459,40 @@ void MemoryLeakChecker::report_memory_leak()
     //     cout << "\033[32mNo memory leak detected.\n" << "\033[0m";
     if(isLeaked)
     {
-        cout << "Memory leak detected."  << endl;
-
+        string file, loc;
+        for(unsigned i = 0; i < leakResult[0].location.printToString(*SM).size(); i++)
+        {
+            file += leakResult[0].location.printToString(*SM)[i];
+            if(leakResult[0].location.printToString(*SM)[i] == ':')
+                break;
+        }
+        std::cout << file << std::endl;
         for(unsigned i = 0; i < leakResult.size(); i++)
         {
-            string tmp = leakResult[i].location.printToString(*SM).substr(leakResult[i].location.printToString(*SM).size() - 5, 5);
-            string line, loc;
-            handle_location_string(line, loc, leakResult[i].location);
-            cout << leakResult[i].pointerName << "->" << "line: " << line << " loc: " << loc 
-                << " with memory ID: " << leakResult[i].memoryID << endl;
-            cout << "The source of pointer: ";
-            while(!leakResult[i].record.calleeLocation.empty())
+            string tmpFile, line, col;
+            handle_location_string(line, col, tmpFile, leakResult[i].location);
+            if(tmpFile != file)
             {
-                assert(leakResult[i].record.calleeLocation.size() == leakResult[i].record.calleeName.size());
-                line = "";
-                loc = "";
-                handle_location_string(line, loc, leakResult[i].record.calleeLocation.front());
-                cout << "line: " << line << " & loc: " << loc << ", function name: " 
-                    << leakResult[i].record.calleeName.front();
-                if(leakResult[i].record.calleeLocation.size() != 1) 
-                    cout << " -> ";
-                leakResult[i].record.calleeLocation.pop();
-                leakResult[i].record.calleeName.pop();
+                file = tmpFile;
+                std::cout << file << endl;
             }
-            cout << endl;
+            std::cout << "WARNING: MEMORY LEAK POINTER ";
+            std::cout << leakResult[i].pointerName << ": Line: " << line << " Column: " << col << endl;
+            // cout << "The source of pointer: ";
+            // while(!leakResult[i].record.calleeLocation.empty())
+            // {
+            //     assert(leakResult[i].record.calleeLocation.size() == leakResult[i].record.calleeName.size());
+            //     line = "";
+            //     loc = "";
+            //     handle_location_string(line, loc, leakResult[i].record.calleeLocation.front());
+            //     cout << "line: " << line << " & loc: " << loc << ", function name: " 
+            //         << leakResult[i].record.calleeName.front();
+            //     if(leakResult[i].record.calleeLocation.size() != 1) 
+            //         cout << " -> ";
+            //     leakResult[i].record.calleeLocation.pop();
+            //     leakResult[i].record.calleeName.pop();
+            // }
+            // cout << endl;
         }
     }
 }
@@ -2490,30 +2506,41 @@ void MemoryLeakChecker::report_double_free()
     //     cout << "\033[32mNo double free detected.\n" << "\033[0m";
     if(isDFreed)
     {
-        cout << "Double free detected." << endl;
+        string file;
+        for(unsigned i = 0; i < DFreeResult[0].location.printToString(*SM).size(); i++)
+        {
+            file += DFreeResult[0].location.printToString(*SM)[i];
+            if(DFreeResult[0].location.printToString(*SM)[i] == ':')
+                break;
+        }
+        std::cout << file << endl;
 
         for(unsigned i = 0; i < DFreeResult.size(); i++)
         {
-            string line, loc;
-            handle_location_string(line, loc, DFreeResult[i].location);
-
-            cout << DFreeResult[i].pointerName << "->" << "line: " << line << " loc: " << loc 
-                << " with memory ID: " << DFreeResult[i].memoryID << endl;
-            cout << "The source of pointer: ";
-            while(!DFreeResult[i].record.calleeLocation.empty())
+            string tmpFile, line, col;
+            handle_location_string(line, col, tmpFile, DFreeResult[i].location);
+            if(tmpFile != file)
             {
-                assert(DFreeResult[i].record.calleeLocation.size() == DFreeResult[i].record.calleeName.size());
-                line = "";
-                loc = "";
-                handle_location_string(line, loc, DFreeResult[i].record.calleeLocation.front());
-                cout << "line: " << line << " & loc: " << loc << ", function name: " 
-                    << DFreeResult[i].record.calleeName.front();
-                if(DFreeResult[i].record.calleeLocation.size() != 1) 
-                    cout << " -> ";
-                DFreeResult[i].record.calleeLocation.pop();
-                DFreeResult[i].record.calleeName.pop();
+                file = tmpFile;
+                std::cout << file << endl;
             }
-            cout << endl;
+            std::cout << "WARNING: DOUBLE FREE POINTER ";
+            std::cout << DFreeResult[i].pointerName << ": Line: " << line << " Column: " << col << endl;
+            // cout << "The source of pointer: ";
+            // while(!DFreeResult[i].record.calleeLocation.empty())
+            // {
+            //     assert(DFreeResult[i].record.calleeLocation.size() == DFreeResult[i].record.calleeName.size());
+            //     line = "";
+            //     loc = "";
+            //     handle_location_string(line, loc, DFreeResult[i].record.calleeLocation.front());
+            //     cout << "line: " << line << " & loc: " << loc << ", function name: " 
+            //         << DFreeResult[i].record.calleeName.front();
+            //     if(DFreeResult[i].record.calleeLocation.size() != 1) 
+            //         cout << " -> ";
+            //     DFreeResult[i].record.calleeLocation.pop();
+            //     DFreeResult[i].record.calleeName.pop();
+            // }
+            // cout << endl;
         }
     }
 }

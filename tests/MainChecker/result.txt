@@ -1,5 +1,6 @@
-Memory leak detected.
-seexp_p->line: 73 loc: 10 with memory ID: 1
-The source of pointer: line: 44 & loc: 5, function name: main
-seexp_p->line: 75 loc: 25 with memory ID: 2
-The source of pointer: line: 44 & loc: 5, function name: main
+/home/sunyu/Desktop/se-experiment/tests/MainChecker/example.cpp:
+WARNING: MEMORY LEAK POINTER seexp_p: Line: 73 Column: 10
+WARNING: MEMORY LEAK POINTER seexp_p: Line: 75 Column: 25
+/home/sunyu/Desktop/se-experiment/tests/MainChecker/example.cpp
+WARNING: USE UNINITIALIZED VARIABLE x: Line: 79 Column: 9
+WARNING: USE UNINITIALIZED VARIABLE y: Line: 80 Column: 9

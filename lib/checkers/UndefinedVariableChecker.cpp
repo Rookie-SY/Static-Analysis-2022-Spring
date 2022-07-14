@@ -1991,7 +1991,7 @@ void UndefinedVariableChecker::report_warning(Variable variable){
     if(isexist == false)
     {
         locationMap[variable.variable].push_back(hashstring);
-        std::cout << "WARNING:USE UNINITIALIZED VARIABLE " << variable.variable << ": " << "Line: " << line << " Column: " << column << std::endl;
+        std::cout << "WARNING: USE UNINITIALIZED VARIABLE " << variable.variable << ": " << "Line: " << line << " Column: " << column << std::endl;
     }
 }
 
