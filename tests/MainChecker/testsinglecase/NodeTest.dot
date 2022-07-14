@@ -1,0 +1,117 @@
+Callee of _PyDebugAllocatorStats  FILE *  const char *  int  size_t  . 
+ printone  FILE *  const char *  size_t  
+Callee of printone  FILE *  const char *  size_t  . 
+Callee of _PyMem_RawWcsdup  const wchar_t *  . 
+ PyMem_RawMalloc  size_t  
+Callee of _PyObject_ArenaMunmap  void *  void *  size_t  . 
+Callee of pymemallocator_eq  PyMemAllocatorEx *  PyMemAllocatorEx *  . 
+Callee of PyMem_Realloc  void *  size_t  . 
+Callee of _PyMem_DebugRawAlloc  int  void *  size_t  . 
+ write_size_t  void *  size_t  
+Callee of PyMem_Malloc  size_t  . 
+Callee of _PyMem_RawCalloc  void *  size_t  size_t  . 
+Callee of PyObject_Free  void *  . 
+Callee of PyMem_RawMalloc  size_t  . 
+Callee of _PyMem_DebugRawCalloc  void *  size_t  size_t  . 
+ _PyMem_DebugRawAlloc  int  void *  size_t  
+Callee of PyMem_RawCalloc  size_t  size_t  . 
+Callee of _PyMem_SetupAllocators  PyMemAllocatorName  . 
+ PyMem_SetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  
+ PyMem_SetupDebugHooks  
+ pymem_set_default_allocator  PyMemAllocatorDomain  int  PyMemAllocatorEx *  
+ _PyMem_SetDefaultAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  
+Callee of _Py_GetAllocatedBlocks  . 
+Callee of PyObject_SetArenaAllocator  PyObjectArenaAllocator *  . 
+Callee of _PyObject_DebugDumpAddress  const void *  . 
+ read_size_t  const void *  
+Callee of PyMem_SetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  . 
+Callee of PyMem_SetupDebugHooks  . 
+ _PyMem_SetupDebugHooksDomain  PyMemAllocatorDomain  
+Callee of _PyMem_PymallocEnabled  . 
+ _PyMem_DebugEnabled  
+Callee of PyObject_GetArenaAllocator  PyObjectArenaAllocator *  . 
+Callee of _PyMem_RawStrdup  const char *  . 
+ PyMem_RawMalloc  size_t  
+Callee of _PyMem_RawMalloc  void *  size_t  . 
+Callee of _PyMem_DebugRealloc  void *  void *  size_t  . 
+ _PyMem_DebugRawRealloc  void *  void *  size_t  
+ _PyMem_DebugCheckGIL  
+Callee of _PyMem_RawRealloc  void *  void *  size_t  . 
+Callee of _PyObject_Malloc  void *  size_t  . 
+ PyMem_RawMalloc  size_t  
+ pymalloc_alloc  void *  size_t  
+Callee of _PyMem_DebugMalloc  void *  size_t  . 
+ _PyMem_DebugRawMalloc  void *  size_t  
+ _PyMem_DebugCheckGIL  
+Callee of PyMem_Free  void *  . 
+Callee of PyObject_Calloc  size_t  size_t  . 
+Callee of _PyObject_ArenaMmap  void *  size_t  . 
+Callee of _PyMem_DebugRawFree  void *  void *  . 
+ _PyMem_DebugCheckAddress  char  const void *  
+ read_size_t  const void *  
+Callee of _PyMem_RawFree  void *  void *  . 
+Callee of read_size_t  const void *  . 
+Callee of _PyMem_SetDefaultAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  . 
+ pymem_set_default_allocator  PyMemAllocatorDomain  int  PyMemAllocatorEx *  
+Callee of pymem_set_default_allocator  PyMemAllocatorDomain  int  PyMemAllocatorEx *  . 
+ PyMem_GetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  
+ PyMem_SetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  
+ _PyMem_SetupDebugHooksDomain  PyMemAllocatorDomain  
+Callee of PyMem_GetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  . 
+Callee of _PyMem_DebugRawRealloc  void *  void *  size_t  . 
+ _PyMem_DebugCheckAddress  char  const void *  
+ read_size_t  const void *  
+ write_size_t  void *  size_t  
+ _PyMem_DebugRawAlloc  int  void *  size_t  
+Callee of _PyMem_GetCurrentAllocatorName  . 
+ pymemallocator_eq  PyMemAllocatorEx *  PyMemAllocatorEx *  
+Callee of _PyMem_Strdup  const char *  . 
+ PyMem_Malloc  size_t  
+Callee of PyObject_Malloc  size_t  . 
+Callee of _PyMem_DebugEnabled  . 
+Callee of PyObject_Realloc  void *  size_t  . 
+Callee of _PyObject_Realloc  void *  void *  size_t  . 
+ PyMem_RawRealloc  void *  size_t  
+ _PyObject_Malloc  void *  size_t  
+ pymalloc_realloc  void *  void **  void *  size_t  
+Callee of new_arena  . 
+ _PyObject_DebugMallocStats  FILE *  
+ PyMem_RawRealloc  void *  size_t  
+Callee of address_in_range  void *  poolp  . 
+Callee of _PyMem_SetupDebugHooksDomain  PyMemAllocatorDomain  . 
+ PyMem_GetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  
+ PyMem_SetAllocator  PyMemAllocatorDomain  PyMemAllocatorEx *  
+Callee of _PyMem_DebugCalloc  void *  size_t  size_t  . 
+ _PyMem_DebugRawCalloc  void *  size_t  size_t  
+ _PyMem_DebugCheckGIL  
+Callee of pymalloc_alloc  void *  size_t  . 
+ new_arena  
+Callee of _PyObject_Calloc  void *  size_t  size_t  . 
+ PyMem_RawCalloc  size_t  size_t  
+ pymalloc_alloc  void *  size_t  
+Callee of PyMem_RawRealloc  void *  size_t  . 
+Callee of pymalloc_realloc  void *  void **  void *  size_t  . 
+ address_in_range  void *  poolp  
+ _PyObject_Malloc  void *  size_t  
+ _PyObject_Free  void *  void *  
+Callee of _PyObject_DebugMallocStats  FILE *  . 
+ _PyMem_PymallocEnabled  
+ printone  FILE *  const char *  size_t  
+Callee of pymalloc_free  void *  void *  . 
+ address_in_range  void *  poolp  
+Callee of _PyObject_Free  void *  void *  . 
+ PyMem_RawFree  void *  
+ pymalloc_free  void *  void *  
+Callee of write_size_t  void *  size_t  . 
+Callee of PyMem_Calloc  size_t  size_t  . 
+Callee of _PyMem_DebugRawMalloc  void *  size_t  . 
+ _PyMem_DebugRawAlloc  int  void *  size_t  
+Callee of PyMem_RawFree  void *  . 
+Callee of _PyMem_DebugCheckAddress  char  const void *  . 
+ _PyObject_DebugDumpAddress  const void *  
+ read_size_t  const void *  
+Callee of _PyMem_DebugCheckGIL  . 
+Callee of _PyMem_GetAllocatorName  const char *  PyMemAllocatorName *  . 
+Callee of _PyMem_DebugFree  void *  void *  . 
+ _PyMem_DebugRawFree  void *  void *  
+ _PyMem_DebugCheckGIL  

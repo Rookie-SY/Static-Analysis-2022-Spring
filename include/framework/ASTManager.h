@@ -22,7 +22,7 @@ public:
 
   const std::vector<ASTFunction *> &getFunctions(bool use = true) const;
   std::vector<ASTFile *> getASTFiles() const;
-
+  std::vector<ASTVariable *> getASTVariables() const;
   friend class ASTManager;
 
 private:

@@ -14,8 +14,8 @@ ControlFlowGraph::ControlFlowGraph(ASTManager *manager, ASTResource *resource, C
 void ControlFlowGraph::drawCfg(){
     for(int i = 0;i<call_graph->allFunctions.size();i++){
         FunctionDecl *funDecl = manager->getFunctionDecl(call_graph->allFunctions[i]);
-        std::cout << "The function is: "
-                        << funDecl->getQualifiedNameAsString() << std::endl;
+        /*std::cout << "The function is: "
+                        << funDecl->getQualifiedNameAsString() << std::endl;*/
         LangOptions LangOpts;
         LangOpts.CPlusPlus = true;
         std::unique_ptr<CFG>& cfg = manager->getCFG(call_graph->allFunctions[i]);

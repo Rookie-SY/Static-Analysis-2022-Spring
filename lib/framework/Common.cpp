@@ -200,7 +200,7 @@ void common::printLog(std::string logString, common::CheckerName cn, int level,
     }
     break;
   case common::CheckerName::danglingPointer:
-    if (block.find("TemplateChecker")->second == "true" && level >= l) {
+    if (block.find("MainChecker")->second == "true" && level >= l) {
       llvm::errs() << logString;
     }
     break;

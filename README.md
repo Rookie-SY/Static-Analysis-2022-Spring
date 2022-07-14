@@ -1,16 +1,8 @@
 # Static-Analysis-2022-Spring
-# SE-Experiment
 
-请参考[代码贡献指南](CONTRIBUTING.md).
-
-## 框架介绍
-
-请参考[Docs](docs/README.md)
-
-## Example
-
-请参考[TemplateChecker](tests/TemplateChecker/README.md)
+## NJUCS Se-experiment
 
 组长：孙羽
 组员：吕玉龙 蒙一涵
 
+仅供19级软件工程综合实验静态分析组程验收使用

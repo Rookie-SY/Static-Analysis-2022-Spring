@@ -29,7 +29,7 @@ void Logger::configure(Config &c) {
 
   if (block.find("taintChecker")->second == "true")
     options[TAINT_CHECK] = true;
-  if (block.find("TemplateChecker")->second == "true")
+  if (block.find("MainChecker")->second == "true")
     options[TEMP_CHECKER] = true;
   if (block.find("arrayBound")->second == "true")
     options[ARRAY_BOUND] = true;

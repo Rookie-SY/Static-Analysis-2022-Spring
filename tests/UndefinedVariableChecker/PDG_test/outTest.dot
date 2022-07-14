@@ -1,7 +1,0 @@
-digraph "Call graph" {
-    label="Call graph"
-
-    Node0x5569d04c3710 [shape=record,label="{main  }"];
-    Node0x5569d04c3640 [shape=record,label="{add1  }"];
-    Node0x5569d049f4d0 [shape=record,label="{add  int  int  int  int  }"];
-}

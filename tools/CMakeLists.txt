@@ -1,2 +1,1 @@
-add_subdirectory(TemplateChecker)
-add_subdirectory(UndefinedVariableChecker)
+add_subdirectory(MainChecker)

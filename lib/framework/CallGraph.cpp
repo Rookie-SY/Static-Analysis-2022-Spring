@@ -30,8 +30,10 @@ CallGraph::CallGraph(ASTManager &manager, const ASTResource &resource) {
       }
     }
   }
+  
   //将顶层函数放入topLevelFunctions中
   for (ASTFunction *F : resource.getFunctions()) {
+    FunctionDecl* func = manager.getFunctionDecl(F);
     allFunctions.push_back(F);
     if (nodes[F->getFullName()]->getParents().size() == 0) {
       topLevelFunctions.push_back(F);

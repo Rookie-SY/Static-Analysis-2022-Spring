@@ -19,6 +19,14 @@ std::vector<ASTFile *> ASTResource::getASTFiles() const {
   return ASTFiles;
 }
 
+std::vector<ASTVariable *> ASTResource::getASTVariables() const {
+  std::vector<ASTVariable *> ASTVars;
+  for(auto &it  : ASTVariables) {
+    ASTVars.push_back(it);
+  }
+  return ASTVars;
+}
+
 void ASTResource::buildUseFunctions() {
   for (ASTFunction *AF : ASTFunctions) {
     if (AF->isUse()) {
