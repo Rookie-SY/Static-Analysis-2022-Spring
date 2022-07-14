@@ -1,12 +1,16 @@
 import os
 import sys
+import re
 import shutil
 import platform
 import subprocess
 import logging
+import hashlib
 
 # IMPORT / GUI AND MODULES AND WIDGETS
 # ///////////////////////////////////////////////////////////////
+import time
+
 from PySide6 import QtCore
 from PySide6.QtWidgets import QMessageBox
 
@@ -26,23 +30,27 @@ os.environ["QT_FONT_DPI"] = "128"  # FIX Problem for High DPI and Scale above 10
 # ///////////////////////////////////////////////////////////////
 widgets = None
 
+watch_name = {"didCodeFileChanged": False, "codefileName": "", "code_md5": ""}
 
-class MyThread(Thread):
-    def __init__(self, func, args):
+class WatchThread(QThread):
+    changed_signal = QtCore.Signal(int)
+    def __init__(self):
         """
         :param func: 可调用的对象
         :param args: 可调用对象的参数
         """
-        Thread.__init__(self)
-        self.func = func
-        self.args = args
-        self.result = None
+        super(WatchThread, self).__init__()
 
     def run(self):
-        self.result = self.func(*self.args)
-
-    def get_result(self):
-        return self.result
+        global watch_name
+        while True:
+            if not watch_name["didCodeFileChanged"] and \
+                    hashlib.md5(open(watch_name["codefileName"]).read().encode("utf-8")).hexdigest() != watch_name["code_md5"]:
+                print("code is changed. not file name")
+                time.sleep(1)
+                self.changed_signal.emit(1)
+                # self.readFileToCodeBox(None, code_changed=True)
+            time.sleep(2)
 
 
 class MainWindow(QMainWindow):
@@ -76,6 +84,9 @@ class MainWindow(QMainWindow):
         self.codefileName = "./default/default.c"
 
         self.pic_or_model = "pic"
+        self.didCodeFileChanged = False
+        self.isDefault = True
+        self.code_md5 = hashlib.md5(open(self.codefileName).read().encode("utf-8")).hexdigest()
 
         # TOGGLE MENU
         # ///////////////////////////////////////////////////////////////
@@ -157,9 +168,9 @@ class MainWindow(QMainWindow):
         widgets.codePageFileTreeView.doubleClicked.connect(self.readFileToCodeBox)
         widgets.btn_home.setStyleSheet(UIFunctions.selectMenu(widgets.btn_home.styleSheet()))
 
-        with open(self.codefileName, "r", encoding='utf-8') as code_file,\
-             open(self.errorfilename, "r",encoding='utf-8') as error_file,\
-             open("./css/errorText.html", "r", encoding='utf-8') as error_html_file:
+        with open(self.codefileName, "r", encoding='utf-8') as code_file, \
+                open(self.errorfilename, "r", encoding='utf-8') as error_file, \
+                open("./css/errorText.html", "r", encoding='utf-8') as error_html_file:
             code_text = code_file.read()
             html = highlight(code_text,
                              CLexer(),
@@ -183,8 +194,6 @@ class MainWindow(QMainWindow):
             error_html_template = error_html_template + "</body>\n</html>"
             widgets.errorText.setHtml(error_html_template)
 
-
-
         # SET PicPage
         # ///////////////////////////////////////////////////////////////
         widgets.picKind.activated.connect(self.change_pic_when_pic_combo_refresh)
@@ -205,36 +214,120 @@ class MainWindow(QMainWindow):
         self.ui.model_picView = NewGraphView(self.picfileName, self.ui.model_picView)
         self.ui.model_picView.setImage("./pic/models/lenet/net_pic.png")
 
+        global watch_name
+        watch_name["didCodeFileChanged"] = self.didCodeFileChanged
+        watch_name["codefileName"] = self.codefileName
+        watch_name["code_md5"] = self.code_md5
+        self.watch_thread = WatchThread()
+        self.watch_thread.changed_signal.connect(self.read_changed_code_to_codebox)
+        self.watch_thread.start()
+
+    def parse_newpic_with_joern(self, code_file_name, path_to_pic, combo_text):
+        tmp_code_filepath = "./tmpFile/tmp_code.cpp"
+        shutil.copy(code_file_name, tmp_code_filepath)
+        with open(tmp_code_filepath, "r+", encoding="utf-8") as tmp_code:
+            code_text = tmp_code.read()
+            tmp_code.seek(0)
+            tmp_code.truncate()
+            cms = rmCommentsInCFile(code_text)
+            ms = rm_emptyline(cms)
+            s = rm_includeline(ms)
+            print(s)
+            tmp_code.write(s)
+        joern_parse_main_func(tmp_code_filepath, path_to_pic, combo_text)
+        self.didCodeFileChanged = False
+        watch_name["didCodeFileChanged"] = self.didCodeFileChanged
+
     # ///////////////////////////////////////////////////////////////
     # set code text when code file selected
     # ///////////////////////////////////////////////////////////////
-    def readFileToCodeBox(self, Qmodelidx):
+    def render_code(self):
+        global widgets
+        with open(self.codefileName, "r", encoding='utf-8') as codeFile:
+            code_text = codeFile.read()
+            self.code_md5 = hashlib.md5(code_text.encode("utf-8")).hexdigest()
+
+            watch_name["didCodeFileChanged"] = self.didCodeFileChanged
+            watch_name["codefileName"] = self.codefileName
+            watch_name["code_md5"] = self.code_md5
+
+            html = highlight(code_text,
+                             CLexer(),
+                             HtmlFormatter(
+                                 linenos="table",
+                                 full=True,
+                                 cssfile="./css/myStyle.css",
+                                 wrapcode=True
+                             ),
+                             outfile=None)
+            widgets.codeText.setHtml(html)
+
+    def print_error_info(self):
+        shutil.copy(self.codefileName, "../tests/MainChecker/staticApptest.cpp")
+        sh_str = "sh ./undefinedvariableshell.sh > staticApp/tmpFile/detect_result.log"
+        subprocess.call(sh_str, shell=True, cwd='../')
+
+        with open('tmpFile/detect_result.log', 'r', encoding="utf-8") as f, \
+                open("./css/errorText.html", "r", encoding='utf-8') as error_html_file:
+            error_html_template = error_html_file.read()
+            for item in f:
+                res = re.search(r'WARNING:[a-zA-Z0-9: ]+', item)
+                if res:
+                    print(res.group())
+                    error_text = res.group()
+                    error_kind = error_text.split(":")[0].lower()
+                    if error_kind == "info":
+                        new_line = f'\t<p class="info">{error_text}</p>\n'
+                    elif error_kind == "warning":
+                        new_line = f'\t<p class="warning">{error_text}</p>\n'
+                    elif error_kind == "error":
+                        new_line = f'\t<p class="error">{error_text}</p>\n'
+                    error_html_template = error_html_template + new_line
+            error_html_template = error_html_template + "</body>\n</html>"
+            self.ui.errorText.setHtml(error_html_template)
+
+    def read_changed_code_to_codebox(self):
+        self.render_code()
+        picview_kind = self.ui.picKind.currentText()
+        print(picview_kind + " in [readFileToCodeBox]")
+        self.print_error_info()
+        #self.parse_newpic_with_joern(self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText())
+        new_thread = Thread(target=self.parse_newpic_with_joern,
+                            args=(
+                                self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText()))
+        new_thread.start()
+
+    def readFileToCodeBox(self, Qmodelidx, code_changed=False):
         """
         Read in the code file and highlight the code according to Qmodelidx
         """
-        if self.model.filePath(Qmodelidx).endswith(self.endswith):
-            self.codefileName = self.model.filePath(Qmodelidx)
-            print(self.codefileName)
-            with open(self.codefileName, "r", encoding='utf-8') as codeFile:
-                code_text = codeFile.read()
-                html = highlight(code_text,
-                                 CLexer(),
-                                 HtmlFormatter(
-                                     linenos="table",
-                                     full=True,
-                                     cssfile="./css/myStyle.css",
-                                     wrapcode=True
-                                 ),
-                                 outfile=None)
-                widgets.codeText.setHtml(html)
+        self.didCodeFileChanged = True
+        self.isDefault = False
+
+        watch_name["codefileName"] = self.codefileName
+        watch_name["code_md5"] = self.code_md5
+
+        if code_changed:
+            self.render_code()
             picview_kind = self.ui.picKind.currentText()
             print(picview_kind + " in [readFileToCodeBox]")
-
-            new_thread = Thread(target=joern_parse_main_func, args=(self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText()))
-            new_thread.start()
+            self.print_error_info()
+            self.parse_newpic_with_joern(self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText())
         else:
-            QMessageBox.warning(self, '格式错误', '选择的文件后缀必须为\n ["c", "cpp", "c++", "h", "hpp"]',
-                                QMessageBox.Ok, QMessageBox.Ok)
+            if self.model.filePath(Qmodelidx).endswith(self.endswith):
+                self.codefileName = self.model.filePath(Qmodelidx)
+                print(self.codefileName)
+                self.render_code()
+                picview_kind = self.ui.picKind.currentText()
+                print(picview_kind + " in [readFileToCodeBox]")
+                new_thread = Thread(target=self.parse_newpic_with_joern,
+                                    args=(
+                                        self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText()))
+                new_thread.start()
+                self.print_error_info()
+            else:
+                QMessageBox.warning(self, '格式错误', '选择的文件后缀必须为\n ["c", "cpp", "c++", "h", "hpp"]',
+                                    QMessageBox.Ok, QMessageBox.Ok)
 
     # ///////////////////////////////////////////////////////////////
     # set img when pic combobox text selected
@@ -245,10 +338,13 @@ class MainWindow(QMainWindow):
         """
         item_name = self.ui.picKind.itemText(item_index)
         item_name = item_name.lower()
-
-        png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
-        self.ui.picPageView.setImage(png_path)
-        print(f"{item_name} pic has refreshed! in pic View!")
+        if self.isDefault:
+            png_path = f"./default/defaultpic_{item_name}.png"
+            self.ui.picPageView.setImage(png_path)
+        else:
+            png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
+            self.ui.picPageView.setImage(png_path)
+            print(f"{item_name} pic has refreshed! in pic View!")
 
     def change_pic_when_pic_combo_current_file_changed(self, item_name):
         """
@@ -256,25 +352,29 @@ class MainWindow(QMainWindow):
         init code struct pic
         """
         item_name = item_name.lower()
-        if item_name == "ast":
-            try:
-                shutil.copy("./tmpFile/tmpCodeForJoern/parse/dot/ast/0-ast.dot",
-                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
-            except:
-                pass
-        elif item_name == "cdg":
-            try:
-                shutil.copy("./tmpFile/tmpCodeForJoern/parse/dot/cdg/1-cdg.dot",
-                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
-            except:
-                pass
+        if self.isDefault:
+            png_path = f"./default/defaultpic_{item_name}.png"
+            self.ui.picPageView.setImage(png_path)
+        else:
+            if item_name == "ast":
+                try:
+                    shutil.copy("./tmpFile/tmpCodeForJoern/parse/dot/ast/0-ast.dot",
+                                f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+                except:
+                    pass
+            elif item_name == "cdg":
+                try:
+                    shutil.copy("./tmpFile/tmpCodeForJoern/parse/dot/cdg/1-cdg.dot",
+                                f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+                except:
+                    pass
 
-        shellstr = f"dot -Grankdir=LR -Tpng -o ./tmpFile/codeFilePic/{item_name}/code_{item_name}.png ./tmpFile/codeFilePic/{item_name}/code_dot.dot "
-        subprocess.call(shellstr, shell=True)
+            shellstr = f"dot -Grankdir=LR -Tpng -o ./tmpFile/codeFilePic/{item_name}/code_{item_name}.png ./tmpFile/codeFilePic/{item_name}/code_dot.dot "
+            subprocess.call(shellstr, shell=True)
 
-        png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
-        self.ui.picPageView.setImage(png_path)
-        print(f"{item_name} pic has made! in [change_pic_when_pic_combo_current_file_changed]!")
+            png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
+            self.ui.picPageView.setImage(png_path)
+            print(f"{item_name} pic has made! in [change_pic_when_pic_combo_current_file_changed]!")
 
     # ///////////////////////////////////////////////////////////////
     # set img when pic combobox text selected
@@ -355,12 +455,6 @@ class MainWindow(QMainWindow):
 
         # PRINT BTN NAME
         print(f'Button "{btnName}" pressed!')
-
-    # RESIZE EVENTS
-    # ///////////////////////////////////////////////////////////////
-    # def resizeEvent(self, event):
-    #     # Update Size Grips
-    #     UIFunctions.resize_grips(self)
 
     # MOUSE CLICK EVENTS
     # ///////////////////////////////////////////////////////////////
@@ -553,14 +647,85 @@ def check_environment():
         logging.error("css file does not exist!")
 
     if os.path.isfile("./default/default.c") \
-            and os.path.isdir("./default/defaultpic_ast.png") \
-            and os.path.isdir("./default/welcome_default.png"):
+            and os.path.isfile("./default/defaultpic_ast.png") \
+            and os.path.isfile("./default/welcome_default.png"):
         print("default folder exists!")
     else:
         logging.error("default folder does not exist!")
 
 
+# 判断dictSymbols的key中，最先出现的符号是哪个，并返回其所在位置以及该符号
+def get1stSymPos(s, fromPos=0):
+    # 清除注释用，对能干扰清除注释的东西，进行判断
+    g_DictSymbols = {'"': '"', '/*': '*/', '//': '\n'}
+    listPos = []  # 位置,符号
+    for b in g_DictSymbols:
+        pos = s.find(b, fromPos)
+        listPos.append((pos, b))  # 插入位置以及结束符号
+    minIndex = -1  # 最小位置在listPos中的索引
+    index = 0  # 索引
+    while index < len(listPos):
+        pos = listPos[index][0]  # 位置
+        if minIndex < 0 and pos >= 0:  # 第一个非负位置
+            minIndex = index
+        if 0 <= pos < listPos[minIndex][0]:  # 后面出现的更靠前的位置
+            minIndex = index
+        index = index + 1
+    if minIndex == -1:  # 没找到
+        return (-1, None)
+    else:
+        return (listPos[minIndex])
+
+
+# 去掉cpp文件的注释
+def rmCommentsInCFile(s):
+    # 全局变量，清除注释用，对能干扰清除注释的东西，进行判断
+    g_DictSymbols = {'"': '"', '/*': '*/', '//': '\n'}
+    if not isinstance(s, str):
+        raise TypeError(s)
+    fromPos = 0
+    while (fromPos < len(s)):
+        result = get1stSymPos(s, fromPos)
+        logging.info(result)
+        if result[0] == -1:  # 没有符号了
+            return s
+        else:
+            endPos = s.find(g_DictSymbols[result[1]], result[0] + len(result[1]))
+            if result[1] == '//':  # 单行注释
+                if endPos == -1:  # 没有换行符也可以
+                    endPos = len(s)
+                s = s.replace(s[result[0]:endPos], '', 1)
+                fromPos = result[0]
+            elif result[1] == '/*':  # 区块注释
+                if endPos == -1:  # 没有结束符就报错
+                    raise ValueError("块状注释未闭合")
+                s = s.replace(s[result[0]:endPos + 2], '', 1)
+                fromPos = result[0]
+            else:  # 字符串
+                if endPos == -1:  # 没有结束符就报错
+                    raise ValueError("符号未闭合")
+                fromPos = endPos + len(g_DictSymbols[result[1]])
+    return s
+
+
+# 去除程序中的空行
+def rm_emptyline(ms):
+    if not isinstance(ms, str):
+        raise TypeError(ms)
+    ms = "".join([s for s in ms.splitlines(True) if s.strip()])
+    return ms
+
+
+# 去除程序中的头文件
+def rm_includeline(ms):
+    if not isinstance(ms, str):
+        raise TypeError(ms)
+    ms = "".join([s for s in ms.splitlines(True) if '#include' not in s])
+    return ms
+
+
 if __name__ == "__main__":
+    check_environment()
     app = QApplication(sys.argv)
     window = MainWindow()
     app.setWindowIcon(QIcon("./images/images/birds.ico"))
