@@ -1,0 +1,3030 @@
+{
+  "name": "%3",
+  "directed": true,
+  "strict": false,
+  "size": "52.8,52.8",
+  "_subgraph_cnt": 0,
+  "objects": [
+    {
+      "_gvid": 0,
+      "name": "139884539478320",
+      "align": "left",
+      "fillcolor": "darkolivegreen",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "\n (1, 1000)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 1,
+      "name": "139884539489488",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "1 ReshapeAliasBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 2,
+      "name": "139884539489536",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "1 MeanBackward1",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 3,
+      "name": "139884539489632",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "1 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 4,
+      "name": "139884539489728",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "1 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 5,
+      "name": "139884539489824",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "1 MulBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 6,
+      "name": "139884539490016",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "1 CatBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 7,
+      "name": "139884539490112",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "2 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 8,
+      "name": "139884539490256",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "2 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 9,
+      "name": "139884539490160",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "3 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 10,
+      "name": "139884536013104",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "3 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 11,
+      "name": "139884536013200",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "1 MaxPool2DWithIndicesBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 12,
+      "name": "139884536013392",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "2 CatBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 13,
+      "name": "139884536013488",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "4 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 14,
+      "name": "139884536013632",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "4 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 15,
+      "name": "139884536013728",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "5 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 16,
+      "name": "139884536013920",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "5 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 17,
+      "name": "139884536014016",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "3 CatBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 18,
+      "name": "139884536014208",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "6 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 19,
+      "name": "139884536014352",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "6 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 20,
+      "name": "139884536014448",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "7 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 21,
+      "name": "139884536014640",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "7 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 22,
+      "name": "139884536014736",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "4 CatBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 23,
+      "name": "139884536014928",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "8 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 24,
+      "name": "139884536015072",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "8 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 25,
+      "name": "139884536015168",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "9 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 26,
+      "name": "139884536015360",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "9 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 27,
+      "name": "139884536015456",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "5 CatBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 28,
+      "name": "139884536015648",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "10 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 29,
+      "name": "139884536015792",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "10 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 30,
+      "name": "139884536015888",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "11 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 31,
+      "name": "139884536016080",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "11 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 32,
+      "name": "139884536016176",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "2 MaxPool2DWithIndicesBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 33,
+      "name": "139884536016368",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "6 CatBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 34,
+      "name": "139884536016416",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "12 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 35,
+      "name": "139884536016656",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "12 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 36,
+      "name": "139884536016704",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "13 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 37,
+      "name": "139884536021152",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "13 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 38,
+      "name": "139884536021200",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "7 CatBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 39,
+      "name": "139884536021488",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "14 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 40,
+      "name": "139884536021632",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "14 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 41,
+      "name": "139884536021680",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "15 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 42,
+      "name": "139884536021968",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "15 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 43,
+      "name": "139884536022016",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "8 CatBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 44,
+      "name": "139884536022304",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "16 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 45,
+      "name": "139884536022448",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "16 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 46,
+      "name": "139884536022496",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "17 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 47,
+      "name": "139884536022784",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "17 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 48,
+      "name": "139884536022832",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "3 MaxPool2DWithIndicesBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 49,
+      "name": "139884536023120",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "18 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 50,
+      "name": "139884536023168",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "18 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 51,
+      "name": "139884536023312",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "1 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 52,
+      "name": "139884539567056",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.0.weight\n (96, 3, 7, 7)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 53,
+      "name": "139884536023264",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "2 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 54,
+      "name": "139884539567216",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.0.bias\n (96)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 55,
+      "name": "139884536022688",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "3 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 56,
+      "name": "139884539567296",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.3.squeeze.weight\n (16, 96, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 57,
+      "name": "139884536022928",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "4 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 58,
+      "name": "139884539567536",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.3.squeeze.bias\n (16)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 59,
+      "name": "139884536022352",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "5 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 60,
+      "name": "139884539568016",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.3.expand1x1.weight\n (64, 16, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 61,
+      "name": "139884536022592",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "6 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 62,
+      "name": "139884539567936",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.3.expand1x1.bias\n (64)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 63,
+      "name": "139884536022256",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "19 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 64,
+      "name": "139884536022736",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "19 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 65,
+      "name": "139884536023072",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "7 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 66,
+      "name": "139884539670672",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.3.expand3x3.weight\n (64, 16, 3, 3)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 67,
+      "name": "139884536022976",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "8 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 68,
+      "name": "139884539670752",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.3.expand3x3.bias\n (64)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 69,
+      "name": "139884536021872",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "9 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 70,
+      "name": "139884539670912",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.4.squeeze.weight\n (16, 128, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 71,
+      "name": "139884536022112",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "10 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 72,
+      "name": "139884539670992",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.4.squeeze.bias\n (16)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 73,
+      "name": "139884536021536",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "11 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 74,
+      "name": "139884539671152",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.4.expand1x1.weight\n (64, 16, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 75,
+      "name": "139884536021776",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "12 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 76,
+      "name": "139884539671232",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.4.expand1x1.bias\n (64)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 77,
+      "name": "139884536021440",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "20 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 78,
+      "name": "139884536021920",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "20 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 79,
+      "name": "139884536022208",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "13 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 80,
+      "name": "139884539671392",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.4.expand3x3.weight\n (64, 16, 3, 3)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 81,
+      "name": "139884536022160",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "14 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 82,
+      "name": "139884539671472",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.4.expand3x3.bias\n (64)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 83,
+      "name": "139884536021056",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "15 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 84,
+      "name": "139884539671632",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.5.squeeze.weight\n (32, 128, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 85,
+      "name": "139884536021296",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "16 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 86,
+      "name": "139884539671712",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.5.squeeze.bias\n (32)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 87,
+      "name": "139884536016560",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "17 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 88,
+      "name": "139884539671872",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.5.expand1x1.weight\n (128, 32, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 89,
+      "name": "139884536016800",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "18 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 90,
+      "name": "139884539671952",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.5.expand1x1.bias\n (128)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 91,
+      "name": "139884536016272",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "21 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 92,
+      "name": "139884536016848",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "21 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 93,
+      "name": "139884536021392",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "19 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 94,
+      "name": "139884539672112",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.5.expand3x3.weight\n (128, 32, 3, 3)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 95,
+      "name": "139884536021344",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "20 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 96,
+      "name": "139884539672192",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.5.expand3x3.bias\n (128)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 97,
+      "name": "139884536016128",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "21 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 98,
+      "name": "139884539672352",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.7.squeeze.weight\n (32, 256, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 99,
+      "name": "139884536015984",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "22 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 100,
+      "name": "139884539672432",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.7.squeeze.bias\n (32)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 101,
+      "name": "139884536015840",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "23 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 102,
+      "name": "139884539672592",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.7.expand1x1.weight\n (128, 32, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 103,
+      "name": "139884536015696",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "24 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 104,
+      "name": "139884539672672",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.7.expand1x1.bias\n (128)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 105,
+      "name": "139884536015600",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "22 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 106,
+      "name": "139884536016032",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "22 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 107,
+      "name": "139884536016320",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "25 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 108,
+      "name": "139884539566176",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.7.expand3x3.weight\n (128, 32, 3, 3)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 109,
+      "name": "139884536016224",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "26 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 110,
+      "name": "139884539567376",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.7.expand3x3.bias\n (128)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 111,
+      "name": "139884536015408",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "27 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 112,
+      "name": "139884539566896",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.8.squeeze.weight\n (48, 256, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 113,
+      "name": "139884536015264",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "28 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 114,
+      "name": "139884539566976",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.8.squeeze.bias\n (48)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 115,
+      "name": "139884536015120",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "29 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 116,
+      "name": "139884539565136",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.8.expand1x1.weight\n (192, 48, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 117,
+      "name": "139884536014976",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "30 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 118,
+      "name": "139884539565936",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.8.expand1x1.bias\n (192)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 119,
+      "name": "139884536014880",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "23 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 120,
+      "name": "139884536015312",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "23 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 121,
+      "name": "139884536015552",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "31 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 122,
+      "name": "139884539565376",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.8.expand3x3.weight\n (192, 48, 3, 3)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 123,
+      "name": "139884536015504",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "32 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 124,
+      "name": "139884539565856",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.8.expand3x3.bias\n (192)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 125,
+      "name": "139884536014688",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "33 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 126,
+      "name": "139884539565536",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.9.squeeze.weight\n (48, 384, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 127,
+      "name": "139884536014544",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "34 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 128,
+      "name": "139884539566096",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.9.squeeze.bias\n (48)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 129,
+      "name": "139884536014400",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "35 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 130,
+      "name": "139884539565456",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.9.expand1x1.weight\n (192, 48, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 131,
+      "name": "139884536014256",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "36 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 132,
+      "name": "139884539565776",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.9.expand1x1.bias\n (192)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 133,
+      "name": "139884536014160",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "24 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 134,
+      "name": "139884536014592",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "24 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 135,
+      "name": "139884536014832",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "37 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 136,
+      "name": "139884539565616",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.9.expand3x3.weight\n (192, 48, 3, 3)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 137,
+      "name": "139884536014784",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "38 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 138,
+      "name": "139884539566336",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.9.expand3x3.bias\n (192)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 139,
+      "name": "139884536013968",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "39 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 140,
+      "name": "139884539566416",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.10.squeeze.weight\n (64, 384, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 141,
+      "name": "139884536013824",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "40 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 142,
+      "name": "139884539672512",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.10.squeeze.bias\n (64)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 143,
+      "name": "139884536013680",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "41 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 144,
+      "name": "139884539672832",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.10.expand1x1.weight\n (256, 64, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 145,
+      "name": "139884536013536",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "42 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 146,
+      "name": "139884539672912",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.10.expand1x1.bias\n (256)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 147,
+      "name": "139884536013440",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "25 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 148,
+      "name": "139884536013872",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "25 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 149,
+      "name": "139884536014112",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "43 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 150,
+      "name": "139884539673072",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.10.expand3x3.weight\n (256, 64, 3, 3)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 151,
+      "name": "139884536014064",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "44 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 152,
+      "name": "139884539673152",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.10.expand3x3.bias\n (256)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 153,
+      "name": "139884536013152",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "45 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 154,
+      "name": "139884539673312",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.12.squeeze.weight\n (64, 512, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 155,
+      "name": "139884536013008",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "46 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 156,
+      "name": "139884539673392",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.12.squeeze.bias\n (64)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 157,
+      "name": "139884536012912",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "47 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 158,
+      "name": "139884539673552",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.12.expand1x1.weight\n (256, 64, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 159,
+      "name": "139884536012864",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "48 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 160,
+      "name": "139884539673632",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.12.expand1x1.bias\n (256)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 161,
+      "name": "139884539490064",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "26 ReluBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 162,
+      "name": "139884539490208",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "26 ConvolutionBackward0",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 163,
+      "name": "139884536013344",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "49 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 164,
+      "name": "139884539673792",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.12.expand3x3.weight\n (256, 64, 3, 3)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 165,
+      "name": "139884536013248",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "50 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 166,
+      "name": "139884539673872",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "features.12.expand3x3.bias\n (256)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 167,
+      "name": "139884539489776",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "51 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 168,
+      "name": "139884539674032",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "classifier.1.weight\n (1000, 512, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 169,
+      "name": "139884539489344",
+      "align": "left",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "52 AccumulateGrad",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 170,
+      "name": "139884539674112",
+      "align": "left",
+      "fillcolor": "lightblue",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "classifier.1.bias\n (1000)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    },
+    {
+      "_gvid": 171,
+      "name": "139884535997760",
+      "align": "left",
+      "fillcolor": "darkolivegreen3",
+      "fontname": "monospace",
+      "fontsize": "10",
+      "height": "0.2",
+      "label": "\n (1, 1000, 1, 1)",
+      "ranksep": "0.1",
+      "shape": "box",
+      "style": "filled"
+    }
+  ],
+  "edges": [
+    {
+      "_gvid": 1,
+      "tail": 2,
+      "head": 1
+    },
+    {
+      "_gvid": 3,
+      "tail": 3,
+      "head": 2
+    },
+    {
+      "_gvid": 4,
+      "tail": 4,
+      "head": 3
+    },
+    {
+      "_gvid": 5,
+      "tail": 5,
+      "head": 4
+    },
+    {
+      "_gvid": 6,
+      "tail": 6,
+      "head": 5
+    },
+    {
+      "_gvid": 7,
+      "tail": 7,
+      "head": 6
+    },
+    {
+      "_gvid": 8,
+      "tail": 8,
+      "head": 7
+    },
+    {
+      "_gvid": 9,
+      "tail": 9,
+      "head": 8
+    },
+    {
+      "_gvid": 11,
+      "tail": 10,
+      "head": 9
+    },
+    {
+      "_gvid": 12,
+      "tail": 11,
+      "head": 10
+    },
+    {
+      "_gvid": 13,
+      "tail": 12,
+      "head": 11
+    },
+    {
+      "_gvid": 14,
+      "tail": 13,
+      "head": 12
+    },
+    {
+      "_gvid": 15,
+      "tail": 14,
+      "head": 13
+    },
+    {
+      "_gvid": 16,
+      "tail": 15,
+      "head": 14
+    },
+    {
+      "_gvid": 18,
+      "tail": 16,
+      "head": 15
+    },
+    {
+      "_gvid": 19,
+      "tail": 17,
+      "head": 16
+    },
+    {
+      "_gvid": 20,
+      "tail": 18,
+      "head": 17
+    },
+    {
+      "_gvid": 21,
+      "tail": 19,
+      "head": 18
+    },
+    {
+      "_gvid": 22,
+      "tail": 20,
+      "head": 19
+    },
+    {
+      "_gvid": 24,
+      "tail": 21,
+      "head": 20
+    },
+    {
+      "_gvid": 25,
+      "tail": 22,
+      "head": 21
+    },
+    {
+      "_gvid": 26,
+      "tail": 23,
+      "head": 22
+    },
+    {
+      "_gvid": 27,
+      "tail": 24,
+      "head": 23
+    },
+    {
+      "_gvid": 28,
+      "tail": 25,
+      "head": 24
+    },
+    {
+      "_gvid": 30,
+      "tail": 26,
+      "head": 25
+    },
+    {
+      "_gvid": 31,
+      "tail": 27,
+      "head": 26
+    },
+    {
+      "_gvid": 32,
+      "tail": 28,
+      "head": 27
+    },
+    {
+      "_gvid": 33,
+      "tail": 29,
+      "head": 28
+    },
+    {
+      "_gvid": 34,
+      "tail": 30,
+      "head": 29
+    },
+    {
+      "_gvid": 36,
+      "tail": 31,
+      "head": 30
+    },
+    {
+      "_gvid": 37,
+      "tail": 32,
+      "head": 31
+    },
+    {
+      "_gvid": 38,
+      "tail": 33,
+      "head": 32
+    },
+    {
+      "_gvid": 39,
+      "tail": 34,
+      "head": 33
+    },
+    {
+      "_gvid": 40,
+      "tail": 35,
+      "head": 34
+    },
+    {
+      "_gvid": 41,
+      "tail": 36,
+      "head": 35
+    },
+    {
+      "_gvid": 43,
+      "tail": 37,
+      "head": 36
+    },
+    {
+      "_gvid": 44,
+      "tail": 38,
+      "head": 37
+    },
+    {
+      "_gvid": 45,
+      "tail": 39,
+      "head": 38
+    },
+    {
+      "_gvid": 46,
+      "tail": 40,
+      "head": 39
+    },
+    {
+      "_gvid": 47,
+      "tail": 41,
+      "head": 40
+    },
+    {
+      "_gvid": 49,
+      "tail": 42,
+      "head": 41
+    },
+    {
+      "_gvid": 50,
+      "tail": 43,
+      "head": 42
+    },
+    {
+      "_gvid": 51,
+      "tail": 44,
+      "head": 43
+    },
+    {
+      "_gvid": 52,
+      "tail": 45,
+      "head": 44
+    },
+    {
+      "_gvid": 53,
+      "tail": 46,
+      "head": 45
+    },
+    {
+      "_gvid": 55,
+      "tail": 47,
+      "head": 46
+    },
+    {
+      "_gvid": 56,
+      "tail": 48,
+      "head": 47
+    },
+    {
+      "_gvid": 57,
+      "tail": 49,
+      "head": 48
+    },
+    {
+      "_gvid": 58,
+      "tail": 50,
+      "head": 49
+    },
+    {
+      "_gvid": 59,
+      "tail": 51,
+      "head": 50
+    },
+    {
+      "_gvid": 60,
+      "tail": 52,
+      "head": 51
+    },
+    {
+      "_gvid": 61,
+      "tail": 53,
+      "head": 50
+    },
+    {
+      "_gvid": 62,
+      "tail": 54,
+      "head": 53
+    },
+    {
+      "_gvid": 63,
+      "tail": 55,
+      "head": 47
+    },
+    {
+      "_gvid": 64,
+      "tail": 56,
+      "head": 55
+    },
+    {
+      "_gvid": 65,
+      "tail": 57,
+      "head": 47
+    },
+    {
+      "_gvid": 66,
+      "tail": 58,
+      "head": 57
+    },
+    {
+      "_gvid": 67,
+      "tail": 59,
+      "head": 45
+    },
+    {
+      "_gvid": 68,
+      "tail": 60,
+      "head": 59
+    },
+    {
+      "_gvid": 69,
+      "tail": 61,
+      "head": 45
+    },
+    {
+      "_gvid": 70,
+      "tail": 62,
+      "head": 61
+    },
+    {
+      "_gvid": 71,
+      "tail": 63,
+      "head": 43
+    },
+    {
+      "_gvid": 72,
+      "tail": 64,
+      "head": 63
+    },
+    {
+      "_gvid": 54,
+      "tail": 46,
+      "head": 64
+    },
+    {
+      "_gvid": 73,
+      "tail": 65,
+      "head": 64
+    },
+    {
+      "_gvid": 74,
+      "tail": 66,
+      "head": 65
+    },
+    {
+      "_gvid": 75,
+      "tail": 67,
+      "head": 64
+    },
+    {
+      "_gvid": 76,
+      "tail": 68,
+      "head": 67
+    },
+    {
+      "_gvid": 77,
+      "tail": 69,
+      "head": 42
+    },
+    {
+      "_gvid": 78,
+      "tail": 70,
+      "head": 69
+    },
+    {
+      "_gvid": 79,
+      "tail": 71,
+      "head": 42
+    },
+    {
+      "_gvid": 80,
+      "tail": 72,
+      "head": 71
+    },
+    {
+      "_gvid": 81,
+      "tail": 73,
+      "head": 40
+    },
+    {
+      "_gvid": 82,
+      "tail": 74,
+      "head": 73
+    },
+    {
+      "_gvid": 83,
+      "tail": 75,
+      "head": 40
+    },
+    {
+      "_gvid": 84,
+      "tail": 76,
+      "head": 75
+    },
+    {
+      "_gvid": 85,
+      "tail": 77,
+      "head": 38
+    },
+    {
+      "_gvid": 86,
+      "tail": 78,
+      "head": 77
+    },
+    {
+      "_gvid": 48,
+      "tail": 41,
+      "head": 78
+    },
+    {
+      "_gvid": 87,
+      "tail": 79,
+      "head": 78
+    },
+    {
+      "_gvid": 88,
+      "tail": 80,
+      "head": 79
+    },
+    {
+      "_gvid": 89,
+      "tail": 81,
+      "head": 78
+    },
+    {
+      "_gvid": 90,
+      "tail": 82,
+      "head": 81
+    },
+    {
+      "_gvid": 91,
+      "tail": 83,
+      "head": 37
+    },
+    {
+      "_gvid": 92,
+      "tail": 84,
+      "head": 83
+    },
+    {
+      "_gvid": 93,
+      "tail": 85,
+      "head": 37
+    },
+    {
+      "_gvid": 94,
+      "tail": 86,
+      "head": 85
+    },
+    {
+      "_gvid": 95,
+      "tail": 87,
+      "head": 35
+    },
+    {
+      "_gvid": 96,
+      "tail": 88,
+      "head": 87
+    },
+    {
+      "_gvid": 97,
+      "tail": 89,
+      "head": 35
+    },
+    {
+      "_gvid": 98,
+      "tail": 90,
+      "head": 89
+    },
+    {
+      "_gvid": 99,
+      "tail": 91,
+      "head": 33
+    },
+    {
+      "_gvid": 100,
+      "tail": 92,
+      "head": 91
+    },
+    {
+      "_gvid": 42,
+      "tail": 36,
+      "head": 92
+    },
+    {
+      "_gvid": 101,
+      "tail": 93,
+      "head": 92
+    },
+    {
+      "_gvid": 102,
+      "tail": 94,
+      "head": 93
+    },
+    {
+      "_gvid": 103,
+      "tail": 95,
+      "head": 92
+    },
+    {
+      "_gvid": 104,
+      "tail": 96,
+      "head": 95
+    },
+    {
+      "_gvid": 105,
+      "tail": 97,
+      "head": 31
+    },
+    {
+      "_gvid": 106,
+      "tail": 98,
+      "head": 97
+    },
+    {
+      "_gvid": 107,
+      "tail": 99,
+      "head": 31
+    },
+    {
+      "_gvid": 108,
+      "tail": 100,
+      "head": 99
+    },
+    {
+      "_gvid": 109,
+      "tail": 101,
+      "head": 29
+    },
+    {
+      "_gvid": 110,
+      "tail": 102,
+      "head": 101
+    },
+    {
+      "_gvid": 111,
+      "tail": 103,
+      "head": 29
+    },
+    {
+      "_gvid": 112,
+      "tail": 104,
+      "head": 103
+    },
+    {
+      "_gvid": 113,
+      "tail": 105,
+      "head": 27
+    },
+    {
+      "_gvid": 114,
+      "tail": 106,
+      "head": 105
+    },
+    {
+      "_gvid": 35,
+      "tail": 30,
+      "head": 106
+    },
+    {
+      "_gvid": 115,
+      "tail": 107,
+      "head": 106
+    },
+    {
+      "_gvid": 116,
+      "tail": 108,
+      "head": 107
+    },
+    {
+      "_gvid": 117,
+      "tail": 109,
+      "head": 106
+    },
+    {
+      "_gvid": 118,
+      "tail": 110,
+      "head": 109
+    },
+    {
+      "_gvid": 119,
+      "tail": 111,
+      "head": 26
+    },
+    {
+      "_gvid": 120,
+      "tail": 112,
+      "head": 111
+    },
+    {
+      "_gvid": 121,
+      "tail": 113,
+      "head": 26
+    },
+    {
+      "_gvid": 122,
+      "tail": 114,
+      "head": 113
+    },
+    {
+      "_gvid": 123,
+      "tail": 115,
+      "head": 24
+    },
+    {
+      "_gvid": 124,
+      "tail": 116,
+      "head": 115
+    },
+    {
+      "_gvid": 125,
+      "tail": 117,
+      "head": 24
+    },
+    {
+      "_gvid": 126,
+      "tail": 118,
+      "head": 117
+    },
+    {
+      "_gvid": 127,
+      "tail": 119,
+      "head": 22
+    },
+    {
+      "_gvid": 128,
+      "tail": 120,
+      "head": 119
+    },
+    {
+      "_gvid": 29,
+      "tail": 25,
+      "head": 120
+    },
+    {
+      "_gvid": 129,
+      "tail": 121,
+      "head": 120
+    },
+    {
+      "_gvid": 130,
+      "tail": 122,
+      "head": 121
+    },
+    {
+      "_gvid": 131,
+      "tail": 123,
+      "head": 120
+    },
+    {
+      "_gvid": 132,
+      "tail": 124,
+      "head": 123
+    },
+    {
+      "_gvid": 133,
+      "tail": 125,
+      "head": 21
+    },
+    {
+      "_gvid": 134,
+      "tail": 126,
+      "head": 125
+    },
+    {
+      "_gvid": 135,
+      "tail": 127,
+      "head": 21
+    },
+    {
+      "_gvid": 136,
+      "tail": 128,
+      "head": 127
+    },
+    {
+      "_gvid": 137,
+      "tail": 129,
+      "head": 19
+    },
+    {
+      "_gvid": 138,
+      "tail": 130,
+      "head": 129
+    },
+    {
+      "_gvid": 139,
+      "tail": 131,
+      "head": 19
+    },
+    {
+      "_gvid": 140,
+      "tail": 132,
+      "head": 131
+    },
+    {
+      "_gvid": 141,
+      "tail": 133,
+      "head": 17
+    },
+    {
+      "_gvid": 142,
+      "tail": 134,
+      "head": 133
+    },
+    {
+      "_gvid": 23,
+      "tail": 20,
+      "head": 134
+    },
+    {
+      "_gvid": 143,
+      "tail": 135,
+      "head": 134
+    },
+    {
+      "_gvid": 144,
+      "tail": 136,
+      "head": 135
+    },
+    {
+      "_gvid": 145,
+      "tail": 137,
+      "head": 134
+    },
+    {
+      "_gvid": 146,
+      "tail": 138,
+      "head": 137
+    },
+    {
+      "_gvid": 147,
+      "tail": 139,
+      "head": 16
+    },
+    {
+      "_gvid": 148,
+      "tail": 140,
+      "head": 139
+    },
+    {
+      "_gvid": 149,
+      "tail": 141,
+      "head": 16
+    },
+    {
+      "_gvid": 150,
+      "tail": 142,
+      "head": 141
+    },
+    {
+      "_gvid": 151,
+      "tail": 143,
+      "head": 14
+    },
+    {
+      "_gvid": 152,
+      "tail": 144,
+      "head": 143
+    },
+    {
+      "_gvid": 153,
+      "tail": 145,
+      "head": 14
+    },
+    {
+      "_gvid": 154,
+      "tail": 146,
+      "head": 145
+    },
+    {
+      "_gvid": 155,
+      "tail": 147,
+      "head": 12
+    },
+    {
+      "_gvid": 156,
+      "tail": 148,
+      "head": 147
+    },
+    {
+      "_gvid": 17,
+      "tail": 15,
+      "head": 148
+    },
+    {
+      "_gvid": 157,
+      "tail": 149,
+      "head": 148
+    },
+    {
+      "_gvid": 158,
+      "tail": 150,
+      "head": 149
+    },
+    {
+      "_gvid": 159,
+      "tail": 151,
+      "head": 148
+    },
+    {
+      "_gvid": 160,
+      "tail": 152,
+      "head": 151
+    },
+    {
+      "_gvid": 161,
+      "tail": 153,
+      "head": 10
+    },
+    {
+      "_gvid": 162,
+      "tail": 154,
+      "head": 153
+    },
+    {
+      "_gvid": 163,
+      "tail": 155,
+      "head": 10
+    },
+    {
+      "_gvid": 164,
+      "tail": 156,
+      "head": 155
+    },
+    {
+      "_gvid": 165,
+      "tail": 157,
+      "head": 8
+    },
+    {
+      "_gvid": 166,
+      "tail": 158,
+      "head": 157
+    },
+    {
+      "_gvid": 167,
+      "tail": 159,
+      "head": 8
+    },
+    {
+      "_gvid": 168,
+      "tail": 160,
+      "head": 159
+    },
+    {
+      "_gvid": 169,
+      "tail": 161,
+      "head": 6
+    },
+    {
+      "_gvid": 170,
+      "tail": 162,
+      "head": 161
+    },
+    {
+      "_gvid": 10,
+      "tail": 9,
+      "head": 162
+    },
+    {
+      "_gvid": 171,
+      "tail": 163,
+      "head": 162
+    },
+    {
+      "_gvid": 172,
+      "tail": 164,
+      "head": 163
+    },
+    {
+      "_gvid": 173,
+      "tail": 165,
+      "head": 162
+    },
+    {
+      "_gvid": 174,
+      "tail": 166,
+      "head": 165
+    },
+    {
+      "_gvid": 175,
+      "tail": 167,
+      "head": 4
+    },
+    {
+      "_gvid": 176,
+      "tail": 168,
+      "head": 167
+    },
+    {
+      "_gvid": 177,
+      "tail": 169,
+      "head": 4
+    },
+    {
+      "_gvid": 178,
+      "tail": 170,
+      "head": 169
+    },
+    {
+      "_gvid": 0,
+      "tail": 1,
+      "head": 0
+    },
+    {
+      "_gvid": 2,
+      "tail": 2,
+      "head": 171
+    },
+    {
+      "_gvid": 179,
+      "tail": 171,
+      "head": 0,
+      "style": "dotted"
+    }
+  ]
+}

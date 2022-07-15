@@ -1,0 +1,8 @@
+torch~=1.12.0
+pyside6~=6.3.1
+pygments~=2.11.2
+torchvision~=0.13.0
+pycparser~=2.21
+pyecharts~=1.9.1
+tqdm~=4.63.0
+graphviz~=2.50.0

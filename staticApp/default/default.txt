@@ -1,0 +1,2 @@
+Info: If you want to get some help. Please refer to left info button.
+WARNING: What you see now is the default file, not the program analysis results.

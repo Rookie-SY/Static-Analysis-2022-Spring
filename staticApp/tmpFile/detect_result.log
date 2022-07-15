@@ -1,0 +1,10 @@
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/cyrus/final_code/Static-Analysis-2022-Spring/cmake-build-debug
+ninja: no work to do.
+/home/cyrus/final_code/Static-Analysis-2022-Spring/tests/MainChecker/staticApptest.cpp
+WARNING: USE UNINITIALIZED VARIABLE a: Line: 25 Column: 8
+WARNING: USE UNINITIALIZED VARIABLE x: Line: 19 Column: 15
+WARNING: USE UNINITIALIZED VARIABLE y: Line: 17 Column: 12
+WARNING: USE UNINITIALIZED VARIABLE y: Line: 19 Column: 19
+WARNING: USE UNINITIALIZED VARIABLE y: Line: 20 Column: 13

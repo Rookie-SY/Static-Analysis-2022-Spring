@@ -3,3 +3,10 @@ cmake-build-debug
 docs
 shell.sh
 time.txt
+gitAll.sh
+gitLV.sh
+staticApp/README.md
+staticApp/cpg.bin
+staticApp/dist/
+staticApp/testFile/
+staticApp/test_sh_and_parse.py

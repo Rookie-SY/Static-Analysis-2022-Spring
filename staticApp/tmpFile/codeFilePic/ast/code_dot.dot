@@ -1,0 +1,71 @@
+digraph "&lt;global&gt;" {  
+"5" [label = <(METHOD,&lt;global&gt;)<SUB>1</SUB>> ]
+"6" [label = <(BLOCK,&lt;empty&gt;,&lt;empty&gt;)> ]
+"7" [label = <(METHOD,main)<SUB>1</SUB>> ]
+"8" [label = <(BLOCK,&lt;empty&gt;,&lt;empty&gt;)<SUB>2</SUB>> ]
+"9" [label = <(LOCAL,int x: int)<SUB>3</SUB>> ]
+"10" [label = <(LOCAL,int y: int)<SUB>3</SUB>> ]
+"11" [label = <(LOCAL,int tmp: int)<SUB>4</SUB>> ]
+"12" [label = <(CONTROL_STRUCTURE,while (y != 0),while (y != 0))<SUB>5</SUB>> ]
+"13" [label = <(&lt;operator&gt;.notEquals,y != 0)<SUB>5</SUB>> ]
+"14" [label = <(IDENTIFIER,y,y != 0)<SUB>5</SUB>> ]
+"15" [label = <(LITERAL,0,y != 0)<SUB>5</SUB>> ]
+"16" [label = <(BLOCK,&lt;empty&gt;,&lt;empty&gt;)<SUB>6</SUB>> ]
+"17" [label = <(&lt;operator&gt;.assignment,tmp = x % y)<SUB>7</SUB>> ]
+"18" [label = <(IDENTIFIER,tmp,tmp = x % y)<SUB>7</SUB>> ]
+"19" [label = <(&lt;operator&gt;.modulo,x % y)<SUB>7</SUB>> ]
+"20" [label = <(IDENTIFIER,x,x % y)<SUB>7</SUB>> ]
+"21" [label = <(IDENTIFIER,y,x % y)<SUB>7</SUB>> ]
+"22" [label = <(&lt;operator&gt;.assignment,x = y)<SUB>8</SUB>> ]
+"23" [label = <(IDENTIFIER,x,x = y)<SUB>8</SUB>> ]
+"24" [label = <(IDENTIFIER,y,x = y)<SUB>8</SUB>> ]
+"25" [label = <(&lt;operator&gt;.assignment,y = tmp)<SUB>9</SUB>> ]
+"26" [label = <(IDENTIFIER,y,y = tmp)<SUB>9</SUB>> ]
+"27" [label = <(IDENTIFIER,tmp,y = tmp)<SUB>9</SUB>> ]
+"28" [label = <(LOCAL,char a: char)<SUB>11</SUB>> ]
+"29" [label = <(CONTROL_STRUCTURE,if (a == 'b'),if (a == 'b'))<SUB>12</SUB>> ]
+"30" [label = <(&lt;operator&gt;.equals,a == 'b')<SUB>12</SUB>> ]
+"31" [label = <(IDENTIFIER,a,a == 'b')<SUB>12</SUB>> ]
+"32" [label = <(LITERAL,'b',a == 'b')<SUB>12</SUB>> ]
+"33" [label = <(BLOCK,&lt;empty&gt;,&lt;empty&gt;)<SUB>12</SUB>> ]
+"34" [label = <(printf,printf(&quot;Hello World&quot;))<SUB>13</SUB>> ]
+"35" [label = <(LITERAL,&quot;Hello World&quot;,printf(&quot;Hello World&quot;))<SUB>13</SUB>> ]
+"36" [label = <(RETURN,return 0;,return 0;)<SUB>15</SUB>> ]
+"37" [label = <(LITERAL,0,return 0;)<SUB>15</SUB>> ]
+"38" [label = <(METHOD_RETURN,int)<SUB>1</SUB>> ]
+"40" [label = <(METHOD_RETURN,ANY)> ]
+  "5" -> "6" 
+  "5" -> "40" 
+  "6" -> "7" 
+  "7" -> "8" 
+  "7" -> "38" 
+  "8" -> "9" 
+  "8" -> "10" 
+  "8" -> "11" 
+  "8" -> "12" 
+  "8" -> "28" 
+  "8" -> "29" 
+  "8" -> "36" 
+  "12" -> "13" 
+  "12" -> "16" 
+  "13" -> "14" 
+  "13" -> "15" 
+  "16" -> "17" 
+  "16" -> "22" 
+  "16" -> "25" 
+  "17" -> "18" 
+  "17" -> "19" 
+  "19" -> "20" 
+  "19" -> "21" 
+  "22" -> "23" 
+  "22" -> "24" 
+  "25" -> "26" 
+  "25" -> "27" 
+  "29" -> "30" 
+  "29" -> "33" 
+  "30" -> "31" 
+  "30" -> "32" 
+  "33" -> "34" 
+  "34" -> "35" 
+  "36" -> "37" 
+}
