@@ -43,6 +43,9 @@
 
 int main()
 {
+    int* p = (int* )malloc(sizeof(int) * 4);
+    p++;
+    free(p);
     // int* g = (int* )malloc(4 * sizeof(int));
     // int* e = (int* )malloc(sizeof(int));
     // pop = new int[4];
@@ -69,15 +72,15 @@ int main()
     // while (i_seexp--) {
     //     free(p_seexp); // seexp, warning
     // }
-    int leaknum = 10;
-    int *seexp_p = NULL;
-    while (leaknum--) {
-        seexp_p = (int*)malloc(10*sizeof(int)); // seexp, warning
-    }
-    seexp_p[0] = 520;
-    int x, y;
-    x = x + 1;
-    y = y + x;
+    // int leaknum = 10;
+    // int *seexp_p = NULL;
+    // while (leaknum--) {
+    //     seexp_p = (int*)malloc(10*sizeof(int)); // seexp, warning
+    // }
+    // seexp_p[0] = 520;
+    // int x, y;
+    // x = x + 1;
+    // y = y + x;
     // free(f);
     // int* r = p++;
     // int* q;

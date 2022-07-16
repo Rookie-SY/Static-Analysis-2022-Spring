@@ -19,8 +19,8 @@ void MemoryLeakChecker::check(ASTFunction* _entryFunc)
         unique_ptr<CFG>& cfg = manager->getCFG(fun);
         // if(funcDecl->getNameAsString() == "RotatingTree_Get")
         // {
-        //     funcDecl->dump();
-            // cfg->dump(LangOpts, true);
+            funcDecl->dump();
+            cfg->dump(LangOpts, true);
         // }
         TraceRecord traceRecord;
         traceRecord.calleeLocation.push(funcDecl->getLocation());
@@ -980,18 +980,38 @@ bool MemoryLeakChecker::handle_malloc_size(Stmt* sizeStmt, int& size)
             }
             else
                 return false;
+            iter++;
+            if((*iter)->getStmtClass() == clang::Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
+            {
+                clang::UnaryExprOrTypeTraitExpr* unaryExpr = static_cast<clang::UnaryExprOrTypeTraitExpr* >(*iter);
+                size *= Pointers.get_unit_length(unaryExpr->getArgumentType().getAsString());
+                return true;
+            }
+            else
+                return false;
         }
-        else
-            return false;
-        iter++;
-        if((*iter)->getStmtClass() == clang::Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
+        else if((*iter)->getStmtClass() == clang::Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
         {
             clang::UnaryExprOrTypeTraitExpr* unaryExpr = static_cast<clang::UnaryExprOrTypeTraitExpr* >(*iter);
-            size *= Pointers.get_unit_length(unaryExpr->getArgumentType().getAsString());
-            return true;
-        }
+            iter++;
+            if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+            {
+                if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass)
+                {
+                    clang::IntegerLiteral* integer = static_cast<clang::IntegerLiteral* >(*(*iter)->child_begin());
+                    size = integer->getValue().getZExtValue();
+                }
+                else
+                    return false;
+                
+                size *= Pointers.get_unit_length(unaryExpr->getArgumentType().getAsString());
+                return true;
+            }
+            return false;
+        }   
         else
             return false;
+        
     }
     else if(sizeStmt->getStmtClass() == clang::Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
     {
@@ -2150,7 +2170,36 @@ void PointerSet::free_pointer(string name, SourceLocation location, SourceLocati
         if(pointerVec[pos].isComputable)
         {
             if(pointerVec[pos].compute.local.begin != 0)
-                cout << "\033[31mPointer " << name << " can't be freed or deleted.\033[0m" << endl;
+            {
+                string file;
+                for(unsigned i = 0; i < pointerVec[pos].location.top().printToString(*SM).size(); i++)
+                {
+                    file += pointerVec[pos].location.top().printToString(*SM)[i];
+                    if(pointerVec[pos].location.top().printToString(*SM)[i] == ':')
+                        break;
+                }
+                string line, col;
+                string tmp = pointerVec[pos].location.top().printToString(*SM);
+                bool isLoc = true;
+                for(unsigned i = tmp.size() - 1; i >= 0; i--)
+                {
+                    if(tmp[i] == ':'){
+                        isLoc = false;
+                        continue;
+                    }
+                    if(!(tmp[i] >= '0' && tmp[i] <= '9'))
+                        break;
+                    if(isLoc)
+                        col += tmp[i];
+                    else
+                        line += tmp[i];
+                }
+                reverse(line.begin(), line.end());
+                reverse(col.begin(), col.end());
+
+                std::cout << file << std::endl;
+                std::cout << "WARNING: Pointer " << name << " can't be freed or deleted."  << " Line: " << line << " Column: " << col << endl;
+            }
             else
             {
                 if(pointerVec[pos].compute.local.end == 0)
@@ -2459,7 +2508,7 @@ void MemoryLeakChecker::report_memory_leak()
     //     cout << "\033[32mNo memory leak detected.\n" << "\033[0m";
     if(isLeaked)
     {
-        string file, loc;
+        string file;
         for(unsigned i = 0; i < leakResult[0].location.printToString(*SM).size(); i++)
         {
             file += leakResult[0].location.printToString(*SM)[i];
