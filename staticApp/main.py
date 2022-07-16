@@ -32,8 +32,10 @@ widgets = None
 
 watch_name = {"didCodeFileChanged": False, "codefileName": "", "code_md5": ""}
 
+
 class WatchThread(QThread):
     changed_signal = QtCore.Signal(int)
+
     def __init__(self):
         """
         :param func: 可调用的对象
@@ -45,7 +47,8 @@ class WatchThread(QThread):
         global watch_name
         while True:
             if not watch_name["didCodeFileChanged"] and \
-                    hashlib.md5(open(watch_name["codefileName"]).read().encode("utf-8")).hexdigest() != watch_name["code_md5"]:
+                    hashlib.md5(open(watch_name["codefileName"]).read().encode("utf-8")).hexdigest() != watch_name[
+                    "code_md5"]:
                 print("code is changed. not file name")
                 time.sleep(1)
                 self.changed_signal.emit(1)
@@ -82,6 +85,12 @@ class MainWindow(QMainWindow):
         self.picfileName = "./default/welcome_default.png"
         self.errorfilename = "./default/default.txt"
         self.codefileName = "./default/default.c"
+        self.astdot = []
+        self.cfgdot = []
+        self.cdgdot = []
+        self.pdgdot = []
+        self.dotindex = 0
+
 
         self.pic_or_model = "pic"
         self.didCodeFileChanged = False
@@ -199,6 +208,8 @@ class MainWindow(QMainWindow):
         widgets.picKind.activated.connect(self.change_pic_when_pic_combo_refresh)
         widgets.picKind.currentTextChanged.connect(self.change_pic_when_pic_combo_current_file_changed)
         self.ui.picPageView = NewGraphView(self.picfileName, self.ui.picPageView)
+        widgets.ASTup.clicked.connect(self.uppic)
+        widgets.ASTdown.clicked.connect(self.dowpic)
 
         # SET ModelPage
         # ///////////////////////////////////////////////////////////////
@@ -206,6 +217,7 @@ class MainWindow(QMainWindow):
         widgets.models.addItems(self.model_name_list)
 
         raw_nodes_list = raw_model_struct()
+        raw_nodes_list.append("output")
         widgets.model_nodes.clear()
         widgets.model_nodes.addItems(raw_nodes_list)
 
@@ -238,6 +250,23 @@ class MainWindow(QMainWindow):
         self.didCodeFileChanged = False
         watch_name["didCodeFileChanged"] = self.didCodeFileChanged
 
+    def modifysh(self):
+
+        with open('../undefinedvariableshelltest.sh', 'r+', encoding="utf-8") as f:
+            result = ''
+            for item in f:
+                res = re.search(r'clang\+\+ -emit-ast -c [a-zA-Z0-9.: ]+', item)
+                if res:
+                    print(res.group())
+                    tmp = res.group().split(' ')
+                    tmp[-1] = 'test.cpp'
+                    tmp2 = ' '.join(tmp)
+                    result = result + tmp2 + '\n'
+                else:
+                    result = result + item
+            f.seek(0)
+            f.truncate()
+            f.write(result)
     # ///////////////////////////////////////////////////////////////
     # set code text when code file selected
     # ///////////////////////////////////////////////////////////////
@@ -263,7 +292,7 @@ class MainWindow(QMainWindow):
             widgets.codeText.setHtml(html)
 
     def print_error_info(self):
-        shutil.copy(self.codefileName, "../tests/MainChecker/staticApptest.cpp")
+        shutil.copy(self.codefileName, f"../tests/MainChecker/staticApptest.cpp")
         sh_str = "sh ./undefinedvariableshell.sh > staticApp/tmpFile/detect_result.log"
         subprocess.call(sh_str, shell=True, cwd='../')
 
@@ -271,11 +300,12 @@ class MainWindow(QMainWindow):
                 open("./css/errorText.html", "r", encoding='utf-8') as error_html_file:
             error_html_template = error_html_file.read()
             for item in f:
-                res = re.search(r'WARNING:[a-zA-Z0-9: ]+', item)
+                res = re.search(r'WARNING:[a-zA-Z0-9\'.: ]+', item)
                 if res:
                     print(res.group())
                     error_text = res.group()
                     error_kind = error_text.split(":")[0].lower()
+                    #error_text = error_text.title()
                     if error_kind == "info":
                         new_line = f'\t<p class="info">{error_text}</p>\n'
                     elif error_kind == "warning":
@@ -291,7 +321,7 @@ class MainWindow(QMainWindow):
         picview_kind = self.ui.picKind.currentText()
         print(picview_kind + " in [readFileToCodeBox]")
         self.print_error_info()
-        #self.parse_newpic_with_joern(self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText())
+        # self.parse_newpic_with_joern(self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText())
         new_thread = Thread(target=self.parse_newpic_with_joern,
                             args=(
                                 self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText()))
@@ -320,6 +350,9 @@ class MainWindow(QMainWindow):
                 self.render_code()
                 picview_kind = self.ui.picKind.currentText()
                 print(picview_kind + " in [readFileToCodeBox]")
+                if os.path.exists("../tests/MainChecker/cfg") and os.path.exists("../tests/MainChecker/pdg"):
+                    shutil.rmtree("../tests/MainChecker/cfg")
+                    shutil.rmtree("../tests/MainChecker/pdg")
                 new_thread = Thread(target=self.parse_newpic_with_joern,
                                     args=(
                                         self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText()))
@@ -332,6 +365,18 @@ class MainWindow(QMainWindow):
     # ///////////////////////////////////////////////////////////////
     # set img when pic combobox text selected
     # ///////////////////////////////////////////////////////////////
+
+    def getFileName(self, path, suffix):
+        # 获取指定目录下的所有指定后缀的文件名
+        input_template_All = []
+        f_list = os.listdir(path)  # 返回文件名
+        for i in f_list:
+            # os.path.splitext():分离文件名与扩展名
+            if os.path.splitext(i)[1] == suffix:
+                input_template_All.append((path + i))
+                # print(i)
+        return sorted(input_template_All)
+
     def change_pic_when_pic_combo_refresh(self, item_index):
         """
         pic combo
@@ -351,6 +396,7 @@ class MainWindow(QMainWindow):
         pic combo changed
         init code struct pic
         """
+
         item_name = item_name.lower()
         if self.isDefault:
             png_path = f"./default/defaultpic_{item_name}.png"
@@ -360,12 +406,33 @@ class MainWindow(QMainWindow):
                 try:
                     shutil.copy("./tmpFile/tmpCodeForJoern/parse/dot/ast/0-ast.dot",
                                 f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+                    self.astdot = self.getFileName("./tmpFile/tmpCodeForJoern/parse/dot/ast/", ".dot")
+                    self.dotindex = 0
                 except:
                     pass
             elif item_name == "cdg":
                 try:
                     shutil.copy("./tmpFile/tmpCodeForJoern/parse/dot/cdg/1-cdg.dot",
                                 f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+                    self.cdgdot = self.getFileName("./tmpFile/tmpCodeForJoern/parse/dot/cdg/", ".dot")
+                    self.dotindex = 0
+                except:
+                    pass
+            elif item_name == "pdg":
+                try:
+                    shutil.copy("../tests/MainChecker/pdg/main.dot",
+                                f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+                    self.pdgdot = self.getFileName("../tests/MainChecker/pdg/", ".dot")
+                    self.dotindex = 0
+                except:
+                    pass
+            elif item_name == "cfg":
+                try:
+
+                    shutil.copy("../tests/MainChecker/cfg/main.dot",
+                                f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+                    self.cfgdot = self.getFileName("../tests/MainChecker/cfg/", ".dot")
+                    self.dotindex = 0
                 except:
                     pass
 
@@ -375,6 +442,99 @@ class MainWindow(QMainWindow):
             png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
             self.ui.picPageView.setImage(png_path)
             print(f"{item_name} pic has made! in [change_pic_when_pic_combo_current_file_changed]!")
+
+    def uppic(self):
+        item_name = self.ui.picKind.currentText().lower()
+
+        if item_name == "ast":
+            try:
+                length = len(self.astdot)
+                self.dotindex = (self.dotindex - 1) % length
+                dot_path = self.astdot[self.dotindex]
+                shutil.copy(f"{dot_path}",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+        elif item_name == "cdg":
+            try:
+                length = len(self.cdgdot)
+                self.dotindex = (self.dotindex - 1) % length
+                dot_path = self.cdgdot[self.dotindex]
+                shutil.copy(f"{dot_path}",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+        elif item_name == "pdg":
+            try:
+                length = len(self.pdgdot)
+                self.dotindex = (self.dotindex - 1) % length
+                dot_path = self.pdgdot[self.dotindex]
+                shutil.copy(f"{dot_path}",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+        elif item_name == "cfg":
+            try:
+                length = len(self.cfgdot)
+                self.dotindex = (self.dotindex - 1) % length
+                dot_path = self.cfgdot[self.dotindex]
+                shutil.copy(f"{dot_path}",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+        shellstr = f"dot -Grankdir=LR -Tpng -o ./tmpFile/codeFilePic/{item_name}/code_{item_name}.png ./tmpFile/codeFilePic/{item_name}/code_dot.dot "
+        subprocess.call(shellstr, shell=True)
+
+        png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
+        self.ui.picPageView.setImage(png_path)
+        print(f"{item_name} pic has made! in [uppic]!")
+
+    def dowpic(self):
+        item_name = self.ui.picKind.currentText().lower()
+
+        if item_name == "ast":
+            try:
+                length = len(self.astdot)
+                self.dotindex = (self.dotindex + 1) % length
+                dot_path = self.astdot[self.dotindex]
+                shutil.copy(f"{dot_path}",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+        elif item_name == "cdg":
+            try:
+                length = len(self.cdgdot)
+                self.dotindex = (self.dotindex + 1) % length
+                dot_path = self.cdgdot[self.dotindex]
+                shutil.copy(f"{dot_path}",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+        elif item_name == "pdg":
+            try:
+                length = len(self.pdgdot)
+                self.dotindex = (self.dotindex + 1) % length
+                dot_path = self.pdgdot[self.dotindex]
+                shutil.copy(f"{dot_path}",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+        elif item_name == "cfg":
+            try:
+                length = len(self.cfgdot)
+                self.dotindex = (self.dotindex + 1) % length
+                dot_path = self.cfgdot[self.dotindex]
+                shutil.copy(f"{dot_path}",
+                            f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+            except:
+                pass
+
+        shellstr = f"dot -Grankdir=LR -Tpng -o ./tmpFile/codeFilePic/{item_name}/code_{item_name}.png ./tmpFile/codeFilePic/{item_name}/code_dot.dot "
+        subprocess.call(shellstr, shell=True)
+
+        png_path = f"./tmpFile/codeFilePic/{item_name}/code_{item_name}.png"
+        self.ui.picPageView.setImage(png_path)
+        print(f"{item_name} pic has made! in [dowpic]!")
 
     # ///////////////////////////////////////////////////////////////
     # set img when pic combobox text selected
@@ -387,6 +547,7 @@ class MainWindow(QMainWindow):
         """
         raw_nodes_list = raw_model_struct(item_name)
         self.ui.model_nodes.clear()
+        raw_nodes_list.append("output")
         self.ui.model_nodes.addItems(raw_nodes_list)
         self.ui.model_picView.setImage(f"./pic/models/{item_name}/net_pic.png")
 
@@ -395,9 +556,13 @@ class MainWindow(QMainWindow):
         model_nodes combo
         when nodes changed
         """
-        if item_name:
+        if not item_name:
+            return
+        if item_name != "output":
             get_node_graph(self.ui.models.currentText(), item_name)
             self.ui.model_picView.setImage(f"./tmpFile/tmpPic.png")
+        else:
+            self.ui.model_picView.setImage(f"./pic/models/{self.ui.models.currentText()}/net_pic.png")
 
     def wheelEvent(self, e: QWheelEvent):
         """
@@ -431,6 +596,7 @@ class MainWindow(QMainWindow):
 
         # SHOW HOME PAGE
         if btnName == "btn_home":
+            self.pic_or_model = "home"
             widgets.stackedWidget.setCurrentWidget(widgets.home)
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
@@ -438,6 +604,7 @@ class MainWindow(QMainWindow):
         # SHOW MODEL PAGE
         if btnName == "btn_model":
             self.pic_or_model = "model"
+            self.ui.model_picView.setImage("./pic/models/lenet/net_pic.png")
             widgets.stackedWidget.setCurrentWidget(widgets.model_page)
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
@@ -478,7 +645,7 @@ class NewGraphView(QGraphicsView):
     def __init__(self, pic_path: str, myPicPageView: QGraphicsView, parent=None):
         super().__init__(parent=parent)
         self.zoomInTimes = 0
-        self.maxZoomInTimes = 22
+        self.maxZoomInTimes = 25
 
         # 创建场景
         self.graphicsScene = QGraphicsScene()

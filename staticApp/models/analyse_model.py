@@ -40,7 +40,8 @@ def getpath_from_node(dot_filepath, node_label):
         for edgesitem in raw_data['edges']:
             if edgesitem['head'] == gvid:
                 node_gvid.append(edgesitem['tail'])
-                target_node['edges'].append(edgesitem)
+                if not edgesitem in target_node['edges']:
+                    target_node['edges'].append(edgesitem)
 
                 for objectsitem in raw_data['objects']:
                     if objectsitem['_gvid'] == edgesitem['tail']:
@@ -50,10 +51,6 @@ def getpath_from_node(dot_filepath, node_label):
     # print(target_node)
 
     my_new_dot.update(target_node)
-    if my_new_dot == raw_data:
-        print("yes")
-    # print(my_new_dot)
-
     name_dict = {}
 
     # 生成新的dot文件

@@ -8,3 +8,75 @@ WARNING: USE UNINITIALIZED VARIABLE x: Line: 19 Column: 15
 WARNING: USE UNINITIALIZED VARIABLE y: Line: 17 Column: 12
 WARNING: USE UNINITIALIZED VARIABLE y: Line: 19 Column: 19
 WARNING: USE UNINITIALIZED VARIABLE y: Line: 20 Column: 13
+Callee of main  . 
+BLOCK 0 1
+   pred: NULL
+   succ: NULL
+BLOCK 1 1
+   pred: NULL
+   succ: NULL
+BLOCK 2 1
+   pred: 3 
+   succ: NULL
+BLOCK 3 2
+   pred: NULL
+   succ: 2 
+BLOCK 4 1
+   pred: 6 
+   succ: NULL
+BLOCK 5 3
+   pred: 6 
+   succ: NULL
+BLOCK 6 1
+   pred: 6 
+   succ: 4 5 6 
+BLOCK 7 3
+   pred: NULL
+   succ: NULL
+BLOCK 8 1
+   pred: NULL
+   succ: NULL
+
+dumpstmt
+BLOCK 0 Stmt0
+   pred: NULL
+   succ: NULL
+BLOCK 1 Stmt0
+   pred: NULL
+   succ: NULL
+BLOCK 2 Stmt0
+   pred: block 3 stmt 1 
+   succ: NULL
+BLOCK 3 Stmt0
+   pred: NULL
+   succ: NULL
+BLOCK 3 Stmt1
+   pred: NULL
+   succ: block 2 stmt 0 
+BLOCK 4 Stmt0
+   pred: block 6 stmt 0 
+   succ: NULL
+BLOCK 5 Stmt0
+   pred: block 6 stmt 0 
+   succ: NULL
+BLOCK 5 Stmt1
+   pred: block 6 stmt 0 
+   succ: NULL
+BLOCK 5 Stmt2
+   pred: block 6 stmt 0 
+   succ: NULL
+BLOCK 6 Stmt0
+   pred: block 6 stmt 0 
+   succ: block 4 stmt 0 block 5 stmt 0 block 5 stmt 1 block 5 stmt 2 block 6 stmt 0 
+BLOCK 7 Stmt0
+   pred: NULL
+   succ: NULL
+BLOCK 7 Stmt1
+   pred: NULL
+   succ: NULL
+BLOCK 7 Stmt2
+   pred: NULL
+   succ: NULL
+BLOCK 8 Stmt0
+   pred: NULL
+   succ: NULL
