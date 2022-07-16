@@ -1399,6 +1399,10 @@ void DataDependenceGraph::GetStmtRvalue(clang::Stmt *statement, vector<string> *
                     {
                         RecursiveGetOperator(initexpr, rvalue);
                     }
+                    else if (initexpr->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass)
+                    {
+                        RecursiveGetOperator(initexpr, rvalue);
+                    }
                     else if (initexpr->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass)
                     {
                         clang::CXXConstructExpr *structIter = static_cast<clang::CXXConstructExpr *>(initexpr);

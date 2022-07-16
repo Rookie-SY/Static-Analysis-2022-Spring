@@ -1,9 +1,9 @@
 digraph "Call graph" {
     label="Call graph"
 
-    Node0x55ec10c3f6a0 [shape=record,label="{main  }"];
-    Node0x55ec10c3f6a0 -> Node0x55ec10c3f380
-    Node0x55ec10c3f380 [shape=record,label="{add  int  int  }"];
-    Node0x55ec10c3f380 -> Node0x55ec10bb0f50
-    Node0x55ec10bb0f50 [shape=record,label="{foo  struct Tree  int  float  }"];
+    Node0x5591477946a0 [shape=record,label="{main  }"];
+    Node0x5591477946a0 -> Node0x559147794380
+    Node0x559147794380 [shape=record,label="{add  int  int  }"];
+    Node0x559147794380 -> Node0x559147705f50
+    Node0x559147705f50 [shape=record,label="{foo  struct Tree  int  float  }"];
 }

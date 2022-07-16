@@ -21,10 +21,12 @@ using namespace clang;
 using namespace llvm;
 using namespace clang::tooling;
 
-int main(int argc, const char *argv[]) {
-  
+int main(int argc, const char *argv[])
+{
+
   ofstream process_file("time.txt");
-  if (!process_file.is_open()) {
+  if (!process_file.is_open())
+  {
     cerr << "can't open time.txt\n";
     return -1;
   }
@@ -33,7 +35,7 @@ int main(int argc, const char *argv[]) {
 
   LLVMInitializeNativeTarget();
   LLVMInitializeNativeAsmParser();
-  
+
   std::vector<std::string> ASTs = initialize(argv[1]);
 
   Config configure(argv[2]);
@@ -45,9 +47,10 @@ int main(int argc, const char *argv[]) {
   ForwardDominanceTree fdt(&manager, &resource, &call_graph);
 
   auto enable = configure.getOptionBlock("CheckerEnable");
-  
+
   Logger::configure_UndefinedVariable(configure);
-  if (enable.find("UndefinedVariableChecker")->second == "true") {
+  if (enable.find("UndefinedVariableChecker")->second == "true")
+  {
     process_file << "Starting UndefinedVariableChecker check" << endl;
     clock_t start, end;
     start = clock();
@@ -64,19 +67,22 @@ int main(int argc, const char *argv[]) {
         << endl;
   }
 
-  if (enable.find("CallGraphChecker")->second == "true") {
+  if (enable.find("CallGraphChecker")->second == "true")
+  {
     process_file << "Starting CallGraphChecker check" << endl;
     clock_t start, end;
     start = clock();
 
-    //call_graph.printCallGraph(std::cout);
+    // call_graph.printCallGraph(std::cout);
     std::fstream out("outTest.dot", ios::out);
-    std::fstream Nodeout("NodeTest.dot",ios::out);
-    if(Nodeout.is_open()){
+    std::fstream Nodeout("NodeTest.dot", ios::out);
+    if (Nodeout.is_open())
+    {
       call_graph.printCallGraph(Nodeout);
     }
     Nodeout.close();
-      if (out.is_open()) {
+    if (out.is_open())
+    {
       call_graph.writeDotFile(out);
     }
     out.close();
@@ -92,13 +98,13 @@ int main(int argc, const char *argv[]) {
   }
   control_flow_graph.drawCfg();
   fdt.ConstructFDTFromCfg();
-  ControlDependenceGraph cdg(&manager, &resource, &call_graph,&fdt);
+  ControlDependenceGraph cdg(&manager, &resource, &call_graph, &fdt);
   cdg.ConstructCDG();
-  //cdg.dumpCDG();
-  //cdg.dumpStmtCDG();
-  DataDependenceGraph ddg(&manager, &resource, &call_graph,&fdt);
+  // cdg.dumpCDG();
+  // cdg.dumpStmtCDG();
+  DataDependenceGraph ddg(&manager, &resource, &call_graph, &fdt);
   ddg.ConstructDDGForest();
-  ProgramDependencyGraph pdg(&manager, &resource, &call_graph,&cdg, &ddg);
+  ProgramDependencyGraph pdg(&manager, &resource, &call_graph, &cdg, &ddg);
   pdg.DrawPdgForest();
   endCTime = clock();
   unsigned sec = unsigned((endCTime - startCTime) / CLOCKS_PER_SEC);

@@ -847,6 +847,10 @@ void UndefinedVariableChecker::get_rvalue(clang::Stmt *statement, UsefulStatemen
                         {
                             recursive_get_binaryop(initexpr, info);
                         }
+                        else if (initexpr->getStmtClass() == clang::Stmt::StmtClass::CStyleCastExprClass)
+                        {
+                            recursive_get_binaryop(initexpr, info);
+                        }
                         else if (initexpr->getStmtClass() == clang::Stmt::StmtClass::CXXConstructExprClass)
                         {
                             clang::CXXConstructExpr *structIter = static_cast<clang::CXXConstructExpr *>(initexpr);
