@@ -32,8 +32,10 @@ widgets = None
 
 watch_name = {"didCodeFileChanged": False, "codefileName": "", "code_md5": ""}
 
+
 class WatchThread(QThread):
     changed_signal = QtCore.Signal(int)
+
     def __init__(self):
         """
         :param func: 可调用的对象
@@ -45,7 +47,8 @@ class WatchThread(QThread):
         global watch_name
         while True:
             if not watch_name["didCodeFileChanged"] and \
-                    hashlib.md5(open(watch_name["codefileName"]).read().encode("utf-8")).hexdigest() != watch_name["code_md5"]:
+                    hashlib.md5(open(watch_name["codefileName"]).read().encode("utf-8")).hexdigest() != watch_name[
+                    "code_md5"]:
                 print("code is changed. not file name")
                 time.sleep(1)
                 self.changed_signal.emit(1)
@@ -206,6 +209,7 @@ class MainWindow(QMainWindow):
         widgets.models.addItems(self.model_name_list)
 
         raw_nodes_list = raw_model_struct()
+        raw_nodes_list.append("output")
         widgets.model_nodes.clear()
         widgets.model_nodes.addItems(raw_nodes_list)
 
@@ -276,6 +280,7 @@ class MainWindow(QMainWindow):
                     print(res.group())
                     error_text = res.group()
                     error_kind = error_text.split(":")[0].lower()
+                    error_text = error_text.title()
                     if error_kind == "info":
                         new_line = f'\t<p class="info">{error_text}</p>\n'
                     elif error_kind == "warning":
@@ -291,7 +296,7 @@ class MainWindow(QMainWindow):
         picview_kind = self.ui.picKind.currentText()
         print(picview_kind + " in [readFileToCodeBox]")
         self.print_error_info()
-        #self.parse_newpic_with_joern(self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText())
+        # self.parse_newpic_with_joern(self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText())
         new_thread = Thread(target=self.parse_newpic_with_joern,
                             args=(
                                 self.codefileName, "./tmpFile/tmpCodeForJoern", self.ui.picKind.currentText()))
@@ -368,6 +373,18 @@ class MainWindow(QMainWindow):
                                 f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
                 except:
                     pass
+            elif item_name == "pdg":
+                try:
+                    shutil.copy("../tests/MainChecker/pdg/main.dot",
+                                f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+                except:
+                    pass
+            elif item_name == "cfg":
+                try:
+                    shutil.copy("../tests/MainChecker/cfg/main.dot",
+                                f"./tmpFile/codeFilePic/{item_name}/code_dot.dot")
+                except:
+                    pass
 
             shellstr = f"dot -Grankdir=LR -Tpng -o ./tmpFile/codeFilePic/{item_name}/code_{item_name}.png ./tmpFile/codeFilePic/{item_name}/code_dot.dot "
             subprocess.call(shellstr, shell=True)
@@ -387,6 +404,7 @@ class MainWindow(QMainWindow):
         """
         raw_nodes_list = raw_model_struct(item_name)
         self.ui.model_nodes.clear()
+        raw_nodes_list.append("output")
         self.ui.model_nodes.addItems(raw_nodes_list)
         self.ui.model_picView.setImage(f"./pic/models/{item_name}/net_pic.png")
 
@@ -395,9 +413,13 @@ class MainWindow(QMainWindow):
         model_nodes combo
         when nodes changed
         """
-        if item_name:
+        if not item_name:
+            return
+        if item_name != "output":
             get_node_graph(self.ui.models.currentText(), item_name)
             self.ui.model_picView.setImage(f"./tmpFile/tmpPic.png")
+        else:
+            self.ui.model_picView.setImage(f"./pic/models/{self.ui.models.currentText()}/net_pic.png")
 
     def wheelEvent(self, e: QWheelEvent):
         """
@@ -431,6 +453,7 @@ class MainWindow(QMainWindow):
 
         # SHOW HOME PAGE
         if btnName == "btn_home":
+            self.pic_or_model = "home"
             widgets.stackedWidget.setCurrentWidget(widgets.home)
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
@@ -438,6 +461,7 @@ class MainWindow(QMainWindow):
         # SHOW MODEL PAGE
         if btnName == "btn_model":
             self.pic_or_model = "model"
+            self.ui.model_picView.setImage("./pic/models/lenet/net_pic.png")
             widgets.stackedWidget.setCurrentWidget(widgets.model_page)
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
@@ -478,7 +502,7 @@ class NewGraphView(QGraphicsView):
     def __init__(self, pic_path: str, myPicPageView: QGraphicsView, parent=None):
         super().__init__(parent=parent)
         self.zoomInTimes = 0
-        self.maxZoomInTimes = 22
+        self.maxZoomInTimes = 25
 
         # 创建场景
         self.graphicsScene = QGraphicsScene()

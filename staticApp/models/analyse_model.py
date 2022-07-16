@@ -50,10 +50,6 @@ def getpath_from_node(dot_filepath, node_label):
     # print(target_node)
 
     my_new_dot.update(target_node)
-    if my_new_dot == raw_data:
-        print("yes")
-    # print(my_new_dot)
-
     name_dict = {}
 
     # 生成新的dot文件

@@ -10,3 +10,5 @@ staticApp/cpg.bin
 staticApp/dist/
 staticApp/testFile/
 staticApp/test_sh_and_parse.py
+staticApp/build/
+staticApp/tmpFile/

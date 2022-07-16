@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 
-JOERNPATH = "/home/cyrus/joern_files/joern/joern-cli/"
+JOERNPATH = "./third_party/joern_files/joern/joern-cli/"
 
 
 def parse_source_code_to_dot(file_path: str, f: str, root_out_dir: str):

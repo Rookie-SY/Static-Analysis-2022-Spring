@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'mainhFmfZf.ui'
+## Form generated from reading UI file 'maingRunvs.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.3.1
 ##
@@ -13,7 +13,6 @@ from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 
 from . resources_rc import *
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -793,14 +792,17 @@ class Ui_MainWindow(object):
         self.extraCenter.setFrameShadow(QFrame.Raised)
         self.verticalLayout_10 = QVBoxLayout(self.extraCenter)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
-        self.textEdit = QTextEdit(self.extraCenter)
-        self.textEdit.setObjectName(u"textEdit")
-        self.textEdit.setMinimumSize(QSize(222, 0))
-        self.textEdit.setStyleSheet(u"background: transparent;")
-        self.textEdit.setFrameShape(QFrame.NoFrame)
-        self.textEdit.setReadOnly(True)
+        self.textedit = QTextBrowser(self.extraCenter)
+        self.textedit.setObjectName(u"textedit")
+        self.textedit.setMinimumSize(QSize(222, 0))
+        self.textedit.setStyleSheet(u"background: transparent;")
+        self.textedit.setFrameShape(QFrame.NoFrame)
+        self.textedit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.textedit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.textedit.setReadOnly(True)
+        self.textedit.setOpenExternalLinks(True)
 
-        self.verticalLayout_10.addWidget(self.textEdit)
+        self.verticalLayout_10.addWidget(self.textedit)
 
 
         self.verticalLayout_12.addWidget(self.extraCenter)
@@ -1121,7 +1123,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 423, 218))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 218, 218))
         self.scrollAreaWidgetContents.setStyleSheet(u" QScrollBar:vertical {\n"
 "	border: none;\n"
 "    background: rgb(52, 59, 72);\n"
@@ -1630,7 +1632,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1650,25 +1652,52 @@ class Ui_MainWindow(object):
         self.extraCloseColumnBtn.setToolTip(QCoreApplication.translate("MainWindow", u"Close left box", None))
 #endif // QT_CONFIG(tooltip)
         self.extraCloseColumnBtn.setText("")
-        self.textEdit.setMarkdown(QCoreApplication.translate("MainWindow", u"**Static Analysis Tools**\n"
+        self.textedit.setMarkdown(QCoreApplication.translate("MainWindow", u"**Static Analysis Tools**\n"
 "\n"
-"A simple tool for static analysis of code from NJU.\n"
+"**A simple static analysis tool from NJU.**\n"
+"\n"
+"**The project address is \n"
+"[github](https://github.com/Rookie-SY/Static-Analysis-2022-Spring)**\n"
+"\n"
+"The analysis tool consists of a QT visualization window application and a code\n"
+"static detector. \n"
+"\n"
+"The QT visualization window application uses PYQT to provide the user with a\n"
+"variety of interfaces that are designed to allow the user to analyze the code\n"
+"easily and efficiently while providing the user with a more intuitive result; \n"
+"\n"
+"the code static detector is responsible for handling the static analysis of the\n"
+"code and passing the results of the inspection and the generated code\n"
+"abstraction model information to the window application.\n"
+"\n"
+"\n"
+"\n"
+"\n"
+"\n"
 "\n"
 "**MIT License**\n"
 "\n"
 "Created by: Wanderson M. Pimenta\n"
 "\n"
 "", None))
-        self.textEdit.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.textedit.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
 "</style></head><body style=\" font-family:'Segoe UI'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#748b6f;\">Static Analysis Tools</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; color:#ffffff;\">A simple tool for static analysis of code from NJU.</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text"
-                        "-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#000000;\">MIT License</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#808080;\">Created by: Wanderson M. Pimenta</span></p></body></html>", None))
+"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; font-weight:600; color:#062b2b;\">Static Analysis Tools</span></p>\n"
+"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:5px; margin-right:5px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:700; color:#60115"
+                        "5;\">A simple static analysis tool from NJU.</span></p>\n"
+"<p align=\"center\" style=\" margin-top:15px; margin-bottom:15px; margin-left:1px; margin-right:1px; -qt-block-indent:0; text-indent:1px;\"><span style=\" font-size:12pt; font-weight:700;\">The project address is </span><a href=\"https://github.com/Rookie-SY/Static-Analysis-2022-Spring\"><span style=\" font-family:'Ubuntu'; font-size:11pt; text-decoration: underline; color:#0000ff;\">github</span></a></p>\n"
+"<p align=\"center\" style=\" margin-top:15px; margin-bottom:15px; margin-left:1px; margin-right:1px; -qt-block-indent:0; text-indent:1px;\"><span style=\" font-size:12pt; color:#000000;\">The analysis tool consists of a QT visualization window application and a code static detector. </span></p>\n"
+"<p align=\"center\" style=\" margin-top:15px; margin-bottom:15px; margin-left:1px; margin-right:1px; -qt-block-indent:0; text-indent:1px;\"><span style=\" font-size:12pt; color:#000000;\">The QT visualization window application uses PYQT to provide the"
+                        " user with a variety of interfaces that are designed to allow the user to analyze the code easily and efficiently while providing the user with a more intuitive result; </span></p>\n"
+"<p align=\"center\" style=\" margin-top:15px; margin-bottom:15px; margin-left:1px; margin-right:1px; -qt-block-indent:0; text-indent:1px;\"><span style=\" font-size:12pt; color:#000000;\">the code static detector is responsible for handling the static analysis of the code and passing the results of the inspection and the generated code abstraction model information to the window application.</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /><br /><br /></p>\n"
+"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#000000;\">MIT License</span></p>\n"
+"<p align=\"center\" style=\" margin-top:12px; marg"
+                        "in-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">Created by: Wanderson M. Pimenta</span></p></body></html>", None))
         self.titleRightInfo.setText(QCoreApplication.translate("MainWindow", u"PyDracula APP - Theme with colors based on Dracula for Python.", None))
 #if QT_CONFIG(tooltip)
         self.minimizeAppBtn.setToolTip(QCoreApplication.translate("MainWindow", u"Minimize", None))
@@ -1763,6 +1792,6 @@ class Ui_MainWindow(object):
         self.btn_print.setText(QCoreApplication.translate("MainWindow", u"Print", None))
         self.btn_logout.setText(QCoreApplication.translate("MainWindow", u"Logout", None))
         self.creditsLabel.setText(QCoreApplication.translate("MainWindow", u"welcome", None))
-        self.version.setText(QCoreApplication.translate("MainWindow", u"v1", None))
+        self.version.setText(QCoreApplication.translate("MainWindow", u"v1.0", None))
     # retranslateUi
 
