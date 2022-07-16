@@ -34,6 +34,7 @@ void MemoryLeakChecker::check(ASTFunction* _entryFunc)
         vector<ReportPointer>().swap(leakResult);
         vector<Pointer>().swap(SafetyResult);
         vector<DFreePointer>().swap(DFreeResult);
+        vector<string>().swap(DeleteError);
         for(unsigned i = 0; i < allLeakPointers.size(); i++)
             vector<ReportPointer>().swap(allLeakPointers[i]);
         vector< vector<ReportPointer> >().swap(allLeakPointers);
@@ -2140,15 +2141,55 @@ void PointerSet::delete_pointer(string name, SourceLocation location, clang::CXX
                         free_pointer(name, location, deleteExpr->getExprLoc());
                     }
                     else{
-                        cout << "At line " << deleteExpr->getExprLoc().printToString(*SM).substr(64, 2) << " ";
-                        cout << "'delete' applied to a pointer that was allocated with 'new[]'; did you mean 'delete[]'?" << endl;
+                        string warning = "WARNING: ";
+                        warning += "At line ";
+                        string line, col;
+                        bool isLoc = true;
+                        string tmp = deleteExpr->getExprLoc().printToString(*SM);
+                        for(unsigned i = tmp.size() - 1; i >= 0; i--)
+                        {
+                            if(tmp[i] == ':'){
+                                isLoc = false;
+                                continue;
+                            }
+                            if(!(tmp[i] >= '0' && tmp[i] <= '9'))
+                                break;
+                            if(isLoc)
+                                col += tmp[i];
+                            else
+                                line += tmp[i];
+                        }
+                        reverse(line.begin(), line.end());
+                        warning += line;
+                        warning += " 'delete' applied to a pointer that was allocated with 'new[]'; did you mean 'delete[]'?";
+                        DeleteVec.push_back(warning);
                     }
                 }
                 else
                 {
                     if(isArray){
-                        cout << "At line " << deleteExpr->getExprLoc().printToString(*SM).substr(64, 2) << " ";
-                        cout << "'delete[]' applied to a pointer that was allocated with 'new'; did you mean 'delete'?" << endl;
+                        string warning = "WARNING: ";
+                        warning += "At line ";
+                        string line, col;
+                        bool isLoc = true;
+                        string tmp = deleteExpr->getExprLoc().printToString(*SM);
+                        for(unsigned i = tmp.size() - 1; i >= 0; i--)
+                        {
+                            if(tmp[i] == ':'){
+                                isLoc = false;
+                                continue;
+                            }
+                            if(!(tmp[i] >= '0' && tmp[i] <= '9'))
+                                break;
+                            if(isLoc)
+                                col += tmp[i];
+                            else
+                                line += tmp[i];
+                        }
+                        reverse(line.begin(), line.end());
+                        warning += line;
+                        warning += " 'delete[]' applied to a pointer that was allocated with 'new'; did you mean 'delete'";
+                        DeleteVec.push_back(warning);
                     }
                     else
                     {
@@ -2571,6 +2612,8 @@ void MemoryLeakChecker::report_double_free()
 
 void MemoryLeakChecker::report_memory_safety()
 {
+    for(unsigned i = 0; i < DeleteError.size(); i++)
+        cout << DeleteError[i] << endl;
     if(SafetyResult.size() == 0)
         return;
     string file;
@@ -2637,10 +2680,22 @@ void MemoryLeakChecker::prepare_next_path(unsigned count)
         if(!isSame)
             SafetyResult.push_back(Pointers.SafetyVec[i]);
     }
+    for(unsigned i = 0; i < Pointers.DeleteVec.size(); i++)
+    {
+        bool isSame = false;
+        for(unsigned j = 0; j < DeleteError.size(); j++)
+        {
+            if(DeleteError[j] == Pointers.DeleteVec[i])
+                isSame = true;
+        }
+        if(!isSame)
+            DeleteError.push_back(Pointers.DeleteVec[i]);
+    }
     Pointers.pointCount = 1;
     Pointers.memoryCount = 1;
     vector<Pointer>().swap(Pointers.pointerVec);
     vector<Pointer>().swap(Pointers.SafetyVec);
+    vector<string>().swap(Pointers.DeleteVec);
     vector<DFreePointer>().swap(Pointers.DFreeVec);
 }
 

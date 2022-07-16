@@ -100,6 +100,7 @@ private:
     vector<Pointer> pointerVec;
     vector<Pointer> SafetyVec;
     vector<DFreePointer> DFreeVec;
+    vector<string> DeleteVec;
     int pointCount;
     int memoryCount;
 public:
@@ -154,6 +155,7 @@ private:
     vector<ReportPointer> leakResult;
     vector<DFreePointer> DFreeResult;
     vector<Pointer> SafetyResult;
+    vector<string> DeleteError;
     clang::SourceManager* SM;
 
     void read_config();
