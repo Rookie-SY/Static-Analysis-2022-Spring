@@ -1215,7 +1215,7 @@ Button */
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_10">
                 <item>
-                 <widget class="QTextEdit" name="textEdit">
+                 <widget class="QTextBrowser" name="textedit">
                   <property name="minimumSize">
                    <size>
                     <width>222</width>
@@ -1228,13 +1228,38 @@ Button */
                   <property name="frameShape">
                    <enum>QFrame::NoFrame</enum>
                   </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="horizontalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
                   <property name="readOnly">
                    <bool>true</bool>
                   </property>
                   <property name="markdown">
                    <string>**Static Analysis Tools**
 
-A simple tool for static analysis of code from NJU.
+**A simple static analysis tool from NJU.**
+
+**The project address is 
+[github](https://github.com/Rookie-SY/Static-Analysis-2022-Spring)**
+
+The analysis tool consists of a QT visualization window application and a code
+static detector. 
+
+The QT visualization window application uses PYQT to provide the user with a
+variety of interfaces that are designed to allow the user to analyze the code
+easily and efficiently while providing the user with a more intuitive result; 
+
+the code static detector is responsible for handling the static analysis of the
+code and passing the results of the inspection and the generated code
+abstraction model information to the window application.
+
+
+
+
+
 
 **MIT License**
 
@@ -1248,10 +1273,19 @@ Created by: Wanderson M. Pimenta
 p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; color:#748b6f;&quot;&gt;Static Analysis Tools&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; color:#ffffff;&quot;&gt;A simple tool for static analysis of code from NJU.&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt; font-weight:600; color:#062b2b;&quot;&gt;Static Analysis Tools&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:5px; margin-right:5px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:700; color:#601155;&quot;&gt;A simple static analysis tool from NJU.&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:15px; margin-bottom:15px; margin-left:1px; margin-right:1px; -qt-block-indent:0; text-indent:1px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:700;&quot;&gt;The project address is &lt;/span&gt;&lt;a href=&quot;https://github.com/Rookie-SY/Static-Analysis-2022-Spring&quot;&gt;&lt;span style=&quot; font-family:'Ubuntu'; font-size:11pt; text-decoration: underline; color:#0000ff;&quot;&gt;github&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:15px; margin-bottom:15px; margin-left:1px; margin-right:1px; -qt-block-indent:0; text-indent:1px;&quot;&gt;&lt;span style=&quot; font-size:12pt; color:#000000;&quot;&gt;The analysis tool consists of a QT visualization window application and a code static detector. &lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:15px; margin-bottom:15px; margin-left:1px; margin-right:1px; -qt-block-indent:0; text-indent:1px;&quot;&gt;&lt;span style=&quot; font-size:12pt; color:#000000;&quot;&gt;The QT visualization window application uses PYQT to provide the user with a variety of interfaces that are designed to allow the user to analyze the code easily and efficiently while providing the user with a more intuitive result; &lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:15px; margin-bottom:15px; margin-left:1px; margin-right:1px; -qt-block-indent:0; text-indent:1px;&quot;&gt;&lt;span style=&quot; font-size:12pt; color:#000000;&quot;&gt;the code static detector is responsible for handling the static analysis of the code and passing the results of the inspection and the generated code abstraction model information to the window application.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; color:#000000;&quot;&gt;MIT License&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#808080;&quot;&gt;Created by: Wanderson M. Pimenta&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Created by: Wanderson M. Pimenta&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="openExternalLinks">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -1625,7 +1659,7 @@ hr { height: 1px; border-width: 0; }
                       <string notr="true">background: transparent;</string>
                      </property>
                      <property name="currentIndex">
-                      <number>0</number>
+                      <number>3</number>
                      </property>
                      <widget class="QWidget" name="home">
                       <property name="styleSheet">
@@ -2649,22 +2683,24 @@ QComboBox QAbstractItemView::item:hover {
                       </layout>
                      </widget>
                      <widget class="QWidget" name="pic_page">
-                      <layout class="QVBoxLayout" name="verticalLayout_11">
+                      <layout class="QVBoxLayout" name="verticalLayout_11" stretch="0,0">
                        <item>
-                        <widget class="QComboBox" name="picKind">
-                         <property name="font">
-                          <font>
-                           <family>Segoe UI</family>
-                           <pointsize>10</pointsize>
-                           <italic>false</italic>
-                           <bold>false</bold>
-                          </font>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox{
+                        <layout class="QHBoxLayout" name="ASTLayout" stretch="18,1,1">
+                         <item>
+                          <widget class="QComboBox" name="picKind">
+                           <property name="font">
+                            <font>
+                             <family>Segoe UI</family>
+                             <pointsize>10</pointsize>
+                             <italic>false</italic>
+                             <bold>false</bold>
+                            </font>
+                           </property>
+                           <property name="autoFillBackground">
+                            <bool>false</bool>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox{
 	background-color: #3A5B52;
 	border-radius: 6px;
 	border: 2px solid #3A5B52;
@@ -2699,37 +2735,78 @@ QComboBox QAbstractItemView {
 QComboBox QAbstractItemView::item:hover {
     background-color: #7FB393;
 }</string>
-                         </property>
-                         <property name="iconSize">
-                          <size>
-                           <width>16</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                         <property name="frame">
-                          <bool>true</bool>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>AST</string>
-                          </property>
+                           </property>
+                           <property name="iconSize">
+                            <size>
+                             <width>16</width>
+                             <height>16</height>
+                            </size>
+                           </property>
+                           <property name="frame">
+                            <bool>true</bool>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>AST</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>CFG</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>CDG</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>PDG</string>
+                            </property>
+                           </item>
+                          </widget>
                          </item>
                          <item>
-                          <property name="text">
-                           <string>CFG</string>
-                          </property>
+                          <widget class="QPushButton" name="ASTup">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QPushButton { background-color: #3a5b52; border: none;  border-radius: 5px; }
+QPushButton:hover { background-color: #7FB393; border-style: solid; border-radius: 4px; }
+QPushButton:pressed { background-color: #104323; border-style: solid; border-radius: 4px; }</string>
+                           </property>
+                           <property name="text">
+                            <string>up</string>
+                           </property>
+                          </widget>
                          </item>
                          <item>
-                          <property name="text">
-                           <string>CDG</string>
-                          </property>
+                          <widget class="QPushButton" name="ASTdown">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QPushButton { background-color: #3a5b52; border: none;  border-radius: 5px; }
+QPushButton:hover { background-color: #7FB393; border-style: solid; border-radius: 4px; }
+QPushButton:pressed { background-color: #104323; border-style: solid; border-radius: 4px; }</string>
+                           </property>
+                           <property name="text">
+                            <string>down</string>
+                           </property>
+                           <property name="flat">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
                          </item>
-                         <item>
-                          <property name="text">
-                           <string>PDG</string>
-                          </property>
-                         </item>
-                        </widget>
+                        </layout>
                        </item>
                        <item>
                         <widget class="QGraphicsView" name="picPageView"/>
@@ -3024,7 +3101,7 @@ QComboBox QAbstractItemView::item:hover {
                 <item>
                  <widget class="QLabel" name="version">
                   <property name="text">
-                   <string>v1</string>
+                   <string>v1.0</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

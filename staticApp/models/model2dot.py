@@ -158,9 +158,11 @@ def make_dot(var, params=None, show_attrs=False, show_saved=False, max_attr_char
             return
         seen.add(var)
         dot.node(str(id(var)), get_var_name(var), fillcolor=color)
-        if (var.grad_fn):
+        #if this tensor has its grad_fn
+        if var.grad_fn:
             add_nodes(var.grad_fn)
             dot.edge(str(id(var.grad_fn)), str(id(var)))
+        # Does this tensor shared space with another name
         if var._is_view():
             add_base_tensor(var._base, color='darkolivegreen3')
             dot.edge(str(id(var._base)), str(id(var)), style="dotted")
