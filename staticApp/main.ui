@@ -1659,7 +1659,7 @@ hr { height: 1px; border-width: 0; }
                       <string notr="true">background: transparent;</string>
                      </property>
                      <property name="currentIndex">
-                      <number>0</number>
+                      <number>3</number>
                      </property>
                      <widget class="QWidget" name="home">
                       <property name="styleSheet">
@@ -1984,7 +1984,7 @@ hr { height: 1px; border-width: 0; }
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>218</width>
+                                 <width>423</width>
                                  <height>218</height>
                                 </rect>
                                </property>
@@ -2683,22 +2683,24 @@ QComboBox QAbstractItemView::item:hover {
                       </layout>
                      </widget>
                      <widget class="QWidget" name="pic_page">
-                      <layout class="QVBoxLayout" name="verticalLayout_11">
+                      <layout class="QVBoxLayout" name="verticalLayout_11" stretch="0,0">
                        <item>
-                        <widget class="QComboBox" name="picKind">
-                         <property name="font">
-                          <font>
-                           <family>Segoe UI</family>
-                           <pointsize>10</pointsize>
-                           <italic>false</italic>
-                           <bold>false</bold>
-                          </font>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox{
+                        <layout class="QHBoxLayout" name="ASTLayout" stretch="18,1,1">
+                         <item>
+                          <widget class="QComboBox" name="picKind">
+                           <property name="font">
+                            <font>
+                             <family>Segoe UI</family>
+                             <pointsize>10</pointsize>
+                             <italic>false</italic>
+                             <bold>false</bold>
+                            </font>
+                           </property>
+                           <property name="autoFillBackground">
+                            <bool>false</bool>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox{
 	background-color: #3A5B52;
 	border-radius: 6px;
 	border: 2px solid #3A5B52;
@@ -2733,37 +2735,78 @@ QComboBox QAbstractItemView {
 QComboBox QAbstractItemView::item:hover {
     background-color: #7FB393;
 }</string>
-                         </property>
-                         <property name="iconSize">
-                          <size>
-                           <width>16</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                         <property name="frame">
-                          <bool>true</bool>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>AST</string>
-                          </property>
+                           </property>
+                           <property name="iconSize">
+                            <size>
+                             <width>16</width>
+                             <height>16</height>
+                            </size>
+                           </property>
+                           <property name="frame">
+                            <bool>true</bool>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>AST</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>CFG</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>CDG</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>PDG</string>
+                            </property>
+                           </item>
+                          </widget>
                          </item>
                          <item>
-                          <property name="text">
-                           <string>CFG</string>
-                          </property>
+                          <widget class="QPushButton" name="ASTup">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QPushButton { background-color: #3a5b52; border: none;  border-radius: 5px; }
+QPushButton:hover { background-color: #7FB393; border-style: solid; border-radius: 4px; }
+QPushButton:pressed { background-color: #104323; border-style: solid; border-radius: 4px; }</string>
+                           </property>
+                           <property name="text">
+                            <string>up</string>
+                           </property>
+                          </widget>
                          </item>
                          <item>
-                          <property name="text">
-                           <string>CDG</string>
-                          </property>
+                          <widget class="QPushButton" name="ASTdown">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QPushButton { background-color: #3a5b52; border: none;  border-radius: 5px; }
+QPushButton:hover { background-color: #7FB393; border-style: solid; border-radius: 4px; }
+QPushButton:pressed { background-color: #104323; border-style: solid; border-radius: 4px; }</string>
+                           </property>
+                           <property name="text">
+                            <string>down</string>
+                           </property>
+                           <property name="flat">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
                          </item>
-                         <item>
-                          <property name="text">
-                           <string>PDG</string>
-                          </property>
-                         </item>
-                        </widget>
+                        </layout>
                        </item>
                        <item>
                         <widget class="QGraphicsView" name="picPageView"/>

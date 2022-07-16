@@ -1,8 +1,26 @@
 digraph {
-    	graph [size = "12,12"]
+    	graph [size = "183.0,183.0"]
 	node [align=left fontname=monospace fontsize=10 height=0.2 ranksep=0.1 shape=box style=filled]
- 	140085234427792 [label="1 AccumulateGrad" fillcolor=darkolivegreen]
-	140085205779776 [label="fc.4.bias
- (10)" fillcolor=lightblue]
-	140085205779776 -> 140085234427792
+ 	140092438450336 [label="4 MaxPool2DWithIndicesBackward0" fillcolor=darkolivegreen]
+	140092438450480 [label="12 ReluBackward0"]
+	140092438450528 [label="12 NativeBatchNormBackward0"]
+	140092438450672 [label="12 ConvolutionBackward0"]
+	140092438450624 [label="3 AccumulateGrad"]
+	140092438450768 [label="4 AccumulateGrad"]
+	140092438450960 [label="2 AccumulateGrad"]
+	140092443143040 [label="conv1.bn.weight
+ (64)" fillcolor=lightblue]
+	140092443143120 [label="conv1.bn.bias
+ (64)" fillcolor=lightblue]
+	140092575760272 [label="conv1.conv.weight
+ (64, 3, 7, 7)" fillcolor=lightblue]
+	140092438450480 -> 140092438450336
+	140092438450528 -> 140092438450480
+	140092438450672 -> 140092438450528
+	140092438450624 -> 140092438450528
+	140092438450768 -> 140092438450528
+	140092438450960 -> 140092438450672
+	140092443143040 -> 140092438450624
+	140092443143120 -> 140092438450768
+	140092575760272 -> 140092438450960
 }

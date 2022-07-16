@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'maingRunvs.ui'
+## Form generated from reading UI file 'mainXJYkLY.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.3.1
 ##
@@ -1123,7 +1123,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 218, 218))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 423, 218))
         self.scrollAreaWidgetContents.setStyleSheet(u" QScrollBar:vertical {\n"
 "	border: none;\n"
 "    background: rgb(52, 59, 72);\n"
@@ -1437,6 +1437,8 @@ class Ui_MainWindow(object):
         self.pic_page.setObjectName(u"pic_page")
         self.verticalLayout_11 = QVBoxLayout(self.pic_page)
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
+        self.ASTLayout = QHBoxLayout()
+        self.ASTLayout.setObjectName(u"ASTLayout")
         self.picKind = QComboBox(self.pic_page)
         self.picKind.addItem("")
         self.picKind.addItem("")
@@ -1483,7 +1485,37 @@ class Ui_MainWindow(object):
         self.picKind.setIconSize(QSize(16, 16))
         self.picKind.setFrame(True)
 
-        self.verticalLayout_11.addWidget(self.picKind)
+        self.ASTLayout.addWidget(self.picKind)
+
+        self.ASTup = QPushButton(self.pic_page)
+        self.ASTup.setObjectName(u"ASTup")
+        sizePolicy4 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.ASTup.sizePolicy().hasHeightForWidth())
+        self.ASTup.setSizePolicy(sizePolicy4)
+        self.ASTup.setStyleSheet(u"QPushButton { background-color: #3a5b52; border: none;  border-radius: 5px; }\n"
+"QPushButton:hover { background-color: #7FB393; border-style: solid; border-radius: 4px; }\n"
+"QPushButton:pressed { background-color: #104323; border-style: solid; border-radius: 4px; }")
+
+        self.ASTLayout.addWidget(self.ASTup)
+
+        self.ASTdown = QPushButton(self.pic_page)
+        self.ASTdown.setObjectName(u"ASTdown")
+        sizePolicy4.setHeightForWidth(self.ASTdown.sizePolicy().hasHeightForWidth())
+        self.ASTdown.setSizePolicy(sizePolicy4)
+        self.ASTdown.setStyleSheet(u"QPushButton { background-color: #3a5b52; border: none;  border-radius: 5px; }\n"
+"QPushButton:hover { background-color: #7FB393; border-style: solid; border-radius: 4px; }\n"
+"QPushButton:pressed { background-color: #104323; border-style: solid; border-radius: 4px; }")
+        self.ASTdown.setFlat(False)
+
+        self.ASTLayout.addWidget(self.ASTdown)
+
+        self.ASTLayout.setStretch(0, 18)
+        self.ASTLayout.setStretch(1, 1)
+        self.ASTLayout.setStretch(2, 1)
+
+        self.verticalLayout_11.addLayout(self.ASTLayout)
 
         self.picPageView = QGraphicsView(self.pic_page)
         self.picPageView.setObjectName(u"picPageView")
@@ -1632,7 +1664,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1788,6 +1820,8 @@ class Ui_MainWindow(object):
         self.picKind.setItemText(2, QCoreApplication.translate("MainWindow", u"CDG", None))
         self.picKind.setItemText(3, QCoreApplication.translate("MainWindow", u"PDG", None))
 
+        self.ASTup.setText(QCoreApplication.translate("MainWindow", u"up", None))
+        self.ASTdown.setText(QCoreApplication.translate("MainWindow", u"down", None))
         self.btn_message.setText(QCoreApplication.translate("MainWindow", u"Message", None))
         self.btn_print.setText(QCoreApplication.translate("MainWindow", u"Print", None))
         self.btn_logout.setText(QCoreApplication.translate("MainWindow", u"Logout", None))

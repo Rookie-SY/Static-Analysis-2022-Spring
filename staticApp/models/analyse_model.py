@@ -40,7 +40,8 @@ def getpath_from_node(dot_filepath, node_label):
         for edgesitem in raw_data['edges']:
             if edgesitem['head'] == gvid:
                 node_gvid.append(edgesitem['tail'])
-                target_node['edges'].append(edgesitem)
+                if not edgesitem in target_node['edges']:
+                    target_node['edges'].append(edgesitem)
 
                 for objectsitem in raw_data['objects']:
                     if objectsitem['_gvid'] == edgesitem['tail']:
