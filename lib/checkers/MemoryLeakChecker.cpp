@@ -19,7 +19,7 @@ void MemoryLeakChecker::check(ASTFunction* _entryFunc)
         unique_ptr<CFG>& cfg = manager->getCFG(fun);
         // if(funcDecl->getNameAsString() == "RotatingTree_Get")
         // {
-        //     funcDecl->dump();
+            // funcDecl->dump();
             // cfg->dump(LangOpts, true);
         // }
         TraceRecord traceRecord;
@@ -29,8 +29,10 @@ void MemoryLeakChecker::check(ASTFunction* _entryFunc)
 
         report_memory_leak();
         report_double_free();
+        report_memory_safety();
 
         vector<ReportPointer>().swap(leakResult);
+        vector<Pointer>().swap(SafetyResult);
         vector<DFreePointer>().swap(DFreeResult);
         for(unsigned i = 0; i < allLeakPointers.size(); i++)
             vector<ReportPointer>().swap(allLeakPointers[i]);
@@ -980,18 +982,38 @@ bool MemoryLeakChecker::handle_malloc_size(Stmt* sizeStmt, int& size)
             }
             else
                 return false;
+            iter++;
+            if((*iter)->getStmtClass() == clang::Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
+            {
+                clang::UnaryExprOrTypeTraitExpr* unaryExpr = static_cast<clang::UnaryExprOrTypeTraitExpr* >(*iter);
+                size *= Pointers.get_unit_length(unaryExpr->getArgumentType().getAsString());
+                return true;
+            }
+            else
+                return false;
         }
-        else
-            return false;
-        iter++;
-        if((*iter)->getStmtClass() == clang::Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
+        else if((*iter)->getStmtClass() == clang::Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
         {
             clang::UnaryExprOrTypeTraitExpr* unaryExpr = static_cast<clang::UnaryExprOrTypeTraitExpr* >(*iter);
-            size *= Pointers.get_unit_length(unaryExpr->getArgumentType().getAsString());
-            return true;
-        }
+            iter++;
+            if((*iter)->getStmtClass() == clang::Stmt::StmtClass::ImplicitCastExprClass)
+            {
+                if((*(*iter)->child_begin())->getStmtClass() == clang::Stmt::StmtClass::IntegerLiteralClass)
+                {
+                    clang::IntegerLiteral* integer = static_cast<clang::IntegerLiteral* >(*(*iter)->child_begin());
+                    size = integer->getValue().getZExtValue();
+                }
+                else
+                    return false;
+                
+                size *= Pointers.get_unit_length(unaryExpr->getArgumentType().getAsString());
+                return true;
+            }
+            return false;
+        }   
         else
             return false;
+        
     }
     else if(sizeStmt->getStmtClass() == clang::Stmt::StmtClass::UnaryExprOrTypeTraitExprClass)
     {
@@ -2150,7 +2172,9 @@ void PointerSet::free_pointer(string name, SourceLocation location, SourceLocati
         if(pointerVec[pos].isComputable)
         {
             if(pointerVec[pos].compute.local.begin != 0)
-                cout << "\033[31mPointer " << name << " can't be freed or deleted.\033[0m" << endl;
+            {
+                SafetyVec.push_back(pointerVec[pos]);
+            }
             else
             {
                 if(pointerVec[pos].compute.local.end == 0)
@@ -2459,7 +2483,7 @@ void MemoryLeakChecker::report_memory_leak()
     //     cout << "\033[32mNo memory leak detected.\n" << "\033[0m";
     if(isLeaked)
     {
-        string file, loc;
+        string file;
         for(unsigned i = 0; i < leakResult[0].location.printToString(*SM).size(); i++)
         {
             file += leakResult[0].location.printToString(*SM)[i];
@@ -2545,6 +2569,43 @@ void MemoryLeakChecker::report_double_free()
     }
 }
 
+void MemoryLeakChecker::report_memory_safety()
+{
+    if(SafetyResult.size() == 0)
+        return;
+    string file;
+    for(unsigned i = 0; i < SafetyResult[0].location.top().printToString(*SM).size(); i++)
+    {
+        file += SafetyResult[0].location.top().printToString(*SM)[i];
+        if(SafetyResult[0].location.top().printToString(*SM)[i] == ':')
+            break;
+    }
+    for(unsigned pos = 0; pos < SafetyResult.size(); pos++)
+    {
+        string line, col;
+        string tmp = SafetyResult[pos].location.top().printToString(*SM);
+        bool isLoc = true;
+        for(unsigned i = tmp.size() - 1; i >= 0; i--)
+        {
+            if(tmp[i] == ':'){
+                isLoc = false;
+                continue;
+            }
+            if(!(tmp[i] >= '0' && tmp[i] <= '9'))
+                break;
+            if(isLoc)
+                col += tmp[i];
+            else
+                line += tmp[i];
+        }
+        reverse(line.begin(), line.end());
+        reverse(col.begin(), col.end());
+
+        std::cout << file << std::endl;
+        std::cout << "WARNING: Pointer " << SafetyResult[pos].initialName << " can't be freed or deleted."  << " Line: " << line << " Column: " << col << endl;
+    }  
+}
+
 void MemoryLeakChecker::prepare_next_path(unsigned count)
 {
     // Pointers.print_set();
@@ -2564,10 +2625,22 @@ void MemoryLeakChecker::prepare_next_path(unsigned count)
         }
     }
     allDFreePointers.push_back(Pointers.DFreeVec);
-
+    for(unsigned i = 0; i < Pointers.SafetyVec.size(); i++)
+    {
+        bool isSame = false;
+        for(unsigned j = 0; j < SafetyResult.size(); j++)
+        {
+            if(Pointers.SafetyVec[i].pointerID == SafetyResult[j].pointerID && 
+                Pointers.SafetyVec[i].location.top() == SafetyResult[j].location.top())
+                isSame = true;
+        }
+        if(!isSame)
+            SafetyResult.push_back(Pointers.SafetyVec[i]);
+    }
     Pointers.pointCount = 1;
     Pointers.memoryCount = 1;
     vector<Pointer>().swap(Pointers.pointerVec);
+    vector<Pointer>().swap(Pointers.SafetyVec);
     vector<DFreePointer>().swap(Pointers.DFreeVec);
 }
 

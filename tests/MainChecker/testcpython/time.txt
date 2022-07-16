@@ -1,5 +1,5 @@
 Starting UndefinedVariableChecker check
-Time: 0min56sec
+Time: 0min51sec
 End of UndefinedVariableChecker check
 -----------------------------------------------------------
 Starting CallGraphChecker check
@@ -7,4 +7,4 @@ Time: 0min0sec
 End of CallGraphChecker check
 -----------------------------------------------------------
 -----------------------------------------------------------
-Total time: 2min21sec
+Total time: 2min9sec

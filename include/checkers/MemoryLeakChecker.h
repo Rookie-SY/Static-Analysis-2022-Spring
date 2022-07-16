@@ -98,6 +98,7 @@ class PointerSet
 {
 private:
     vector<Pointer> pointerVec;
+    vector<Pointer> SafetyVec;
     vector<DFreePointer> DFreeVec;
     int pointCount;
     int memoryCount;
@@ -152,6 +153,7 @@ private:
     vector<vector<DFreePointer> >allDFreePointers;
     vector<ReportPointer> leakResult;
     vector<DFreePointer> DFreeResult;
+    vector<Pointer> SafetyResult;
     clang::SourceManager* SM;
 
     void read_config();
@@ -191,4 +193,5 @@ private:
     bool is_same_pointer(ReportPointer left, ReportPointer right);
     void report_memory_leak();
     void report_double_free();
+    void report_memory_safety();
 };
