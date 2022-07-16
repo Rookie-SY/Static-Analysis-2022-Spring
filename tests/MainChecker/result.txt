@@ -1,4 +1,9 @@
+At line 30 'delete' applied to a pointer that was allocated with 'new[]'; did you mean 'delete[]'?
 /home/sunyu/Desktop/se-experiment/tests/MainChecker/example.cpp:
-WARNING: Pointer p can't be freed or deleted. Line: 46 Column: 10
+WARNING: MEMORY LEAK POINTER r: Line: 35 Column: 13
 /home/sunyu/Desktop/se-experiment/tests/MainChecker/example.cpp:
-WARNING: MEMORY LEAK POINTER p: Line: 46 Column: 10
+WARNING: DOUBLE FREE POINTER r: Line: 35 Column: 13
+/home/sunyu/Desktop/se-experiment/tests/MainChecker/example.cpp
+WARNING: USE UNINITIALIZED VARIABLE a: Line: 23 Column: 23
+WARNING: USE UNINITIALIZED VARIABLE c: Line: 27 Column: 16
+WARNING: USE UNINITIALIZED VARIABLE temp2: Line: 24 Column: 13
