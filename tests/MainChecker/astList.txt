@@ -1,1 +1,1 @@
-./example.ast
+./staticApptest.ast

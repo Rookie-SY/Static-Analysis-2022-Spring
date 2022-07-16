@@ -1,0 +1,15 @@
+digraph "main" {  
+"13" [label = <(&lt;operator&gt;.notEquals,y != 0)<SUB>5</SUB>> ]
+"30" [label = <(&lt;operator&gt;.equals,a == 'b')<SUB>12</SUB>> ]
+"17" [label = <(&lt;operator&gt;.assignment,tmp = x % y)<SUB>7</SUB>> ]
+"22" [label = <(&lt;operator&gt;.assignment,x = y)<SUB>8</SUB>> ]
+"25" [label = <(&lt;operator&gt;.assignment,y = tmp)<SUB>9</SUB>> ]
+"34" [label = <(printf,printf(&quot;Hello World&quot;))<SUB>13</SUB>> ]
+"19" [label = <(&lt;operator&gt;.modulo,x % y)<SUB>7</SUB>> ]
+  "13" -> "17" 
+  "13" -> "13" 
+  "13" -> "19" 
+  "13" -> "25" 
+  "13" -> "22" 
+  "30" -> "34" 
+}
